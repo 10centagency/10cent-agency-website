@@ -145,11 +145,11 @@ export default function Footer() {
             &copy; 2025 10 Cent Agency. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
-            <Link href="#" className="text-white/50 text-sm hover:text-white/80 transition-colors">
+            <Link href="/privacy-policy" className="text-white/50 text-sm hover:text-white/80 transition-colors">
               Privacy Policy
             </Link>
             <span className="text-white/30">|</span>
-            <Link href="#" className="text-white/50 text-sm hover:text-white/80 transition-colors">
+            <Link href="/terms-of-service" className="text-white/50 text-sm hover:text-white/80 transition-colors">
               Terms of Service
             </Link>
           </div>

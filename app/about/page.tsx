@@ -4,6 +4,7 @@ import { ChevronRight, Rocket, Target, Heart, Handshake, Eye, TrendingUp, Users 
 import SectionLabel from '@/components/ui/SectionLabel';
 import AnimatedSection, { StaggerContainer, StaggerItem } from '@/components/ui/AnimatedSection';
 import CTABanner from '@/components/home/CTABanner';
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: 'About Us',
@@ -68,19 +69,23 @@ export default function AboutPage() {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
             {/* Visual */}
             <AnimatedSection variant="scaleIn">
-              <div className="relative">
-                <div className="bg-gradient-to-br from-brand-blue/10 to-brand-accent/30 rounded-3xl aspect-[4/3] flex items-center justify-center border border-brand-border">
-                  <div className="text-center">
-                    <div className="text-8xl font-black text-brand-navy/10 leading-none select-none">10¢</div>
-                    <p className="text-brand-textMid text-sm mt-2">Est. 2024</p>
-                  </div>
-                </div>
-                <div className="absolute -bottom-4 -right-4 bg-brand-navy text-white rounded-2xl p-5 shadow-xl">
-                  <div className="text-3xl font-black">20+</div>
-                  <div className="text-xs text-white/70">Happy Clients</div>
-                </div>
-              </div>
-            </AnimatedSection>
+  <div className="relative">
+    <div className="relative rounded-3xl aspect-[4/3] overflow-hidden border border-brand-border">
+      <Image
+        src="/about-agency.jpg"
+        alt="Why We Built 10 Cent Agency"
+        fill
+        className="object-cover"
+        priority
+      />
+    </div>
+
+    <div className="absolute -bottom-4 -right-4 bg-brand-navy text-white rounded-2xl p-5 shadow-xl">
+      <div className="text-3xl font-black">20+</div>
+      <div className="text-xs text-white/70">Happy Clients</div>
+    </div>
+  </div>
+</AnimatedSection>
 
             {/* Story text */}
             <AnimatedSection variant="slideRight">
@@ -184,12 +189,29 @@ export default function AboutPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <AnimatedSection>
             <SectionLabel className="mx-auto">A Personal Note</SectionLabel>
-            <div className="w-24 h-24 rounded-full bg-brand-navy flex items-center justify-center mx-auto mt-6 mb-4 text-white text-2xl font-bold">
-              10¢
+
+            <div className="mt-8 flex justify-center">
+              <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-brand-navy shadow-[0_8px_20px_rgba(0,52,109,0.15)]">
+                <Image
+                  src="/founder.jpg"
+                  alt="Founder of 10 Cent Agency"
+                  fill
+                  className="object-cover object-center"
+                  sizes="96px"
+                  priority
+                />
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-brand-textDark mb-1">Founder, 10 Cent Agency</h3>
-            <p className="text-brand-textMid text-sm mb-6">Mirpur, Dhaka, Bangladesh</p>
-            <blockquote className="text-brand-textDark text-lg leading-relaxed italic max-w-2xl mx-auto">
+
+            <h3 className="text-xl font-bold text-brand-textDark mt-6">
+              Founder, 10 Cent Agency
+            </h3>
+
+            <p className="text-brand-textMid text-sm mt-2">
+              Mirpur, Dhaka, Bangladesh
+            </p>
+
+            <blockquote className="mt-8 text-brand-textDark text-lg leading-relaxed italic max-w-2xl mx-auto">
               &ldquo;I started this agency because I kept seeing brilliant business owners struggle to grow online — not because of lack of effort, but because of lack of access to the right help at the right price. 10 Cent Agency is my answer to that problem. Every day, we work to make sure that your business gets the digital presence it deserves.&rdquo;
             </blockquote>
           </AnimatedSection>
