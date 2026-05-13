@@ -1,0 +1,126 @@
+
+# 10 Cent Agency
+
+> 10 Cent Agency is a Bangladesh-based full-service digital marketing agency built specifically for small and medium-sized businesses, startups, and entrepreneurs. Tagline: Professional | Affordable | Unstoppable.
+
+10 Cent Agency was founded to level the playing field — giving small businesses access to the same quality of digital marketing that large corporations enjoy, at prices that make sense for growing businesses. The agency operates from East Monipur, Mirpur, Dhaka, Bangladesh.
+
+## Company Overview
+
+- **Founded:** 2026
+- **Founder:** MD AL AMIN
+- **Location:** East Monipur, Mirpur, Dhaka, Bangladesh
+- **Website:** https://www.10centagency.com
+- **Email:** hello@10centagency.com
+- **Phone/WhatsApp:** +880 1410-244114
+
+**Mission:** To empower every small and medium business in Bangladesh with professional, results-driven digital services — at a price that lets them grow without fear.
+
+**Vision:** To become the most trusted and accessible digital growth agency in Bangladesh — and eventually, the world — where no business is too small to deserve the best.
+
+## Target Clients
+
+- Small & Medium Businesses wanting professional digital presence without agency-sized bills
+- Startups & new entrepreneurs building from the ground up
+- Offline businesses making the leap online
+- Budget-conscious owners who refuse to sacrifice quality
+
+## Core Values
+
+- **Quality Without Compromise:** Affordable does not mean average
+- **Partnership Over Transaction:** Long-term investment in client success
+- **Clarity & Transparency:** No hidden fees, no confusing jargon
+- **Growth-First Thinking:** Every decision driven by client business growth
+- **People Before Profit:** Every client treated with equal care and respect
+
+## Brand Personality
+
+- Friendly, Professional, Reliable, Innovative, Committed
+
+## Services
+
+### Core Service 01 — Facebook & Meta Marketing
+
+Full Meta ecosystem management from setup to revenue-generating ad campaigns.
+
+- **01A Page Setup & Optimization** (One-time): Facebook Business Page & Instagram setup, Meta Business Suite configuration, Facebook Pixel installation, profile optimization, cover/profile photo design
+- **01B Content Creation & Post Design** (Monthly Retainer): Custom post design in Bangla & English, copywriting, monthly content calendar, hashtag research, promotional posts
+- **01C Ad Creative Production** (Per Project/Monthly): Static ad creative design, A/B testing variations, multiple ad sizes (Feed, Story, Banner), retargeting creatives
+- **01D Facebook & Instagram Ads Management** (Monthly Retainer): Full campaign strategy, audience targeting, Custom & Lookalike audiences, A/B split testing, Facebook Conversions API, GA4 + GTM integration, UTM tracking, weekly performance checks, monthly reports. Client provides ad budget directly to Meta.
+- **01E Monthly Performance Report** (Included with Retainer): Page growth, ad campaign results (Spend, Reach, Clicks, Leads, ROAS), GA4 report, audience insights, delivered as PDF within first 5 days of each month
+
+### Core Service 02 — Website Development
+
+WordPress + Elementor websites that convert visitors into paying customers.
+
+- **02A Personal & Business Website** (One-time): Custom design up to 5–7 pages, mobile responsive, domain & hosting setup, SSL, on-page SEO, GA4, contact form, WhatsApp button, Google Maps, 1 month free support
+- **02B Landing Page** (One-time): High-converting layout, lead capture form, WhatsApp/Messenger CTA, countdown timer, Facebook Pixel + Conversions API + GA4 + UTM, mobile-first, 1 month free support
+- **02C E-Commerce Website** (One-time): Full online store up to 20 products, payment gateways (bKash, Nagad, Rocket, SSLCommerz), shopping cart, coupon system, order management, customer accounts, Facebook Pixel e-commerce events, GA4 e-commerce tracking, 1 month free support
+
+### Core Service 03 — AI Automation & Chatbot
+
+24/7 intelligent automation powered by AI and n8n workflows.
+
+- **03A AI Chatbot Setup** (One-time): Platforms: Facebook Messenger, WhatsApp Business, Telegram. Post auto-comment reply, lead-to-DM conversion, FAQ handling, appointment booking, multilingual (Bangla & English), human handover. API cost ~$5–20/month paid by client.
+- **03B AI Automation Workflows via n8n** (One-time Setup + Optional Maintenance): Lead generation automation, order management, customer support automation, business workflows (payment reminders, review requests, social cross-posting)
+
+### Core Service 04 — Social Media Management
+
+- **04A Full Social Media Management** (Monthly Retainer): Monthly content calendar, post design & copywriting (Bangla & English), scheduled posting, story creation, AI-powered comment management, inbox moderation, monthly engagement report
+
+### Add-On Service 05 — SEO
+
+- **05A On-Page SEO** (One-time): Keyword research, meta title/description optimization, heading structure, image alt text, URL optimization, XML sitemap, GSC & GA4 setup
+- **05B Local SEO** (One-time + Monthly Maintenance): Google Business Profile setup & optimization, local keyword targeting, NAP consistency, Google Maps optimization, review management strategy
+
+### Add-On Service 06 — Graphic Design
+
+- **06A Brand Identity Design** (One-time): Logo design (primary, icon, all variations), color palette, typography, brand style guide, business card & letterhead
+- **06B Social Media Graphics** (Per Project/Monthly): Facebook/Instagram cover & post templates, story templates, highlight icons, promotional banners
+- **06C Marketing Materials** (Per Project): Flyers, posters, brochures, pitch decks, ad creatives
+
+## Complete Service Directory
+
+| Code | Service | Type |
+|------|---------|------|
+| 01A | Page Setup & Optimization | One-time Setup |
+| 01B | Content Creation & Post Design | Monthly Retainer |
+| 01C | Ad Creative Production | Per Project / Monthly |
+| 01D | Facebook & Instagram Ads Management | Monthly Retainer |
+| 01E | Monthly Performance Report | Included with Retainer |
+| 02A | Personal & Business Website | One-time Project |
+| 02B | Landing Page | One-time Project |
+| 02C | E-Commerce Website | One-time Project |
+| 03A | AI Chatbot Setup | One-time Setup Fee |
+| 03B | AI Automation Workflows (n8n) | One-time Setup |
+| 04A | Full Social Media Management | Monthly Retainer |
+| 05A | On-Page SEO | One-time Setup |
+| 05B | Local SEO | One-time + Maintenance |
+| 06A | Brand Identity Design | One-time Project |
+| 06B | Social Media Graphics | Per Project / Monthly |
+| 06C | Marketing Materials | Per Project |
+
+## Brand Identity
+
+- **Primary Color:** Deep Blue #00346D — Trust, Professionalism, Stability, Authority
+- **Secondary Color:** Vibrant Blue #2F85F3 — CTAs, highlights, notifications
+- **Accent Color:** Pale Blue #B6D7FF — Interactive and highlighted elements
+- **Brand Font:** Outfit (Google Fonts) — geometric, modern, highly legible
+- **Bangla Font:** Anek Bangla (Google Fonts)
+
+## Key Differentiators
+
+- Professional quality at a fraction of typical agency cost
+- Dedicated ongoing support, not just project delivery
+- Custom strategies built for each business
+- Honest, transparent pricing — no surprises
+- Long-term growth partnership mindset
+- Serves businesses that large agencies typically ignore
+
+## Contact
+
+- **Website:** https://www.10centagency.com
+- **Email:** hello@10centagency.com
+- **WhatsApp:** +880 1410-244114
+- **Address:** East Monipur, Mirpur, Dhaka, Bangladesh
+- **Free consultation:** Available — no commitment required

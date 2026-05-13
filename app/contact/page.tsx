@@ -34,16 +34,15 @@ const contactInfo = [
   {
     icon: Clock,
     label: 'Hours',
-    value: 'Saturday–Thursday, 9AM–8PM',
+    value: 'Saturday–Thursday, 10AM–11PM',
     href: null,
   },
 ];
 
 const socialLinks = [
-  { icon: Facebook, href: '#', label: 'Facebook' },
-  { icon: Instagram, href: '#', label: 'Instagram' },
-  { icon: Youtube, href: '#', label: 'YouTube' },
-  { icon: Linkedin, href: '#', label: 'LinkedIn' },
+  { icon: Facebook, href: 'https://www.facebook.com/10centagency', label: 'Facebook' },
+  { icon: Instagram, href: 'https://www.instagram.com/10centagency', label: 'Instagram' },
+  { icon: Youtube, href: 'https://www.youtube.com/@10centagency', label: 'YouTube' },
 ];
 
 export default function ContactPage() {

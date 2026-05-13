@@ -1,4 +1,4 @@
-import { MetadataRoute } from 'next'
+import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -6,32 +6,30 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin/', '/auth', '/api/'],
+        disallow: ['/api/', '/_next/', '/admin/'],
       },
       {
         userAgent: 'GPTBot',
         allow: '/',
-        disallow: ['/admin/', '/auth', '/api/'],
       },
       {
         userAgent: 'ChatGPT-User',
         allow: '/',
-        disallow: ['/admin/', '/auth', '/api/'],
       },
       {
-        userAgent: 'CCBot',
+        userAgent: 'Claude-Web',
         allow: '/',
       },
       {
-        userAgent: 'anthropic-ai',
+        userAgent: 'PerplexityBot',
         allow: '/',
       },
       {
-        userAgent: 'Google-Extended',
+        userAgent: 'Googlebot',
         allow: '/',
       },
     ],
-    sitemap: 'https://10centagency.com/sitemap.xml',
-    host: 'https://10centagency.com',
-  }
+    sitemap: 'https://www.10centagency.com/sitemap.xml',
+    host: 'https://www.10centagency.com',
+  };
 }

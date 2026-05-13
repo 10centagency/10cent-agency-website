@@ -169,7 +169,7 @@ export default function ServicesDetail() {
               </p>
               <FeatureList features={metaFeatures} />
               <Link
-                href="/services"
+                href="/services/facebook-meta-marketing"
                 className="inline-flex items-center gap-1 text-brand-blue font-semibold mt-6 hover:underline"
               >
                 Learn More <span aria-hidden>→</span>
@@ -198,7 +198,7 @@ export default function ServicesDetail() {
               </p>
               <FeatureList features={websiteFeatures} />
               <Link
-                href="/services"
+                href="/services/website-development"
                 className="inline-flex items-center gap-1 text-brand-blue font-semibold mt-6 hover:underline"
               >
                 Learn More <span aria-hidden>→</span>
@@ -233,7 +233,7 @@ export default function ServicesDetail() {
               </p>
               <FeatureList features={aiFeatures} />
               <Link
-                href="/services"
+                href="/services/ai-automation-chatbot"
                 className="inline-flex items-center gap-1 text-brand-blue font-semibold mt-6 hover:underline"
               >
                 Learn More <span aria-hidden>→</span>

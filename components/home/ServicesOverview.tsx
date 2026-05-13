@@ -10,28 +10,28 @@ const services = [
     title: 'Facebook & Meta Marketing',
     description: 'Drive real results with data-driven Facebook and Instagram campaigns. From ad creation to conversion tracking — we handle it all for your business growth.',
     tag: 'Monthly Retainer',
-    href: '/services#meta',
+    href: '/services/facebook-meta-marketing',
   },
   {
     icon: Monitor,
     title: 'Website Development',
     description: 'Professional websites built to convert visitors into customers. E-commerce, landing pages, business sites — all optimized for performance and conversions.',
     tag: 'One-time Project',
-    href: '/services#website',
+    href: '/services/website-development',
   },
   {
     icon: Bot,
     title: 'AI Automation & Chatbot',
     description: 'Smart automation that works while you sleep. Messenger, WhatsApp, and Telegram chatbots that handle leads, orders, and customer support automatically.',
-    tag: 'One-time Setup',
-    href: '/services#ai',
+    tag: 'Free Trial Available',
+    href: '/services/ai-automation-chatbot',
   },
   {
     icon: Calendar,
     title: 'Social Media Management',
     description: 'Full monthly management of your social media presence with AI-powered engagement tools, consistent content, and community management.',
     tag: 'Monthly Retainer',
-    href: '/services#social',
+    href: '/services/social-media-management',
   },
 ];
 
@@ -78,6 +78,16 @@ export default function ServicesOverview() {
             );
           })}
         </StaggerContainer>
+
+        <AnimatedSection className="text-center mt-10 lg:mt-12">
+          <Link
+            href="/services"
+            className="inline-flex items-center justify-center bg-brand-navy text-white font-medium rounded-xl px-8 py-4 shadow-[0_4px_24px_rgba(47,133,243,0.10)] hover:bg-brand-blue hover:-translate-y-1 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:ring-offset-2"
+            aria-label="Explore all services offered by 10 Cent Agency"
+          >
+            Explore All Services
+          </Link>
+        </AnimatedSection>
       </div>
     </section>
   );

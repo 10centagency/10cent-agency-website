@@ -1,73 +1,80 @@
-import { MetadataRoute } from 'next'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { MetadataRoute } from 'next';
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const supabase = createServerSupabaseClient()
+export default function sitemap(): MetadataRoute.Sitemap {
+  const baseUrl = 'https://www.10centagency.com';
 
-  const { data: portfolioItems } = await supabase
-    .from('portfolio_items')
-    .select('slug, updated_at')
-    .eq('status', 'published')
-
-  const { data: blogPosts } = await supabase
-    .from('blog_posts')
-    .select('slug, updated_at')
-    .eq('status', 'published')
-
-  const staticPages: MetadataRoute.Sitemap = [
+  return [
     {
-      url: 'https://10centagency.com',
+      url: baseUrl,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 1,
     },
     {
-      url: 'https://10centagency.com/services',
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.9,
-    },
-    {
-      url: 'https://10centagency.com/about',
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: 'https://10centagency.com/portfolio',
+      url: `${baseUrl}/services`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
-      url: 'https://10centagency.com/blog',
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
-      url: 'https://10centagency.com/contact',
+      url: `${baseUrl}/services/facebook-meta-marketing`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },
-  ]
-
-  const portfolioPages: MetadataRoute.Sitemap = (portfolioItems ?? []).map(
-    (item) => ({
-      url: `https://10centagency.com/portfolio/${item.slug}`,
-      lastModified: new Date(item.updated_at),
-      changeFrequency: 'monthly' as const,
+    {
+      url: `${baseUrl}/services/website-development`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/services/ai-automation-chatbot`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/services/social-media-management`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
       priority: 0.7,
-    })
-  )
-
-  const blogPages: MetadataRoute.Sitemap = (blogPosts ?? []).map((post) => ({
-    url: `https://10centagency.com/blog/${post.slug}`,
-    lastModified: new Date(post.updated_at),
-    changeFrequency: 'weekly' as const,
-    priority: 0.8,
-  }))
-
-  return [...staticPages, ...portfolioPages, ...blogPages]
+    },
+    {
+      url: `${baseUrl}/services/seo`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/services/graphic-design`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/about`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/portfolio`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/blog`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/contact`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+  ];
 }

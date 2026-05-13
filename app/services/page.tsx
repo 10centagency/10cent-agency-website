@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Script from 'next/script';
+import Image from 'next/image';
 import { CircleCheck as CheckCircle2, ChartBar as BarChart2, Monitor, Bot, Search, Palette, Share2, Clock, ChevronRight } from 'lucide-react';
 import SectionLabel from '@/components/ui/SectionLabel';
 import AnimatedSection, { StaggerContainer, StaggerItem } from '@/components/ui/AnimatedSection';
 import CTABanner from '@/components/home/CTABanner';
+import ServicesFAQ from '@/components/services/ServicesFAQ';
 
 export const metadata: Metadata = {
   title: 'Our Services',
@@ -14,6 +17,8 @@ export const metadata: Metadata = {
 const mainServices = [
   {
     id: 'meta',
+    image: '/services/facebook-marketing.jpg',
+    slug: 'facebook-meta-marketing',
     number: '01',
     icon: BarChart2,
     title: 'Facebook & Meta Marketing',
@@ -33,6 +38,8 @@ const mainServices = [
   },
   {
     id: 'website',
+    image: '/services/website-development.jpg',
+    slug: 'website-development',
     number: '02',
     icon: Monitor,
     title: 'Website Development',
@@ -52,9 +59,11 @@ const mainServices = [
   },
   {
     id: 'ai',
+    image: '/services/ai-automation-chatbot.jpg',
+    slug: 'ai-automation-chatbot',
     number: '03',
     icon: Bot,
-    title: 'AI Automation & Chatbot',
+    title: 'AI Automation & Chatbot (3 Days Free Trial)',
     type: 'One-time Setup',
     description:
       'Stop missing leads after business hours. Our AI-powered chatbots and automation workflows handle customer inquiries, generate leads, and manage orders around the clock — so you never lose a potential customer while you sleep.',
@@ -74,6 +83,7 @@ const mainServices = [
 const addOnServices = [
   {
     id: 'social',
+    slug: 'social-media-management',
     number: '04',
     icon: Share2,
     title: 'Social Media Management',
@@ -91,6 +101,7 @@ const addOnServices = [
   },
   {
     id: 'seo',
+    slug: 'seo',
     number: '05',
     icon: Search,
     title: 'Search Engine Optimization',
@@ -108,6 +119,7 @@ const addOnServices = [
   },
   {
     id: 'design',
+    slug: 'graphic-design',
     number: '06',
     icon: Palette,
     title: 'Graphic Design',
@@ -142,14 +154,14 @@ function ServiceSection({ service, reversed = false }: { service: typeof mainSer
             variant="scaleIn"
             className={`${reversed ? 'lg:col-start-2' : ''} flex justify-center`}
           >
-            <div className="w-full max-w-md bg-gradient-to-br from-brand-blue/10 to-brand-accent/20 rounded-3xl p-10 flex flex-col items-center justify-center min-h-[300px] border border-brand-border">
-              <div className="w-20 h-20 rounded-2xl bg-brand-blue/10 border border-brand-border flex items-center justify-center mb-4">
-                <Icon className="w-10 h-10 text-brand-blue" />
-              </div>
-              <span className="text-6xl font-black text-brand-navy/10 select-none">{service.number}</span>
-              <span className="text-xs font-semibold bg-brand-accent/40 text-brand-navy rounded-full px-3 py-1 mt-2">
-                {service.type}
-              </span>
+            <div className="w-full max-w-md rounded-3xl overflow-hidden border border-brand-border shadow-card">
+              <Image
+                src={service.image}
+                alt={service.title}
+                width={600}
+                height={400}
+                className="w-full h-auto object-cover"
+              />
             </div>
           </AnimatedSection>
 
@@ -159,7 +171,9 @@ function ServiceSection({ service, reversed = false }: { service: typeof mainSer
               <div className="w-10 h-10 rounded-xl bg-brand-blue/10 flex items-center justify-center">
                 <Icon className="w-5 h-5 text-brand-blue" />
               </div>
-              <span className="text-sm font-semibold text-brand-blue">{service.title}</span>
+              <span className="text-sm font-semibold text-brand-blue">
+                {service.id === 'ai' ? 'AI Automation & Chatbot' : service.title}
+              </span>
             </div>
             <h2 className="text-2xl lg:text-3xl font-bold text-brand-textDark mb-4">{service.title}</h2>
             <p className="text-brand-textMid leading-relaxed mb-6">{service.description}</p>
@@ -171,12 +185,20 @@ function ServiceSection({ service, reversed = false }: { service: typeof mainSer
                 </li>
               ))}
             </ul>
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-2 bg-brand-navy text-white font-semibold rounded-xl px-6 py-3 hover:bg-brand-blue transition-colors duration-200"
-            >
-              Get a Quote
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link
+                href={`/services/${service.slug}`}
+                className="inline-flex items-center justify-center gap-2 border-2 border-brand-navy text-brand-navy font-semibold rounded-xl px-6 py-3 hover:bg-brand-navy hover:text-white transition-colors duration-200"
+              >
+                View Details
+              </Link>
+              <Link
+                href="/contact"
+                className="inline-flex items-center justify-center gap-2 bg-brand-navy text-white font-semibold rounded-xl px-6 py-3 hover:bg-brand-blue transition-colors duration-200"
+              >
+                {service.id === 'ai' ? 'Start Free Trial' : 'Get a Quote'}
+              </Link>
+            </div>
           </AnimatedSection>
         </div>
       </div>
@@ -184,9 +206,86 @@ function ServiceSection({ service, reversed = false }: { service: typeof mainSer
   );
 }
 
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'How much do your services cost?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Our pricing varies based on the service and your specific needs. We offer flexible packages for every budget — from one-time projects to monthly retainers. Contact us for a free consultation and custom quote tailored to your business goals.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Do I need to pay for Facebook/Instagram ad costs separately?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. You pay Meta (Facebook) directly for your ad budget, and we manage the campaigns at no extra charge. This keeps things transparent — you control the budget, and we make sure every taka is spent wisely.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How long does it take to build a website?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Most websites are completed within 7-14 days, depending on complexity. E-commerce sites may take 14-21 days. We will give you a clear timeline during our initial consultation.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Can you help if I already have a website or social media page?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Absolutely! We can optimize, redesign, or take over management of your existing digital assets. Whether you need a refresh or ongoing support, we will work with what you have and make it better.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Do you provide content in Bangla and English?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes! We create content in both Bangla and English to help you reach your target audience effectively. Our team understands the local market and can communicate your message in the language your customers prefer.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'What if I need revisions or changes after the project is done?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'All our website projects include 1 month of free support with up to 3-4 revision requests. For ongoing changes and updates, we offer affordable monthly maintenance packages.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Do you work with small businesses and startups?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes! We specialize in helping small businesses and startups grow online. Our services are designed to be affordable and scalable — so you can start small and expand as your business grows.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How do I get started?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Simply contact us through our website, WhatsApp, or email. We will schedule a free consultation to understand your needs, discuss solutions, and provide a custom quote. No commitment required!',
+      },
+    },
+  ],
+};
+
 export default function ServicesPage() {
   return (
     <>
+      {/* FAQ Schema */}
+      <Script
+        id="faq-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       {/* Hero */}
       <section className="bg-brand-bgAlt pt-32 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -247,12 +346,20 @@ export default function ServicesPage() {
                         </li>
                       ))}
                     </ul>
-                    <Link
-                      href="/contact"
-                      className="text-brand-blue text-sm font-semibold hover:underline inline-flex items-center gap-1"
-                    >
-                      Get a Quote <span aria-hidden>→</span>
-                    </Link>
+                    <div className="flex flex-col sm:flex-row gap-3 mt-auto">
+                      <Link
+                        href={`/services/${service.slug}`}
+                        className="text-brand-navy text-sm font-semibold hover:underline inline-flex items-center justify-center gap-1 border border-brand-navy rounded-lg px-4 py-2 hover:bg-brand-navy hover:text-white transition-colors duration-200"
+                      >
+                        View Details
+                      </Link>
+                      <Link
+                        href="/contact"
+                        className="text-white bg-brand-navy text-sm font-semibold rounded-lg px-4 py-2 hover:bg-brand-blue transition-colors duration-200 inline-flex items-center justify-center gap-1"
+                      >
+                        Get a Quote
+                      </Link>
+                    </div>
                   </div>
                 </StaggerItem>
               );
@@ -283,6 +390,9 @@ export default function ServicesPage() {
           </StaggerContainer>
         </div>
       </section>
+
+      {/* FAQ Section */}
+      <ServicesFAQ />
 
       <CTABanner />
     </>

@@ -21,10 +21,9 @@ const services = [
 ];
 
 const socialLinks = [
-  { icon: Facebook, href: '#', label: 'Facebook' },
-  { icon: Instagram, href: '#', label: 'Instagram' },
-  { icon: Youtube, href: '#', label: 'YouTube' },
-  { icon: Linkedin, href: '#', label: 'LinkedIn' },
+  { icon: Facebook, href: 'https://www.facebook.com/10centagency', label: 'Facebook' },
+  { icon: Instagram, href: 'https://www.instagram.com/10centagency', label: 'Instagram' },
+  { icon: Youtube, href: 'https://www.youtube.com/@10centagency', label: 'YouTube' },
 ];
 
 export default function Footer() {
@@ -132,7 +131,7 @@ export default function Footer() {
               <li>
                 <div className="flex items-start gap-3 text-white/60 text-sm">
                   <Clock className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span>Saturday–Thursday, 9AM–8PM</span>
+                  <span>Saturday–Thursday, 10AM–11PM</span>
                 </div>
               </li>
             </ul>
@@ -142,7 +141,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-white/50 text-sm">
-            &copy; 2025 10 Cent Agency. All rights reserved.
+            &copy; 2026 10 Cent Agency. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <Link href="/privacy-policy" className="text-white/50 text-sm hover:text-white/80 transition-colors">

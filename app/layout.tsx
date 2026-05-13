@@ -32,6 +32,20 @@ export const metadata: Metadata = {
     'Meta ads agency Bangladesh',
     'website development Dhaka',
   ],
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png' },
+    ],
+    shortcut: '/favicon.ico',
+  },
+  verification: {
+    google: 'YOUR_GOOGLE_SEARCH_CONSOLE_VERIFICATION_CODE',
+  },
   openGraph: {
     title: '10 Cent Agency | Professional | Affordable | Unstoppable',
     description:

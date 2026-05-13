@@ -78,7 +78,9 @@ export default function Navbar() {
           {/* Desktop CTA */}
           <div className="hidden lg:block">
             <Link
-              href="/contact"
+              href="https://calendly.com/10centagency/free-consultation"
+              target="_blank"
+rel="noopener noreferrer"
               className="bg-brand-navy text-white text-sm font-semibold rounded-lg px-5 py-2.5 hover:bg-brand-blue transition-colors duration-200"
             >
               Get Free Consultation

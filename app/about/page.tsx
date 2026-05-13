@@ -184,39 +184,46 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Founder section */}
-      <section className="bg-brand-bgAlt py-16 lg:py-20">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <AnimatedSection>
-            <SectionLabel className="mx-auto">A Personal Note</SectionLabel>
+     {/* Founder section */}
+<section className="bg-brand-bgAlt py-16 lg:py-20">
+  <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <AnimatedSection>
+      <SectionLabel className="mx-auto">A Personal Note</SectionLabel>
 
-            <div className="mt-8 flex justify-center">
-              <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-brand-navy shadow-[0_8px_20px_rgba(0,52,109,0.15)]">
-                <Image
-                  src="/founder.jpg"
-                  alt="Founder of 10 Cent Agency"
-                  fill
-                  className="object-cover object-center"
-                  sizes="96px"
-                  priority
-                />
-              </div>
-            </div>
-
-            <h3 className="text-xl font-bold text-brand-textDark mt-6">
-              Founder, 10 Cent Agency
-            </h3>
-
-            <p className="text-brand-textMid text-sm mt-2">
-              Mirpur, Dhaka, Bangladesh
-            </p>
-
-            <blockquote className="mt-8 text-brand-textDark text-lg leading-relaxed italic max-w-2xl mx-auto">
-              &ldquo;I started this agency because I kept seeing brilliant business owners struggle to grow online — not because of lack of effort, but because of lack of access to the right help at the right price. 10 Cent Agency is my answer to that problem. Every day, we work to make sure that your business gets the digital presence it deserves.&rdquo;
-            </blockquote>
-          </AnimatedSection>
+      <div className="mt-8 flex justify-center">
+        <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-brand-navy shadow-[0_8px_20px_rgba(0,52,109,0.15)]">
+          <Image
+            src="/founder.jpg"
+            alt="Founder of 10 Cent Agency"
+            fill
+            className="object-cover object-center"
+            sizes="96px"
+            priority
+          />
         </div>
-      </section>
+      </div>
+
+      {/* Name: Bold */}
+      <h3 className="text-xl font-bold text-brand-textDark mt-6">
+        Md Al Amin
+      </h3>
+
+      {/* Founder: Normal/Regular weight */}
+      <p className="text-brand-textDark text-base font-normal">
+        Founder of 10 Cent Agency
+      </p>
+
+      {/* Location */}
+      <p className="text-brand-textMid text-sm mt-1">
+        Mirpur, Dhaka, Bangladesh
+      </p>
+
+      <blockquote className="mt-8 text-brand-textDark text-lg leading-relaxed italic max-w-2xl mx-auto">
+        &ldquo;I started this agency because I kept seeing brilliant business owners struggle to grow online — not because of lack of effort, but because of lack of access to the right help at the right price. 10 Cent Agency is my answer to that problem. Every day, we work to make sure that your business gets the digital presence it deserves.&rdquo;
+      </blockquote>
+    </AnimatedSection>
+  </div>
+</section>
 
       {/* CTA */}
       <section className="bg-white py-12 text-center">

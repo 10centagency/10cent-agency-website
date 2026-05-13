@@ -27,7 +27,9 @@ export default function CTABanner() {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
                 <Link
-                  href="/contact"
+                  href="https://calendly.com/10centagency/free-consultation"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center justify-center bg-white text-brand-navy font-semibold rounded-xl px-8 py-4 hover:bg-brand-accent transition-colors duration-200"
                 >
                   Book Free Consultation

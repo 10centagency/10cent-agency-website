@@ -8,23 +8,23 @@ import AnimatedSection from '@/components/ui/AnimatedSection';
 
 const testimonials = [
   {
-    quote: '10 Cent Agency transformed our Facebook presence completely. Within 2 months, our restaurant saw a 3x increase in reach and table bookings through social media doubled. Their work is professional and the pricing is unbeatable.',
-    name: 'Rakib Hossain',
-    business: 'Local Restaurant Owner, Dhaka',
-    initials: 'RH',
+    quote: '10 Cent Agency transformed our online presence completely. Within 2 months, our shop saw a 3x increase in reach and our wholesale inquiries through social media doubled. Their work is professional, they truly understand business needs, and the pricing is unbeatable. Best decision we made for our business!',
+    name: 'Abdus Salam',
+    business: 'Salam Garments, Clothing Wholesale Suppliers',
+    initials: 'AS',
     rating: 5,
   },
   {
-    quote: 'They built our e-commerce website exactly how we imagined — clean, fast, and with full payment integration for bKash and cards. The conversion rate has been amazing since launch. Highly recommend for any business going online.',
-    name: 'Nusrat Jahan',
-    business: 'Online Clothing Brand',
-    initials: 'NJ',
+    quote: 'They built our e-commerce landing page exactly how we imagined — clean, fast, and user-friendly. The conversion rate has been amazing since launch. Highly recommend for any business going online.',
+    name: 'Shohidul Islam',
+    business: 'FC Collection BD, Clothing Store',
+    initials: 'SI',
     rating: 5,
   },
   {
-    quote: 'The AI chatbot they built for our Messenger handles more than 80% of customer inquiries automatically. Our team can now focus on actual work instead of answering the same questions repeatedly. Game changer for our coaching center.',
+    quote: 'The AI chatbot they built for our Messenger handles more than 80% of customer inquiries automatically. Our team can now focus on actual work instead of answering the same questions repeatedly. Game changer for our logistics business.',
     name: 'Tanvir Ahmed',
-    business: 'Coaching Center, Mirpur',
+    business: 'KD Cargo Service, Logistics Company',
     initials: 'TA',
     rating: 5,
   },
