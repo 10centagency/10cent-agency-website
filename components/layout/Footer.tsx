@@ -113,13 +113,13 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="https://wa.me/8801410244114"
+                  href="https://wa.me/8801615144114"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-start gap-3 text-white/60 text-sm hover:text-brand-accent transition-colors duration-200"
                 >
                   <Phone className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  +880 1410-244114
+                  +880 1615-144114
                 </a>
               </li>
               <li>
@@ -131,7 +131,7 @@ export default function Footer() {
               <li>
                 <div className="flex items-start gap-3 text-white/60 text-sm">
                   <Clock className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span>Saturday–Thursday, 10AM–11PM</span>
+                  <span>Saturday–Thursday, 10AM–09PM</span>
                 </div>
               </li>
             </ul>

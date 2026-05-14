@@ -124,7 +124,7 @@ rel="noopener noreferrer"
               ))}
               <div className="pt-3">
                 <Link
-                  href="/contact"
+                  href="https://calendly.com/10centagency/free-consultation"
                   className="block w-full text-center bg-brand-navy text-white text-sm font-semibold rounded-lg px-5 py-3 hover:bg-brand-blue transition-colors duration-200"
                 >
                   Get Free Consultation

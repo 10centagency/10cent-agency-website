@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ChevronRight, Mail, Phone, MapPin, Clock, Facebook, Instagram, Youtube, Linkedin } from 'lucide-react';
+import { ChevronRight, Mail, Phone, MapPin, Clock, Facebook, Instagram, Youtube, Linkedin, Calendar } from 'lucide-react';
 import SectionLabel from '@/components/ui/SectionLabel';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import ContactForm from './ContactForm';
@@ -21,8 +21,8 @@ const contactInfo = [
   {
     icon: Phone,
     label: 'WhatsApp',
-    value: '+880 1410-244114',
-    href: 'https://wa.me/8801410244114',
+    value: '+880 1615-144114',
+    href: 'https://wa.me/8801615144114',
     external: true,
   },
   {
@@ -34,7 +34,7 @@ const contactInfo = [
   {
     icon: Clock,
     label: 'Hours',
-    value: 'Saturday–Thursday, 10AM–11PM',
+    value: 'Saturday–Thursday, 10AM–09PM',
     href: null,
   },
 ];
@@ -115,7 +115,7 @@ export default function ContactPage() {
               </div>
 
               {/* Social */}
-              <div>
+              <div className="mb-8">
                 <p className="text-sm text-brand-textMid font-medium mb-3">Follow Us</p>
                 <div className="flex items-center gap-3">
                   {socialLinks.map(({ icon: Icon, href, label }) => (
@@ -129,6 +129,31 @@ export default function ContactPage() {
                     </a>
                   ))}
                 </div>
+              </div>
+
+              {/* Book a Free Consultation */}
+              <div className="bg-brand-bgAlt border border-brand-border rounded-2xl p-6">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-6 h-6 text-brand-blue" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-brand-textDark mb-2">
+                      Book a Free Consultation
+                    </h3>
+                    <p className="text-brand-textMid text-sm leading-relaxed">
+                      Schedule a 30-minute one-on-one call with our team — no pressure, just a conversation.
+                    </p>
+                  </div>
+                </div>
+                <a
+                  href="https://calendly.com/10centagency/free-consultation"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center w-full bg-brand-blue text-white font-semibold px-6 py-3 rounded-xl hover:bg-brand-blue/90 transition-colors duration-200"
+                >
+                  Book Your Free Call →
+                </a>
               </div>
             </AnimatedSection>
 
