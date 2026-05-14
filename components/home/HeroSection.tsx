@@ -92,6 +92,8 @@ export default function HeroSection() {
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
                 <Link
                   href="https://calendly.com/10centagency/free-consultation"
+                  target="_blank"
+rel="noopener noreferrer"
                   className="inline-flex items-center justify-center bg-brand-navy text-white font-semibold rounded-xl px-8 py-4 hover:bg-brand-blue transition-colors duration-200 w-full sm:w-auto"
                 >
                   Get Free Consultation

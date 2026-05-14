@@ -34,7 +34,7 @@ const contactInfo = [
   {
     icon: Clock,
     label: 'Hours',
-    value: 'Saturday–Thursday, 10AM–09PM',
+    value: 'Saturday–Thursday, 10AM–9PM',
     href: null,
   },
 ];
@@ -123,6 +123,8 @@ export default function ContactPage() {
                       key={label}
                       href={href}
                       aria-label={label}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="w-10 h-10 rounded-xl bg-brand-bgAlt border border-brand-border flex items-center justify-center text-brand-textMid hover:text-brand-blue hover:border-brand-blue transition-all duration-200"
                     >
                       <Icon className="w-4 h-4" />

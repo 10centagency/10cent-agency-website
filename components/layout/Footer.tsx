@@ -50,14 +50,16 @@ export default function Footer() {
             </p>
             <div className="flex items-center gap-3">
               {socialLinks.map(({ icon: Icon, href, label }) => (
-                <Link
+                <a
                   key={label}
                   href={href}
                   aria-label={label}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center text-white hover:text-brand-accent hover:bg-white/20 transition-all duration-200"
                 >
                   <Icon className="w-4 h-4" />
-                </Link>
+                </a>
               ))}
             </div>
           </div>
@@ -131,7 +133,7 @@ export default function Footer() {
               <li>
                 <div className="flex items-start gap-3 text-white/60 text-sm">
                   <Clock className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span>Saturday–Thursday, 10AM–09PM</span>
+                  <span>Saturday–Thursday, 10AM–9PM</span>
                 </div>
               </li>
             </ul>
