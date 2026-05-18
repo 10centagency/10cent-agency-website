@@ -4,6 +4,7 @@ import AnimatedSection from '@/components/ui/AnimatedSection';
 import { ContentBlock } from '@/lib/database.types';
 import { ExternalLink } from 'lucide-react';
 import ImageLightbox from '@/components/ui/ImageLightbox';
+import RichTextContent from '@/components/RichTextContent';
 
 interface ProjectContentProps {
   contentBlocks: ContentBlock[];
@@ -26,10 +27,7 @@ export default function ProjectContent({ contentBlocks }: ProjectContentProps) {
                     {block.heading}
                   </h2>
                 )}
-                <div
-                  className="prose prose-lg max-w-none prose-headings:text-brand-textDark prose-headings:font-bold prose-p:text-brand-textMid prose-p:leading-relaxed prose-a:text-brand-blue prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-4 prose-blockquote:border-brand-blue prose-blockquote:text-brand-textMid prose-strong:text-brand-textDark prose-ul:text-brand-textMid prose-ol:text-brand-textMid"
-                  dangerouslySetInnerHTML={{ __html: block.content }}
-                />
+                <RichTextContent html={block.content} />
               </AnimatedSection>
             );
           }

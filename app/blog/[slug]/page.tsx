@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import CTABanner from '@/components/home/CTABanner'
 import ImageLightbox from '@/components/ui/ImageLightbox'
+import RichTextContent from '@/components/RichTextContent'
 
 export default function BlogSinglePage() {
   const params = useParams()
@@ -186,10 +187,7 @@ export default function BlogSinglePage() {
                       {block.heading}
                     </h2>
                   )}
-                  <div
-                    className="prose-content prose-headings:text-brand-textDark prose-headings:font-semibold prose-p:text-brand-textDark prose-p:leading-relaxed prose-a:text-brand-blue prose-a:underline prose-blockquote:border-brand-blue prose-blockquote:text-brand-textMid"
-                    dangerouslySetInnerHTML={{ __html: block.content }}
-                  />
+                  <RichTextContent html={block.content} />
                 </div>
               )
             }
