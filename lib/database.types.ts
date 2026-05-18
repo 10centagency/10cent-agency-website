@@ -43,6 +43,8 @@ export interface Database {
           industry: string
           client_name: string | null
           result_highlight: string
+          excerpt?: string | null
+          meta_description?: string | null
           tags: string[]
           featured_image_url: string | null
           featured_image_link: string | null

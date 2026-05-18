@@ -40,6 +40,8 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
   const [industry, setIndustry] = useState('');
   const [clientName, setClientName] = useState('');
   const [resultHighlight, setResultHighlight] = useState('');
+  const [excerpt, setExcerpt] = useState('');
+  const [metaDescription, setMetaDescription] = useState('');
   const [tags, setTags] = useState('');
   const [featuredImageUrl, setFeaturedImageUrl] = useState('');
   const [featuredImageLink, setFeaturedImageLink] = useState('');
@@ -73,6 +75,8 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
         setIndustry(data.industry);
         setClientName(data.client_name || '');
         setResultHighlight(data.result_highlight);
+        setExcerpt(data.excerpt || '');
+        setMetaDescription(data.meta_description || '');
         setTags(data.tags?.join(', ') || '');
         setFeaturedImageUrl(data.featured_image_url || '');
         setFeaturedImageLink(data.featured_image_link || '');
@@ -202,6 +206,8 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
       industry,
       client_name: clientName || null,
       result_highlight: resultHighlight,
+      excerpt: excerpt || null,
+      meta_description: metaDescription || null,
       tags: tagsArray,
       featured_image_url: featuredImageUrl || null,
       featured_image_link: featuredImageLink || null,
@@ -365,6 +371,42 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
               placeholder="Facebook Ads, Lead Gen, E-commerce"
               className="w-full px-4 py-2.5 rounded-lg border border-brand-border bg-white text-sm text-brand-textDark placeholder:text-brand-textMid/50 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue transition-colors"
             />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label className="block text-sm font-medium text-brand-textDark mb-1.5">
+              Excerpt (Short Description)
+            </label>
+            <textarea
+              value={excerpt}
+              onChange={(e) => setExcerpt(e.target.value)}
+              placeholder="Keep under 160 characters"
+              rows={2}
+              maxLength={160}
+              className="w-full px-4 py-2 border border-brand-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+            />
+            <p className="text-xs text-brand-textMid mt-1">
+              {excerpt.length}/160 characters
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-brand-textDark mb-1.5">
+              Meta Description (SEO)
+            </label>
+            <textarea
+              value={metaDescription}
+              onChange={(e) => setMetaDescription(e.target.value)}
+              placeholder="Shown in Google results. Keep under 160 characters."
+              rows={2}
+              maxLength={160}
+              className="w-full px-4 py-2 border border-brand-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+            />
+            <p className="text-xs text-brand-textMid mt-1">
+              {metaDescription.length}/160 characters
+            </p>
           </div>
         </div>
       </div>

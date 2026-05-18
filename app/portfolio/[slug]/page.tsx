@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = createServerSupabaseClient();
   const { data: item } = await supabase
     .from('portfolio_items')
-    .select('title, result_highlight, category')
+    .select('title, result_highlight, category, meta_description, excerpt')
     .eq('slug', params.slug)
     .eq('status', 'published')
     .maybeSingle();
@@ -36,9 +36,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Project Not Found' };
   }
 
+  const description =
+    item.meta_description ||
+    item.excerpt ||
+    `${item.category} project — ${item.result_highlight}`;
+
   return {
     title: item.title,
-    description: `${item.category} project — ${item.result_highlight}`,
+    description,
   };
 }
 
