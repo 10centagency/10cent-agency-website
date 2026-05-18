@@ -9,6 +9,8 @@ import CTABanner from '@/components/home/CTABanner';
 import ProjectContent from './ProjectContent';
 import ImageLightbox from '@/components/ui/ImageLightbox';
 
+export const dynamic = 'force-dynamic';
+
 interface Props {
   params: { slug: string };
 }

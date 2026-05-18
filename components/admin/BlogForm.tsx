@@ -211,12 +211,8 @@ export default function BlogForm({ postId }: BlogFormProps) {
     setError('')
     setSaving(true)
 
-    const { data: { session } } = await supabase.auth.getSession()
-
-    if (!session) {
-      window.location.replace('/auth')
-      return
-    }
+    const client = await getAuthenticatedClient()
+    if (!client) return
 
     const finalSlug = slug || generateSlug(title)
     const tagsArray = tags
@@ -242,7 +238,7 @@ export default function BlogForm({ postId }: BlogFormProps) {
     }
 
     if (isEditing) {
-      const { data, error } = await supabase
+      const { error } = await client
         .from('blog_posts')
         .update(payload)
         .eq('id', postId!)
@@ -250,19 +246,21 @@ export default function BlogForm({ postId }: BlogFormProps) {
         .single()
 
       if (error) {
-        setError(error.message)
+        console.error('Blog update error:', error)
+        setError(`Update failed: ${error.message}`)
         setSaving(false)
         return
       }
     } else {
-      const { data, error } = await supabase
+      const { error } = await client
         .from('blog_posts')
         .insert([payload])
         .select()
         .single()
 
       if (error) {
-        setError(error.message)
+        console.error('Blog insert error:', error)
+        setError(`Create failed: ${error.message}`)
         setSaving(false)
         return
       }
@@ -505,30 +503,12 @@ export default function BlogForm({ postId }: BlogFormProps) {
       <div className="bg-white rounded-xl p-6 shadow-sm border border-brand-border">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-brand-textDark">Content</h2>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => handleAddContentBlock('text')}
-              className="px-3 py-1.5 bg-brand-blue text-white text-sm rounded-lg hover:bg-brand-blue/90 flex items-center gap-1"
-            >
-              <Type className="w-4 h-4" />
-              Add Text
-            </button>
-            <button
-              type="button"
-              onClick={() => handleAddContentBlock('image')}
-              className="px-3 py-1.5 bg-brand-blue text-white text-sm rounded-lg hover:bg-brand-blue/90 flex items-center gap-1"
-            >
-              <ImageIcon className="w-4 h-4" />
-              Add Image
-            </button>
-          </div>
         </div>
 
         <div className="space-y-4">
           {contentBlocks.length === 0 ? (
             <p className="text-sm text-brand-textMid text-center py-8">
-              No content blocks yet. Add text or images above.
+              No content blocks yet. Add text or images below.
             </p>
           ) : (
             contentBlocks.map((block, index) => (
@@ -561,8 +541,8 @@ export default function BlogForm({ postId }: BlogFormProps) {
                       className="w-full px-3 py-2 border border-brand-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
                     />
                     <RichTextEditor
-                      value={(block as any).content || ''}
-                      onChange={(content) =>
+                      content={(block as any).content || ''}
+                      onUpdate={(content: string) =>
                         updateContentBlock(block.id, { content } as any)
                       }
                     />
@@ -629,6 +609,26 @@ export default function BlogForm({ postId }: BlogFormProps) {
               </div>
             ))
           )}
+        </div>
+
+        {/* Add block buttons - bottom */}
+        <div className="flex gap-2 mt-4">
+          <button
+            type="button"
+            onClick={() => handleAddContentBlock('text')}
+            className="px-3 py-1.5 bg-brand-blue text-white text-sm rounded-lg hover:bg-brand-blue/90 flex items-center gap-1"
+          >
+            <Type className="w-4 h-4" />
+            Add Text
+          </button>
+          <button
+            type="button"
+            onClick={() => handleAddContentBlock('image')}
+            className="px-3 py-1.5 bg-brand-blue text-white text-sm rounded-lg hover:bg-brand-blue/90 flex items-center gap-1"
+          >
+            <ImageIcon className="w-4 h-4" />
+            Add Image
+          </button>
         </div>
       </div>
 

@@ -185,13 +185,8 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
     setError('');
     setSaving(true);
 
-    const { data: { session } } = await supabase.auth.getSession()
-
-    if (!session) {
-      alert('Session expired. Please login again.')
-      window.location.replace('/auth')
-      return
-    }
+    const client = await getAuthenticatedClient();
+    if (!client) return;
 
     const finalSlug = slug || generateSlug(title);
     const tagsArray = tags
@@ -220,29 +215,31 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
     };
 
     if (isEditing) {
-      const { data, error } = await supabase
+      const { error } = await client
         .from('portfolio_items')
         .update(payload)
         .eq('id', itemId!)
         .select()
-        .single()
+        .single();
 
       if (error) {
-        setError(error.message)
-        setSaving(false)
-        return
+        console.error('Portfolio update error:', error);
+        setError(`Update failed: ${error.message}`);
+        setSaving(false);
+        return;
       }
     } else {
-      const { data, error } = await supabase
+      const { error } = await client
         .from('portfolio_items')
         .insert([payload])
         .select()
-        .single()
+        .single();
 
       if (error) {
-        setError(error.message)
-        setSaving(false)
-        return
+        console.error('Portfolio insert error:', error);
+        setError(`Create failed: ${error.message}`);
+        setSaving(false);
+        return;
       }
     }
 
@@ -525,29 +522,11 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
           <h2 className="text-sm font-semibold text-brand-textDark">
             Content Blocks
           </h2>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => addContentBlock('text')}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-blue bg-brand-blue/5 hover:bg-brand-blue/10 px-3 py-1.5 rounded-lg transition-colors"
-            >
-              <Type className="w-3.5 h-3.5" />
-              Add Text
-            </button>
-            <button
-              type="button"
-              onClick={() => addContentBlock('image')}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-blue bg-brand-blue/5 hover:bg-brand-blue/10 px-3 py-1.5 rounded-lg transition-colors"
-            >
-              <ImageIcon className="w-3.5 h-3.5" />
-              Add Image
-            </button>
-          </div>
         </div>
 
         {contentBlocks.length === 0 && (
           <p className="text-sm text-brand-textMid text-center py-6">
-            No content blocks yet. Add text or image blocks above.
+            No content blocks yet. Add text or image blocks below.
           </p>
         )}
 
@@ -604,8 +583,8 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
                     className="w-full px-3 py-2 rounded-lg border border-brand-border bg-white text-sm text-brand-textDark placeholder:text-brand-textMid/50 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue transition-colors"
                   />
                   <RichTextEditor
-                    value={block.content}
-                    onChange={(content) =>
+                    content={block.content || ''}
+                    onUpdate={(content: string) =>
                       updateContentBlock(block.id, { content })
                     }
                   />
@@ -682,6 +661,26 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
               )}
             </div>
           ))}
+        </div>
+
+        {/* Add block buttons - bottom */}
+        <div className="flex gap-2 mt-2">
+          <button
+            type="button"
+            onClick={() => addContentBlock('text')}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-blue bg-brand-blue/5 hover:bg-brand-blue/10 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <Type className="w-3.5 h-3.5" />
+            Add Text
+          </button>
+          <button
+            type="button"
+            onClick={() => addContentBlock('image')}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-blue bg-brand-blue/5 hover:bg-brand-blue/10 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <ImageIcon className="w-3.5 h-3.5" />
+            Add Image
+          </button>
         </div>
       </div>
 
