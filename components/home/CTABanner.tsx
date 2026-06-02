@@ -35,7 +35,7 @@ export default function CTABanner() {
                   Book Free Consultation
                 </Link>
                 <a
-                  href="https://wa.me/8801410244114"
+                  href="https://wa.me/8801615144114"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center border-2 border-white text-white font-semibold rounded-xl px-8 py-4 hover:bg-white/10 transition-colors duration-200"

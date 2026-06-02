@@ -4,7 +4,13 @@ import Link from 'next/link';
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
 import { CircleCheck as CheckCircle2, ChevronDown, ChartBar as BarChart2, Monitor, Bot } from 'lucide-react';
 
-const words = ['Grow', 'Your', 'Business', 'Online', 'Without', 'Breaking', 'the', 'Bank'];
+// Each inner array is one line. Lines with nowrap:true are wrapped in whitespace-nowrap.
+const lines: { words: string[]; nowrap?: boolean }[] = [
+  { words: ['The', 'Last', 'Digital'] },
+  { words: ['Marketing', 'Agency'] },
+  { words: ['Your', 'Small', 'Business'], nowrap: true },
+  { words: ['Will', 'Ever', 'Need.'] },
+];
 
 export default function HeroSection() {
   const prefersReducedMotion = useReducedMotion();
@@ -51,7 +57,7 @@ export default function HeroSection() {
               className="inline-flex items-center gap-2 bg-brand-blue/10 text-brand-blue rounded-full px-4 py-1.5 text-sm font-semibold mb-6"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-brand-blue animate-pulse" />
-              Social Media Marketing Agency in Bangladesh
+              Best Digital Marketing Agency in BD
             </motion.div>
 
             {/* Headline */}
@@ -61,14 +67,22 @@ export default function HeroSection() {
               initial="hidden"
               animate="visible"
             >
-              {words.map((word, i) => (
-                <motion.span
-                  key={i}
-                  variants={prefersReducedMotion ? {} : wordVariants}
-                  className="inline-block mr-3 mb-1"
+              {lines.map((line, lineIndex) => (
+                <span
+                  key={lineIndex}
+                  className={line.nowrap ? 'whitespace-nowrap inline' : 'inline'}
                 >
-                  {word}
-                </motion.span>
+                  {line.words.map((word, wordIndex) => (
+                    <motion.span
+                      key={`${lineIndex}-${wordIndex}`}
+                      variants={prefersReducedMotion ? {} : wordVariants}
+                      className="inline-block mr-3 mb-1"
+                    >
+                      {word}
+                    </motion.span>
+                  ))}
+                  {lineIndex < lines.length - 1 && <br />}
+                </span>
               ))}
             </motion.h1>
 
@@ -79,7 +93,7 @@ export default function HeroSection() {
               transition={{ duration: 0.6, delay: 0.4 }}
               className="text-brand-textMid text-lg leading-relaxed mb-8 max-w-xl"
             >
-              From Facebook &amp; Instagram marketing to professional websites and AI automation — we help small and medium businesses across Bangladesh build a powerful digital presence at a price that makes sense.
+              Facebook ads, websites & AI automation — everything your business needs to grow online, all in one place.
             </motion.p>
 
             {/* CTA Buttons */}

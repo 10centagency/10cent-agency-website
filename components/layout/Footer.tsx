@@ -12,18 +12,19 @@ const quickLinks = [
 ];
 
 const services = [
-  'Facebook & Meta Marketing',
-  'Website Development',
-  'AI Automation & Chatbot',
-  'Social Media Management',
-  'SEO',
-  'Graphic Design',
+  { label: 'Facebook & Meta Marketing', href: '/services/facebook-meta-marketing' },
+  { label: 'Website Development', href: '/services/website-development' },
+  { label: 'AI Automation & Chatbot', href: '/services/ai-automation-chatbot' },
+  { label: 'Social Media Management', href: '/services/social-media-management' },
+  { label: 'SEO', href: '/services#seo' },
+  { label: 'Graphic Design', href: '/services#graphic-design' },
 ];
 
 const socialLinks = [
   { icon: Facebook, href: 'https://www.facebook.com/10centagency', label: 'Facebook' },
   { icon: Instagram, href: 'https://www.instagram.com/10centagency', label: 'Instagram' },
   { icon: Youtube, href: 'https://www.youtube.com/@10centagency', label: 'YouTube' },
+  { icon: Linkedin, href: 'https://www.linkedin.com/company/10-cent-agency', label: 'LinkedIn' },
 ];
 
 export default function Footer() {
@@ -36,7 +37,7 @@ export default function Footer() {
             <Link href="/" className="inline-block mb-4">
               <Image
                 src="/Asset_13@2x-8.png"
-                alt="10 Cent Agency"
+                alt="10 Cent Agency Logo"
                 width={160}
                 height={40}
                 className="h-10 w-auto"
@@ -87,13 +88,13 @@ export default function Footer() {
             <h3 className="text-white font-semibold text-base mb-5">Our Services</h3>
             <ul className="space-y-3">
               {services.map((service) => (
-                <li key={service}>
+                <li key={service.label}>
                   <Link
-                    href="/services"
+                    href={service.href}
                     className="text-white/60 text-sm hover:text-brand-accent transition-colors duration-200 group flex items-center gap-2"
                   >
                     <span className="w-0 h-px bg-brand-accent transition-all duration-300 group-hover:w-3" />
-                    {service}
+                    {service.label}
                   </Link>
                 </li>
               ))}

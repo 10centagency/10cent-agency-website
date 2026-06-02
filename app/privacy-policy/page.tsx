@@ -264,7 +264,7 @@ export default function PrivacyPolicyPage() {
               <p className="text-brand-textDark font-semibold">10 Cent Agency</p>
               <p className="text-brand-textMid">East Monipur, Mirpur, Dhaka, Bangladesh-1216</p>
               <p className="text-brand-textMid">Email: <a href="mailto:hello@10centagency.com" className="text-brand-blue hover:underline">hello@10centagency.com</a></p>
-              <p className="text-brand-textMid">WhatsApp: <a href="https://wa.me/8801410244114" className="text-brand-blue hover:underline">+880 1410 244114</a></p>
+              <p className="text-brand-textMid">WhatsApp: <a href="https://wa.me/8801615144114" className="text-brand-blue hover:underline">+880 1615 144114</a></p>
             </div>
           </section>
 

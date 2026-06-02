@@ -45,7 +45,7 @@ export default function Navbar() {
           <Link href="/" className="flex-shrink-0">
             <Image
               src="/Logo.png"
-              alt="10 Cent Agency"
+              alt="10 Cent Agency - Best Digital Marketing Agency in BD"
               width={160}
               height={40}
               priority

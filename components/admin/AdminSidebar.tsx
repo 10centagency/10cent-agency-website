@@ -62,7 +62,7 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
           <Link href="/admin/dashboard" onClick={onClose}>
             <Image
               src="/Asset_13@2x-8.png"
-              alt="10 Cent Agency"
+              alt="10 Cent Agency Logo"
               width={120}
               height={30}
               className="h-7 w-auto"

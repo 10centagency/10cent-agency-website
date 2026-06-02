@@ -43,6 +43,7 @@ const socialLinks = [
   { icon: Facebook, href: 'https://www.facebook.com/10centagency', label: 'Facebook' },
   { icon: Instagram, href: 'https://www.instagram.com/10centagency', label: 'Instagram' },
   { icon: Youtube, href: 'https://www.youtube.com/@10centagency', label: 'YouTube' },
+  { icon: Linkedin, href: 'https://www.linkedin.com/company/10-cent-agency', label: 'LinkedIn' },
 ];
 
 export default function ContactPage() {

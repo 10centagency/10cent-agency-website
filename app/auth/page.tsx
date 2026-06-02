@@ -42,7 +42,7 @@ export default function AuthPage() {
           <div className="flex flex-col items-center mb-8">
             <Image
               src="/Logo.png"
-              alt="10 Cent Agency"
+              alt="10 Cent Agency - Best Digital Marketing Agency in BD"
               width={140}
               height={36}
               className="h-9 w-auto mb-3"
