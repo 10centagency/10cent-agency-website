@@ -8,6 +8,10 @@ declare global {
 
 export const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID!;
 
+if (!META_PIXEL_ID) {
+  console.error('[MetaPixel] NEXT_PUBLIC_META_PIXEL_ID is missing or empty. Check your .env.local file.');
+}
+
 // ─── Core helper ────────────────────────────────────────────────────────────
 
 function fbq(...args: unknown[]) {
