@@ -1,9 +1,17 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Anek_Bangla } from 'next/font/google'
 import "./globals.css";
 import PublicLayoutWrapper from "@/components/layout/PublicLayoutWrapper";
 import MetaPixel from "@/components/MetaPixel";
 import { META_PIXEL_ID } from "@/lib/pixel";
+
+const anekBangla = Anek_Bangla({
+  subsets: ['bengali'],
+  weight: ['300', '400', '500', '600', '700', '800'],
+  variable: '--font-anek-bangla',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.10centagency.com'),
@@ -66,7 +74,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${anekBangla.variable}`}>
       <body>
         {/* ── Meta Pixel base code ─────────────────────────────────────────
             strategy="afterInteractive": loads after hydration, non-blocking.

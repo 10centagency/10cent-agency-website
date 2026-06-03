@@ -8,20 +8,78 @@ export type Json =
 
 export type ContentBlock =
   | {
-      id: string
-      type: 'text'
-      order: number
-      heading?: string
-      content: string
+      id: string;
+      type: 'text';
+      order: number;
+      heading?: string;
+      content: string;
     }
   | {
-      id: string
-      type: 'image'
-      order: number
-      image_url: string
-      caption?: string
-      link_url?: string
+      id: string;
+      type: 'image';
+      order: number;
+      image_url: string;
+      caption?: string;
+      link_url?: string;
+      width?: 'full' | 'half' | 'third';
+      aspect_ratio?: '16/9' | '4/3' | '1/1' | '3/4' | 'free';
     }
+  | {
+      id: string;
+      type: 'full-image';
+      order: number;
+      image_url: string;
+      caption?: string;
+      link_url?: string;
+    }
+  | {
+      id: string;
+      type: 'image-duo';
+      order: number;
+      left_image_url: string;
+      right_image_url: string;
+      left_label?: string;
+      right_label?: string;
+      caption?: string;
+    }
+  | {
+      id: string;
+      type: 'image-grid';
+      order: number;
+      images: { url: string; caption?: string }[];
+      columns: 2 | 3 | 4;
+    }
+  | {
+      id: string;
+      type: 'image-text';
+      order: number;
+      image_url: string;
+      image_position: 'left' | 'right';
+      image_width: '1/3' | '1/2' | '2/3';
+      aspect_ratio?: '16/9' | '4/3' | '1/1' | '3/4';
+      heading?: string;
+      content?: string;
+      link_url?: string;
+    }
+  | {
+      id: string;
+      type: 'color-palette';
+      order: number;
+      title?: string;
+      colors: { hex: string; name: string }[];
+    }
+  | {
+      id: string;
+      type: 'typography';
+      order: number;
+      title?: string;
+      fonts: {
+        name: string;
+        sample: string;
+        weight: string;
+        style: string;
+      }[];
+    };
 
 export interface Category {
   id: string

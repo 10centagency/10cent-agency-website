@@ -19,6 +19,7 @@ import {
 import CTABanner from '@/components/home/CTABanner'
 import ImageLightbox from '@/components/ui/ImageLightbox'
 import RichTextContent from '@/components/RichTextContent'
+import ContentBlockRenderer from '@/components/portfolio/ContentBlockRenderer'
 
 export default function BlogSinglePage() {
   const params = useParams()
@@ -105,9 +106,9 @@ export default function BlogSinglePage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  return (
-    <div className="min-h-screen bg-white pt-28 pb-20">
-      <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+   return (
+     <div className="min-h-screen bg-white pt-28 pb-20">
+       <article className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Link */}
         <Link href="/blog" className="flex items-center gap-2 text-brand-blue hover:text-brand-blue/70 transition-colors mb-8">
           <ArrowLeft className="w-4 h-4" />
@@ -177,61 +178,18 @@ export default function BlogSinglePage() {
         )}
 
         {/* Content */}
-        <div className="prose prose-lg max-w-none mb-12 space-y-6">
-          {(post.content_blocks as any[])?.map((block, index) => {
-            if (block.type === 'text') {
-              return (
-                <div key={index}>
-                  {block.heading && (
-                    <h2 className="text-2xl font-bold text-brand-textDark mt-6 mb-3">
-                      {block.heading}
-                    </h2>
-                  )}
-                  <RichTextContent html={block.content} />
-                </div>
-              )
-            }
-
-            if (block.type === 'image') {
-              return (
-                <div key={index} className="my-8">
-                  {block.link_url ? (
-                    <figure>
-                      <a
-                        href={block.link_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block relative group rounded-lg overflow-hidden"
-                      >
-                        <img
-                          src={block.image_url}
-                          alt={block.caption || 'Content image'}
-                          className="w-full h-auto rounded-lg group-hover:scale-105 transition-transform duration-300"
-                        />
-                        <div className="absolute inset-0 bg-brand-navy/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 rounded-lg">
-                          <ExternalLink className="w-5 h-5 text-white" />
-                          <span className="text-white font-medium">Visit</span>
-                        </div>
-                      </a>
-                      {block.caption && (
-                        <figcaption className="text-center text-sm text-brand-textMid mt-3">
-                          {block.caption}
-                        </figcaption>
-                      )}
-                    </figure>
-                  ) : (
-                    <ImageLightbox
-                      src={block.image_url}
-                      alt={block.caption || 'Content image'}
-                      caption={block.caption}
-                    />
-                  )}
-                </div>
-              )
-            }
-
-            return null
-          })}
+        <div className="mb-12 prose prose-sm max-w-none text-brand-textMid
+          prose-ul:list-disc prose-ul:pl-5 prose-ul:space-y-1
+          prose-ol:list-decimal prose-ol:pl-5 prose-ol:space-y-1
+          prose-li:text-brand-textMid prose-li:marker:text-brand-textMid
+          prose-strong:text-brand-textDark prose-strong:font-semibold
+          prose-em:italic prose-u:underline
+          prose-a:text-brand-blue prose-a:underline prose-a:hover:text-brand-blue/70 prose-a:transition-colors
+          prose-blockquote:border-l-4 prose-blockquote:border-brand-blue/40 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-brand-textMid
+          prose-h1:text-brand-textDark prose-h1:font-bold
+          prose-h2:text-brand-textDark prose-h2:font-bold
+          prose-h3:text-brand-textDark prose-h3:font-semibold">
+          <ContentBlockRenderer blocks={post.content_blocks ?? []} />
         </div>
 
         {/* Social Share */}
