@@ -45,7 +45,7 @@ export default function AddOnServices() {
             const Icon = service.icon;
             return (
               <StaggerItem key={service.title}>
-                <div className="group bg-white rounded-2xl p-8 shadow-card border border-brand-border border-t-4 border-t-brand-blue hover:-translate-y-2 transition-all duration-300 hover:shadow-card-hover h-full flex flex-col">
+                <div className="group bg-white rounded-2xl p-8 shadow-card border border-brand-border border-t-4 border-t-brand-blue transition-all duration-300 hover:shadow-card-hover h-full flex flex-col">
                   <div className="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center mb-4">
                     <Icon className="w-6 h-6 text-brand-blue" />
                   </div>

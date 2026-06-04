@@ -54,7 +54,7 @@ export default function ServicesOverview() {
             const Icon = service.icon;
             return (
               <StaggerItem key={service.title}>
-                <div className="group bg-white rounded-2xl p-8 shadow-card border border-brand-border border-t-4 border-t-brand-blue hover:-translate-y-2 transition-all duration-300 hover:shadow-card-hover h-full flex flex-col">
+                <div className="group bg-white rounded-2xl p-8 shadow-card border border-brand-border border-t-4 border-t-brand-blue transition-all duration-300 hover:shadow-card-hover h-full flex flex-col">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center flex-shrink-0">
                       <Icon className="w-6 h-6 text-brand-blue" />
@@ -82,7 +82,7 @@ export default function ServicesOverview() {
         <AnimatedSection className="text-center mt-10 lg:mt-12">
           <Link
             href="/services"
-            className="inline-flex items-center justify-center bg-brand-navy text-white font-medium rounded-xl px-8 py-4 shadow-[0_4px_24px_rgba(47,133,243,0.10)] hover:bg-brand-blue hover:-translate-y-1 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:ring-offset-2"
+            className="inline-flex items-center justify-center bg-brand-navy text-white font-medium rounded-xl px-8 py-4 shadow-[0_4px_24px_rgba(47,133,243,0.10)] hover:bg-brand-blue transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:ring-offset-2"
             aria-label="Explore all services offered by 10 Cent Agency"
           >
             Explore All Services

@@ -75,9 +75,9 @@ export default function Testimonials() {
             <AnimatePresence mode="wait">
               <motion.div
                 key={current}
-                initial={{ opacity: 0, x: 40 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -40 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 transition={{ duration: 0.4, ease: 'easeOut' }}
                 className="bg-white rounded-3xl p-8 lg:p-12 shadow-card border border-brand-border"
               >

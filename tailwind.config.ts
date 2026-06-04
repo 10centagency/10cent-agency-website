@@ -90,9 +90,9 @@ const config: Config = {
         },
         marquee: { '0%': { transform: 'translateX(0%)' }, '100%': { transform: 'translateX(-50%)' } },
         'marquee-reverse': { '0%': { transform: 'translateX(-50%)' }, '100%': { transform: 'translateX(0%)' } },
-        float: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-16px)' } },
-        'spin-slow': { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } },
-        'bounce-arrow': { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(8px)' } },
+        float: { '0%, 100%': { opacity: '1' }, '50%': { opacity: '0.8' } },
+        'spin-slow': { '0%': { opacity: '1' }, '100%': { opacity: '1' } },
+        'bounce-arrow': { '0%, 100%': { opacity: '1' }, '50%': { opacity: '0.6' } },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',

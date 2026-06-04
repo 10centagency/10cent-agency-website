@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { Anek_Bangla } from 'next/font/google'
+import { LazyMotion, domAnimation } from "framer-motion";
 import "./globals.css";
 import PublicLayoutWrapper from "@/components/layout/PublicLayoutWrapper";
 import MetaPixel from "@/components/MetaPixel";
+import WhatsAppButton from "@/components/ui/WhatsAppButton";
+import ScrollToTop from "@/components/ui/ScrollToTop";
+import CustomCursor from "@/components/ui/CustomCursor";
 import { META_PIXEL_ID } from "@/lib/pixel";
 
 const anekBangla = Anek_Bangla({
@@ -103,7 +107,12 @@ export default function RootLayout({
         />
         {/* Fires PageView on every App Router SPA navigation */}
         <MetaPixel />
-        <PublicLayoutWrapper>{children}</PublicLayoutWrapper>
+        <LazyMotion features={domAnimation}>
+          <PublicLayoutWrapper>{children}</PublicLayoutWrapper>
+        </LazyMotion>
+        <WhatsAppButton />
+        <ScrollToTop />
+        <CustomCursor />
       </body>
     </html>
   );

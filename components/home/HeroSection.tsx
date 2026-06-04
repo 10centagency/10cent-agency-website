@@ -21,8 +21,8 @@ export default function HeroSection() {
   };
 
   const wordVariants: Variants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.5 } },
   };
 
   return (
@@ -30,10 +30,10 @@ export default function HeroSection() {
       {/* Background rings */}
       <div className="absolute top-0 right-0 w-full h-full pointer-events-none overflow-hidden">
         <div
-          className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full border-2 border-brand-navy opacity-[0.06] animate-spin-slow"
+          className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full border-2 border-brand-navy/8 animate-spin-slow"
         />
         <div
-          className="absolute top-[-20%] right-[-20%] w-[900px] h-[900px] rounded-full border-2 border-brand-navy opacity-[0.04] animate-spin-slow-reverse"
+          className="absolute top-[-20%] right-[-20%] w-[900px] h-[900px] rounded-full border-2 border-brand-navy/8 animate-spin-slow-reverse"
         />
       </div>
       {/* Dot grid */}
@@ -51,8 +51,8 @@ export default function HeroSection() {
           <div>
             {/* Badge */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
               className="inline-flex items-center gap-2 bg-brand-blue/10 text-brand-blue rounded-full px-4 py-1.5 text-sm font-semibold mb-6"
             >
@@ -88,8 +88,8 @@ export default function HeroSection() {
 
             {/* Sub */}
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.4 }}
               className="text-brand-textMid text-lg leading-relaxed mb-8 max-w-xl"
             >
@@ -98,8 +98,8 @@ export default function HeroSection() {
 
             {/* CTA Buttons */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.55 }}
               className="flex flex-col sm:flex-row gap-4 mb-10"
             >
@@ -125,8 +125,8 @@ rel="noopener noreferrer"
 
             {/* Trust strip */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.7 }}
               className="flex flex-wrap items-center gap-5"
             >
@@ -141,8 +141,8 @@ rel="noopener noreferrer"
 
           {/* Right Visual — Floating Cards */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.3 }}
             className="relative hidden lg:block h-[520px]"
           >

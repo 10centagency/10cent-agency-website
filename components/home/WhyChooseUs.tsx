@@ -41,9 +41,12 @@ function CountUp({ target, suffix }: { target: number; suffix: string }) {
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true });
   const [count, setCount] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
 
   useEffect(() => {
-    if (!isInView) return;
+    if (!isInView || hasStarted) return;
+    setHasStarted(true);
+    
     let start = 0;
     const duration = 1500;
     const step = 16;
@@ -60,11 +63,11 @@ function CountUp({ target, suffix }: { target: number; suffix: string }) {
     }, step);
 
     return () => clearInterval(timer);
-  }, [isInView, target]);
+  }, [isInView, target, hasStarted]);
 
   return (
     <span ref={ref} className="text-5xl font-black text-brand-navy">
-      {count}{suffix}
+      {count || target}{suffix}
     </span>
   );
 }
