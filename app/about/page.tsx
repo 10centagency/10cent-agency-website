@@ -7,11 +7,25 @@ import CTABanner from '@/components/home/CTABanner';
 import Image from "next/image";
 
 export const metadata: Metadata = {
-  title: 'About Us',
+  title: 'About Us | 10 Cent Agency',
   description:
     'Learn about 10 Cent Agency — a Bangladesh-based digital marketing agency built to serve small and medium businesses with professional, affordable services.',
   alternates: {
     canonical: 'https://www.10centagency.com/about',
+  },
+  openGraph: {
+    type: 'website',
+    url: 'https://www.10centagency.com/about',
+    siteName: '10 Cent Agency',
+    title: 'About Us | 10 Cent Agency',
+    description: 'Learn about 10 Cent Agency — a Bangladesh-based digital marketing agency built to serve small and medium businesses with professional, affordable services.',
+    images: [{ url: 'https://www.10centagency.com/og-image.png', width: 1200, height: 630, alt: '10 Cent Agency' }],
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'About Us | 10 Cent Agency',
+    description: 'Learn about 10 Cent Agency — a Bangladesh-based digital marketing agency built to serve small and medium businesses.',
   },
 };
 

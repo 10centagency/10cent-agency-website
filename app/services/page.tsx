@@ -12,7 +12,7 @@ const CTABanner = dynamic(() => import('@/components/home/CTABanner'), { ssr: tr
 const ServicesFAQ = dynamic(() => import('@/components/services/ServicesFAQ'), { ssr: true });
 
 export const metadata: Metadata = {
-  title: 'Our Services',
+  title: 'Our Services | 10 Cent Agency',
   description:
     'Explore our complete range of digital marketing services including Facebook marketing, website development, AI automation, SEO, and graphic design.',
   alternates: {

@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/_next/', '/admin/'],
+        disallow: ['/api/', '/admin/'],
       },
       {
         userAgent: 'GPTBot',
@@ -30,6 +30,5 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: 'https://www.10centagency.com/sitemap.xml',
-    host: 'https://www.10centagency.com',
   };
 }

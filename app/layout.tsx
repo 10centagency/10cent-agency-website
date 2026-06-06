@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Anek_Bangla } from 'next/font/google'
+import { Outfit, Anek_Bangla } from 'next/font/google'
 import { LazyMotion, domAnimation } from "framer-motion";
 import "./globals.css";
 import PublicLayoutWrapper from "@/components/layout/PublicLayoutWrapper";
@@ -9,6 +9,13 @@ import WhatsAppButton from "@/components/ui/WhatsAppButton";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import CustomCursor from "@/components/ui/CustomCursor";
 import { META_PIXEL_ID } from "@/lib/pixel";
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  weight: ['300','400','500','600','700','800','900'],
+  variable: '--font-outfit',
+  display: 'swap',
+});
 
 const anekBangla = Anek_Bangla({
   subsets: ['bengali'],
@@ -78,7 +85,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${anekBangla.variable}`}>
+    <html lang="en" className={`${outfit.variable} ${anekBangla.variable}`}>
       <head>
         {/* Preload critical above-the-fold image */}
         <link

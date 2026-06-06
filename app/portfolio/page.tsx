@@ -7,11 +7,25 @@ import CTABanner from '@/components/home/CTABanner';
 import PortfolioGrid from './PortfolioGrid';
 
 export const metadata: Metadata = {
-  title: 'Our Portfolio',
+  title: 'Our Portfolio | 10 Cent Agency',
   description:
     'See our work — Facebook marketing campaigns, websites, AI automation projects, and graphic design for businesses across Bangladesh.',
   alternates: {
     canonical: 'https://www.10centagency.com/portfolio',
+  },
+  openGraph: {
+    type: 'website',
+    url: 'https://www.10centagency.com/portfolio',
+    siteName: '10 Cent Agency',
+    title: 'Our Portfolio | 10 Cent Agency',
+    description: 'See our work — Facebook marketing campaigns, websites, AI automation projects, and graphic design for businesses across Bangladesh.',
+    images: [{ url: 'https://www.10centagency.com/og-image.png', width: 1200, height: 630, alt: '10 Cent Agency Portfolio' }],
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Our Portfolio | 10 Cent Agency',
+    description: 'See our work — Facebook campaigns, websites, AI automation for businesses across Bangladesh.',
   },
 };
 
