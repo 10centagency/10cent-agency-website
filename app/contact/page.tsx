@@ -6,9 +6,36 @@ import AnimatedSection from '@/components/ui/AnimatedSection';
 import ContactForm from './ContactForm';
 
 export const metadata: Metadata = {
-  title: 'Contact Us',
+  title: 'Contact 10 Cent Agency',
   description:
     'Get in touch with 10 Cent Agency. Book a free consultation for Facebook marketing, website development, or AI automation services.',
+  alternates: {
+    canonical: 'https://www.10centagency.com/contact',
+  },
+  openGraph: {
+    type: 'website',
+    url: 'https://www.10centagency.com/contact',
+    siteName: '10 Cent Agency',
+    title: 'Contact 10 Cent Agency',
+    description:
+      'Get in touch with 10 Cent Agency. Book a free consultation for Facebook marketing, website development, or AI automation services.',
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: '10 Cent Agency — Best Digital Marketing Agency in BD',
+      },
+    ],
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Contact 10 Cent Agency',
+    description:
+      'Get in touch with 10 Cent Agency. Book a free consultation for Facebook marketing, website development, or AI automation services.',
+    images: ['https://www.10centagency.com/og-image.png'],
+  },
 };
 
 const contactInfo = [

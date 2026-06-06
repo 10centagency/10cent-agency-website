@@ -10,6 +10,33 @@ export const metadata: Metadata = {
   title: 'AI Automation & Chatbot Services | 10 Cent Agency',
   description:
     'Smart assistants that work 24/7 — answering questions, collecting leads, processing orders, and following up automatically.',
+  alternates: {
+    canonical: 'https://www.10centagency.com/services/ai-automation-chatbot',
+  },
+  openGraph: {
+    type: 'website',
+    url: 'https://www.10centagency.com/services/ai-automation-chatbot',
+    siteName: '10 Cent Agency',
+    title: 'AI Automation & Chatbot Services | 10 Cent Agency',
+    description:
+      'Smart AI-powered chatbots for Messenger, WhatsApp, and Telegram. Automate leads, orders, and support 24/7.',
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: '10 Cent Agency — Best Digital Marketing Agency in BD',
+      },
+    ],
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AI Automation & Chatbot Services | 10 Cent Agency',
+    description:
+      'Smart AI-powered chatbots for Messenger, WhatsApp, and Telegram. Automate leads, orders, and support 24/7.',
+    images: ['https://www.10centagency.com/og-image.png'],
+  },
 };
 
 const subServices = [

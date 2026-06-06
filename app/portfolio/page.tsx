@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: 'Our Portfolio',
   description:
     'See our work — Facebook marketing campaigns, websites, AI automation projects, and graphic design for businesses across Bangladesh.',
+  alternates: {
+    canonical: 'https://www.10centagency.com/portfolio',
+  },
 };
 
 export default function PortfolioPage() {

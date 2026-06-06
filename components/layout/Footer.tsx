@@ -16,8 +16,8 @@ const services = [
   { label: 'Website Development', href: '/services/website-development' },
   { label: 'AI Automation & Chatbot', href: '/services/ai-automation-chatbot' },
   { label: 'Social Media Management', href: '/services/social-media-management' },
-  { label: 'SEO', href: '/services#seo' },
-  { label: 'Graphic Design', href: '/services#graphic-design' },
+  { label: 'SEO', href: '/services/seo' },
+  { label: 'Graphic Design', href: '/services/graphic-design' },
 ];
 
 const socialLinks = [
@@ -36,7 +36,7 @@ export default function Footer() {
           <div>
             <Link href="/" className="inline-block mb-4">
               <Image
-                src="/Asset_13@2x-8.png"
+                src="/10cent-agency-logo.png"
                 alt="10 Cent Agency Logo"
                 width={160}
                 height={40}
@@ -47,7 +47,7 @@ export default function Footer() {
               Professional | Affordable | Unstoppable
             </p>
             <p className="text-white/60 text-sm leading-relaxed mb-6">
-              We help small and medium businesses in Bangladesh build a powerful digital presence with professional, affordable services.
+              The best digital marketing agency in BD for small businesses — helping brands grow with social media marketing, website development, and AI automation.
             </p>
             <div className="flex items-center gap-3">
               {socialLinks.map(({ icon: Icon, href, label }) => (

@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: 'About Us',
   description:
     'Learn about 10 Cent Agency — a Bangladesh-based digital marketing agency built to serve small and medium businesses with professional, affordable services.',
+  alternates: {
+    canonical: 'https://www.10centagency.com/about',
+  },
 };
 
 const values = [

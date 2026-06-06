@@ -2,16 +2,22 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Script from 'next/script';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { CircleCheck as CheckCircle2, ChartBar as BarChart2, Monitor, Bot, Search, Palette, Share2, Clock, ChevronRight } from 'lucide-react';
 import SectionLabel from '@/components/ui/SectionLabel';
 import AnimatedSection, { StaggerContainer, StaggerItem } from '@/components/ui/AnimatedSection';
-import CTABanner from '@/components/home/CTABanner';
-import ServicesFAQ from '@/components/services/ServicesFAQ';
+
+// Dynamic imports for below-the-fold components
+const CTABanner = dynamic(() => import('@/components/home/CTABanner'), { ssr: true });
+const ServicesFAQ = dynamic(() => import('@/components/services/ServicesFAQ'), { ssr: true });
 
 export const metadata: Metadata = {
   title: 'Our Services',
   description:
     'Explore our complete range of digital marketing services including Facebook marketing, website development, AI automation, SEO, and graphic design.',
+  alternates: {
+    canonical: 'https://www.10centagency.com/services',
+  },
 };
 
 const mainServices = [
@@ -223,7 +229,7 @@ const faqSchema = {
       name: 'Do I need to pay for Facebook/Instagram ad costs separately?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes. You pay Meta (Facebook) directly for your ad budget, and we manage the campaigns at no extra charge. This keeps things transparent — you control the budget, and we make sure every taka is spent wisely.',
+        text: 'Yes. You pay Meta (Facebook) directly for your ad budget, and we manage the campaigns at no extra charge. You control the budget, and we make sure every taka is spent wisely.',
       },
     },
     {
@@ -231,7 +237,7 @@ const faqSchema = {
       name: 'How long does it take to build a website?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Most websites are completed within 7-14 days, depending on complexity. E-commerce sites may take 14-21 days. We will give you a clear timeline during our initial consultation.',
+        text: 'Most websites are completed within 7-14 days, depending on complexity. E-commerce sites may take 14-21 days. We provide a clear timeline during our initial consultation.',
       },
     },
     {
@@ -239,7 +245,7 @@ const faqSchema = {
       name: 'Can you help if I already have a website or social media page?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Absolutely! We can optimize, redesign, or take over management of your existing digital assets. Whether you need a refresh or ongoing support, we will work with what you have and make it better.',
+        text: 'Absolutely. We can optimize, redesign, or take over management of your existing digital assets. Whether you need a refresh or ongoing support, we will work with what you have and make it better.',
       },
     },
     {
@@ -247,7 +253,7 @@ const faqSchema = {
       name: 'Do you provide content in Bangla and English?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes! We create content in both Bangla and English to help you reach your target audience effectively. Our team understands the local market and can communicate your message in the language your customers prefer.',
+        text: 'Yes. We create content in both Bangla and English to help you reach your target audience effectively. Our team understands the local market and can communicate your message in the language your customers prefer.',
       },
     },
     {
@@ -255,7 +261,7 @@ const faqSchema = {
       name: 'What if I need revisions or changes after the project is done?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'All our website projects include 1 month of free support with up to 3-4 revision requests. For ongoing changes and updates, we offer affordable monthly maintenance packages.',
+        text: 'All website projects include 1 month of free support with up to 3-4 revision requests. For ongoing changes and updates, we offer affordable monthly maintenance packages.',
       },
     },
     {
@@ -263,7 +269,7 @@ const faqSchema = {
       name: 'Do you work with small businesses and startups?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes! We specialize in helping small businesses and startups grow online. Our services are designed to be affordable and scalable — so you can start small and expand as your business grows.',
+        text: 'Yes. We specialize in helping small businesses and startups grow online. Our services are designed to be affordable and scalable — so you can start small and expand as your business grows.',
       },
     },
     {
@@ -271,10 +277,24 @@ const faqSchema = {
       name: 'How do I get started?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Simply contact us through our website, WhatsApp, or email. We will schedule a free consultation to understand your needs, discuss solutions, and provide a custom quote. No commitment required!',
+        text: 'Simply contact us through our website, WhatsApp, or email. We will schedule a free consultation to understand your needs, discuss solutions, and provide a custom quote. No commitment required.',
       },
     },
   ],
+};
+
+const serviceSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: 'Digital Marketing Services',
+  provider: {
+    '@type': 'LocalBusiness',
+    name: '10 Cent Agency',
+    url: 'https://www.10centagency.com',
+  },
+  description: 'Complete digital marketing services including Facebook marketing, website development, AI automation, SEO, and graphic design for small businesses in Bangladesh.',
+  areaServed: { '@type': 'Country', name: 'Bangladesh' },
+  url: 'https://www.10centagency.com/services',
 };
 
 export default function ServicesPage() {
@@ -285,6 +305,12 @@ export default function ServicesPage() {
         id="faq-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      {/* Service Schema */}
+      <Script
+        id="service-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
       />
       {/* Hero */}
       <section className="bg-brand-bgAlt pt-32 pb-16">

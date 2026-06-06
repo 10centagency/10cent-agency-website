@@ -1,9 +1,22 @@
+# robots.txt — 10 Cent Agency
+# https://www.10centagency.com
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# General crawl rules
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 User-agent: *
 Allow: /
 Disallow: /api/
-Disallow: /_next/
+Disallow: /admin/
 
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# AI Search Bots — Allowed
+# Helps site appear in AI-powered search results
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
 Allow: /
 
 User-agent: Claude-Web
@@ -15,4 +28,10 @@ Allow: /
 User-agent: Googlebot
 Allow: /
 
+User-agent: Bingbot
+Allow: /
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Sitemap location
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Sitemap: https://www.10centagency.com/sitemap.xml

@@ -79,6 +79,23 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${anekBangla.variable}`}>
+      <head>
+        {/* Preload critical above-the-fold image */}
+        <link
+          rel="preload"
+          href="/10cent-agency-logo.png"
+          as="image"
+          type="image/png"
+        />
+        
+        {/* Preconnect hints for external resources */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://assets.calendly.com" />
+        <link rel="dns-prefetch" href="https://wa.me" />
+        <link rel="dns-prefetch" href="https://www.facebook.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+      </head>
       <body>
         {/* ── Meta Pixel base code ─────────────────────────────────────────
             strategy="afterInteractive": loads after hydration, non-blocking.

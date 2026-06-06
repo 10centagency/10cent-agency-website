@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Script from 'next/script';
 import { ChevronRight, CheckCircle2 } from 'lucide-react';
 import SectionLabel from '@/components/ui/SectionLabel';
 import AnimatedSection, { StaggerContainer, StaggerItem } from '@/components/ui/AnimatedSection';
@@ -10,6 +11,33 @@ export const metadata: Metadata = {
   title: 'Facebook & Meta Marketing Services | 10 Cent Agency',
   description:
     'Build a powerful, revenue-generating presence on Facebook and Instagram. From page setup to full-scale ad campaigns with measurable results.',
+  alternates: {
+    canonical: 'https://www.10centagency.com/services/facebook-meta-marketing',
+  },
+  openGraph: {
+    type: 'website',
+    url: 'https://www.10centagency.com/services/facebook-meta-marketing',
+    siteName: '10 Cent Agency',
+    title: 'Facebook & Meta Marketing Services | 10 Cent Agency',
+    description:
+      'Build a powerful revenue-generating presence on Facebook and Instagram. Data-driven ad campaigns with measurable results.',
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: '10 Cent Agency — Best Digital Marketing Agency in BD',
+      },
+    ],
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Facebook & Meta Marketing Services | 10 Cent Agency',
+    description:
+      'Build a powerful revenue-generating presence on Facebook and Instagram. Data-driven ad campaigns with measurable results.',
+    images: ['https://www.10centagency.com/og-image.png'],
+  },
 };
 
 const subServices = [
@@ -71,9 +99,29 @@ const subServices = [
   },
 ];
 
+const serviceSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: 'Facebook & Meta Marketing',
+  provider: {
+    '@type': 'LocalBusiness',
+    name: '10 Cent Agency',
+    url: 'https://www.10centagency.com',
+  },
+  description: 'Data-driven Facebook and Instagram ad campaigns with full campaign management, content creation in Bangla and English, and server-side tracking.',
+  areaServed: { '@type': 'Country', name: 'Bangladesh' },
+  url: 'https://www.10centagency.com/services/facebook-meta-marketing',
+};
+
 export default function FacebookMetaMarketingPage() {
   return (
     <>
+      {/* Service Schema */}
+      <Script
+        id="service-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+      />
       {/* Hero Section */}
       <section className="relative bg-brand-bgAlt pt-32 pb-16 overflow-hidden">
         {/* Decorative rings */}

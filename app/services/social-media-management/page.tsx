@@ -10,6 +10,33 @@ export const metadata: Metadata = {
   title: 'Social Media Management Services | 10 Cent Agency',
   description:
     'Consistent, strategic social media presence — without taking your time. We handle content planning, posting, and community engagement.',
+  alternates: {
+    canonical: 'https://www.10centagency.com/services/social-media-management',
+  },
+  openGraph: {
+    type: 'website',
+    url: 'https://www.10centagency.com/services/social-media-management',
+    siteName: '10 Cent Agency',
+    title: 'Social Media Management Services | 10 Cent Agency',
+    description:
+      'Full monthly social media management with AI-powered engagement tools, content creation, and community management.',
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: '10 Cent Agency — Best Digital Marketing Agency in BD',
+      },
+    ],
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Social Media Management Services | 10 Cent Agency',
+    description:
+      'Full monthly social media management with AI-powered engagement tools, content creation, and community management.',
+    images: ['https://www.10centagency.com/og-image.png'],
+  },
 };
 
 const subServices = [

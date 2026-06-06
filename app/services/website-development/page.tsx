@@ -10,6 +10,33 @@ export const metadata: Metadata = {
   title: 'Website Development Services | 10 Cent Agency',
   description:
     'Fast, beautiful, mobile-optimized websites that convert visitors into paying customers. Built on WordPress with Elementor.',
+  alternates: {
+    canonical: 'https://www.10centagency.com/services/website-development',
+  },
+  openGraph: {
+    type: 'website',
+    url: 'https://www.10centagency.com/services/website-development',
+    siteName: '10 Cent Agency',
+    title: 'Website Development Services | 10 Cent Agency',
+    description:
+      'Professional websites built to convert visitors into customers. E-commerce, landing pages, and business sites for Bangladesh businesses.',
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: '10 Cent Agency — Best Digital Marketing Agency in BD',
+      },
+    ],
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Website Development Services | 10 Cent Agency',
+    description:
+      'Professional websites built to convert visitors into customers. E-commerce, landing pages, and business sites for Bangladesh businesses.',
+    images: ['https://www.10centagency.com/og-image.png'],
+  },
 };
 
 const subServices = [
