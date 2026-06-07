@@ -84,10 +84,10 @@ html {
 
 @layer utilities {
   .marquee-container:hover .marquee-track {
-    animation-play-state: paused;
+    animation-play-state: running;
   }
   .pause-on-hover:hover {
-    animation-play-state: paused;
+    animation-play-state: running;
   }
 }
 
@@ -105,21 +105,9 @@ html {
   background: #2F85F3;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
 /* Anek Bangla for Bengali text */
 :lang(bn),
 .font-bangla {
   font-family: var(--font-anek-bangla), sans-serif;
 }
 
-.custom-cursor-active,
-.custom-cursor-active * {
-  cursor: none !important;
-}

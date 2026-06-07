@@ -1,7 +1,6 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
-import { ReactNode } from 'react';
+import { useEffect, useRef, useState, ReactNode } from 'react';
 
 interface AnimatedSectionProps {
   children: ReactNode;
@@ -10,84 +9,54 @@ interface AnimatedSectionProps {
   variant?: 'fadeUp' | 'fadeIn' | 'slideLeft' | 'slideRight' | 'scaleIn';
 }
 
-const variants = {
-  fadeUp: {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 },
-  },
-  fadeIn: {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 },
-  },
-  slideLeft: {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 },
-  },
-  slideRight: {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 },
-  },
-  scaleIn: {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 },
-  },
-};
-
 export default function AnimatedSection({
   children,
   className,
   delay = 0,
-  variant = 'fadeUp',
 }: AnimatedSectionProps) {
-  const prefersReducedMotion = useReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
 
-  if (prefersReducedMotion) {
-    return <div className={className}>{children}</div>;
-  }
+  useEffect(() => {
+    setMounted(true);
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => setVisible(true), delay * 1000);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [delay]);
 
   return (
-    <motion.div
+    <div
+      ref={ref}
       className={className}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: '-100px' }}
-      transition={{ duration: 0.6, ease: 'easeOut', delay }}
-      variants={variants[variant]}
+      style={{
+        opacity: !mounted ? 1 : visible ? 1 : 0,
+        transition: mounted ? 'opacity 0.6s ease' : 'none',
+      }}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 
 export function StaggerContainer({
   children,
   className,
-  staggerDelay = 0.15,
 }: {
   children: ReactNode;
   className?: string;
-  staggerDelay?: number;
 }) {
-  const prefersReducedMotion = useReducedMotion();
-
-  if (prefersReducedMotion) {
-    return <div className={className}>{children}</div>;
-  }
-
-  return (
-    <motion.div
-      className={className}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: '-100px' }}
-      variants={{
-        hidden: {},
-        visible: { transition: { staggerChildren: staggerDelay } },
-      }}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={className}>{children}</div>;
 }
 
 export function StaggerItem({
@@ -97,15 +66,37 @@ export function StaggerItem({
   children: ReactNode;
   className?: string;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <motion.div
+    <div
+      ref={ref}
       className={className}
-      variants={{
-        hidden: { opacity: 0 },
-        visible: { opacity: 1, transition: { duration: 0.5, ease: 'easeOut' } },
+      style={{
+        opacity: !mounted ? 1 : visible ? 1 : 0,
+        transition: mounted ? 'opacity 0.5s ease' : 'none',
       }}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }

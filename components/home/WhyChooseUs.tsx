@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 import { BadgeDollarSign, Eye, ChartLine as LineChart, Languages } from 'lucide-react';
-import { useInView } from 'framer-motion';
-import { useRef, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import SectionLabel from '@/components/ui/SectionLabel';
 import AnimatedSection, { StaggerContainer, StaggerItem } from '@/components/ui/AnimatedSection';
 
@@ -38,35 +37,39 @@ const stats = [
 ];
 
 function CountUp({ target, suffix }: { target: number; suffix: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true });
+  const [isInView, setIsInView] = useState(false);
   const [count, setCount] = useState(0);
   const [hasStarted, setHasStarted] = useState(false);
 
   useEffect(() => {
+    const timer = setTimeout(() => setIsInView(true), 300);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     if (!isInView || hasStarted) return;
     setHasStarted(true);
-    
+
     let start = 0;
     const duration = 1500;
     const step = 16;
     const increment = target / (duration / step);
 
-    const timer = setInterval(() => {
+    const interval = setInterval(() => {
       start += increment;
       if (start >= target) {
         setCount(target);
-        clearInterval(timer);
+        clearInterval(interval);
       } else {
         setCount(Math.floor(start));
       }
     }, step);
 
-    return () => clearInterval(timer);
+    return () => clearInterval(interval);
   }, [isInView, target, hasStarted]);
 
   return (
-    <span ref={ref} className="text-5xl font-black text-brand-navy">
+    <span className="text-5xl font-black text-brand-navy">
       {count || target}{suffix}
     </span>
   );

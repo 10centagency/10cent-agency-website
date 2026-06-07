@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { motion, useReducedMotion, type Variants } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { CircleCheck as CheckCircle2, ChevronDown, ChartBar as BarChart2, Monitor, Bot } from 'lucide-react';
 
 // Each inner array is one line. Lines with nowrap:true are wrapped in whitespace-nowrap.
@@ -14,16 +14,6 @@ const lines: { words: string[]; nowrap?: boolean }[] = [
 
 export default function HeroSection() {
   const prefersReducedMotion = useReducedMotion();
-
-  const containerVariants: Variants = {
-    hidden: {},
-    visible: { transition: { staggerChildren: 0.08 } },
-  };
-
-  const wordVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.5 } },
-  };
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-brand-bg to-brand-bgAlt">
@@ -61,30 +51,24 @@ export default function HeroSection() {
             </motion.div>
 
             {/* Headline */}
-            <motion.h1
-              className="text-4xl sm:text-5xl lg:text-6xl font-black text-brand-textDark leading-tight mb-6"
-              variants={prefersReducedMotion ? {} : containerVariants}
-              initial="hidden"
-              animate="visible"
-            >
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-brand-textDark leading-tight mb-6">
               {lines.map((line, lineIndex) => (
                 <span
                   key={lineIndex}
                   className={line.nowrap ? 'whitespace-nowrap inline' : 'inline'}
                 >
                   {line.words.map((word, wordIndex) => (
-                    <motion.span
+                    <span
                       key={`${lineIndex}-${wordIndex}`}
-                      variants={prefersReducedMotion ? {} : wordVariants}
                       className="inline-block mr-3 mb-1"
                     >
                       {word}
-                    </motion.span>
+                    </span>
                   ))}
                   {lineIndex < lines.length - 1 && <br />}
                 </span>
               ))}
-            </motion.h1>
+            </h1>
 
             {/* Sub */}
             <motion.p
@@ -150,7 +134,7 @@ rel="noopener noreferrer"
             <div className="absolute inset-8 bg-brand-blue/10 blur-3xl rounded-full" />
 
             {/* Card 1 — Facebook Ads */}
-            <div className={`absolute top-8 left-4 w-[260px] bg-white rounded-2xl shadow-card p-4 border border-brand-border ${prefersReducedMotion ? '' : 'animate-float'}`}>
+            <div className="absolute top-8 left-4 w-[260px] bg-white rounded-2xl shadow-card p-4 border border-brand-border animate-float">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-6 h-6 rounded bg-[#1877F2] flex items-center justify-center">
                   <span className="text-white text-xs font-bold">f</span>
@@ -172,7 +156,7 @@ rel="noopener noreferrer"
             </div>
 
             {/* Card 2 — Website Live */}
-            <div className={`absolute top-1/2 right-0 -translate-y-1/2 w-[240px] bg-white rounded-2xl shadow-card p-4 border border-brand-border ${prefersReducedMotion ? '' : 'animate-float-delay-1'}`}>
+            <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[240px] bg-white rounded-2xl shadow-card p-4 border border-brand-border animate-float-delay-1">
               <div className="flex items-center gap-1.5 mb-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
                 <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
@@ -194,7 +178,7 @@ rel="noopener noreferrer"
             </div>
 
             {/* Card 3 — AI Chatbot */}
-            <div className={`absolute bottom-8 left-8 w-[250px] bg-white rounded-2xl shadow-card p-4 border border-brand-border ${prefersReducedMotion ? '' : 'animate-float-delay-2'}`}>
+            <div className="absolute bottom-8 left-8 w-[250px] bg-white rounded-2xl shadow-card p-4 border border-brand-border animate-float-delay-2">
               <div className="space-y-2 mb-3">
                 <div className="flex gap-2">
                   <div className="w-6 h-6 rounded-full bg-brand-blue/20 flex items-center justify-center flex-shrink-0">
