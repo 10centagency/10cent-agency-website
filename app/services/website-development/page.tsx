@@ -80,6 +80,27 @@ const subServices = [
 export default function WebsiteDevelopmentPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Website Development Services",
+            "url": "https://www.10centagency.com/services/website-development",
+            "provider": {
+              "@type": "Organization",
+              "name": "10 Cent Agency",
+              "url": "https://www.10centagency.com"
+            },
+            "areaServed": {
+              "@type": "Country",
+              "name": "Bangladesh"
+            },
+            "description": "Fast, beautiful, mobile-optimized websites that convert visitors into paying customers. Built on WordPress with Elementor."
+          })
+        }}
+      />
       {/* Hero Section */}
       <section className="relative bg-brand-bgAlt pt-32 pb-16 overflow-hidden">
         {/* Decorative rings */}

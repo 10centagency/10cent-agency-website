@@ -14,6 +14,8 @@ export default function CustomCursor() {
     setIsTouchDevice(isTouch)
     if (isTouch) return
 
+    document.body.classList.add('custom-cursor-active');
+
     let mouseX = 0, mouseY = 0
     let circleX = 0, circleY = 0
     let animFrameId: number
@@ -50,6 +52,7 @@ export default function CustomCursor() {
       cancelAnimationFrame(animFrameId)
       window.removeEventListener('mousemove', onMouseMove)
       window.removeEventListener('mouseover', onMouseOver)
+      document.body.classList.remove('custom-cursor-active');
     }
   }, [isHovering])
 

@@ -15,7 +15,9 @@ export default function PublicLayoutWrapper({
   return (
     <>
       {!isAdmin && <Navbar />}
-      {children}
+      <main id="main-content">
+        {children}
+      </main>
       {!isAdmin && <Footer />}
     </>
   );

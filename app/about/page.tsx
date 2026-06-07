@@ -60,6 +60,33 @@ const values = [
 export default function AboutPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "AboutPage",
+            "url": "https://www.10centagency.com/about",
+            "name": "About 10 Cent Agency",
+            "description": "Learn about 10 Cent Agency — a Bangladesh-based digital marketing agency built to serve small and medium businesses.",
+            "publisher": {
+              "@type": "Organization",
+              "name": "10 Cent Agency",
+              "url": "https://www.10centagency.com",
+              "logo": "https://www.10centagency.com/Logo.png"
+            },
+            "mainEntity": {
+              "@type": "Person",
+              "name": "Al Amin",
+              "jobTitle": "Founder & CEO",
+              "worksFor": {
+                "@type": "Organization",
+                "name": "10 Cent Agency"
+              }
+            }
+          })
+        }}
+      />
       {/* Hero */}
       <section className="bg-brand-bgAlt pt-32 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -89,7 +116,7 @@ export default function AboutPage() {
   <div className="relative">
     <div className="relative rounded-3xl aspect-[4/3] overflow-hidden border border-brand-border">
       <Image
-        src="/about-agency.jpg"
+        src="/about-agency.webp"
         alt="Why We Built 10 Cent Agency"
         fill
         className="object-cover"
@@ -210,7 +237,7 @@ export default function AboutPage() {
       <div className="mt-8 flex justify-center">
         <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-brand-navy shadow-[0_8px_20px_rgba(0,52,109,0.15)]">
           <Image
-            src="/founder.jpg"
+            src="/founder.webp"
             alt="Founder of 10 Cent Agency"
             fill
             className="object-cover object-center"

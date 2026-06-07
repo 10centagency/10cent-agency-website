@@ -122,6 +122,27 @@ export default function FacebookMetaMarketingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Facebook & Meta Marketing Services",
+            "url": "https://www.10centagency.com/services/facebook-meta-marketing",
+            "provider": {
+              "@type": "Organization",
+              "name": "10 Cent Agency",
+              "url": "https://www.10centagency.com"
+            },
+            "areaServed": {
+              "@type": "Country",
+              "name": "Bangladesh"
+            },
+            "description": "Build a powerful, revenue-generating presence on Facebook and Instagram. From page setup to full-scale ad campaigns with measurable results."
+          })
+        }}
+      />
       {/* Hero Section */}
       <section className="relative bg-brand-bgAlt pt-32 pb-16 overflow-hidden">
         {/* Decorative rings */}

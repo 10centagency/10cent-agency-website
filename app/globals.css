@@ -118,3 +118,8 @@ html {
 .font-bangla {
   font-family: var(--font-anek-bangla), sans-serif;
 }
+
+.custom-cursor-active,
+.custom-cursor-active * {
+  cursor: none !important;
+}

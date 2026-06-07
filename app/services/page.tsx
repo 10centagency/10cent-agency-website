@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 const mainServices = [
   {
     id: 'meta',
-    image: '/services/facebook-marketing.jpg',
+    image: '/services/facebook-marketing.webp',
     slug: 'facebook-meta-marketing',
     number: '01',
     icon: BarChart2,
@@ -44,7 +44,7 @@ const mainServices = [
   },
   {
     id: 'website',
-    image: '/services/website-development.jpg',
+    image: '/services/website-development.webp',
     slug: 'website-development',
     number: '02',
     icon: Monitor,
@@ -65,7 +65,7 @@ const mainServices = [
   },
   {
     id: 'ai',
-    image: '/services/ai-automation-chatbot.jpg',
+    image: '/services/ai-automation-chatbot.webp',
     slug: 'ai-automation-chatbot',
     number: '03',
     icon: Bot,

@@ -45,6 +45,27 @@ const subServices = [
 export default function GraphicDesignPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Graphic Design Services in Bangladesh",
+            "url": "https://www.10centagency.com/services/graphic-design",
+            "provider": {
+              "@type": "Organization",
+              "name": "10 Cent Agency",
+              "url": "https://www.10centagency.com"
+            },
+            "areaServed": {
+              "@type": "Country",
+              "name": "Bangladesh"
+            },
+            "description": "Professional logo, branding & graphic design services in Dhaka, Bangladesh. Make your business look polished and trustworthy. Get a free quote today!"
+          })
+        }}
+      />
       {/* Hero Section */}
       <section className="relative bg-brand-bgAlt pt-32 pb-16 overflow-hidden">
         {/* Decorative rings */}

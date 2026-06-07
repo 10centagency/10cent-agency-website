@@ -66,6 +66,27 @@ const subServices = [
 export default function AIAutomationChatbotPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "AI Automation & Chatbot Services",
+            "url": "https://www.10centagency.com/services/ai-automation-chatbot",
+            "provider": {
+              "@type": "Organization",
+              "name": "10 Cent Agency",
+              "url": "https://www.10centagency.com"
+            },
+            "areaServed": {
+              "@type": "Country",
+              "name": "Bangladesh"
+            },
+            "description": "Smart assistants that work 24/7 — answering questions, collecting leads, processing orders, and following up automatically."
+          })
+        }}
+      />
       {/* Hero Section */}
       <section className="relative bg-brand-bgAlt pt-32 pb-16 overflow-hidden">
         {/* Decorative rings */}

@@ -56,6 +56,27 @@ const subServices = [
 export default function SocialMediaManagementPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Social Media Management Services",
+            "url": "https://www.10centagency.com/services/social-media-management",
+            "provider": {
+              "@type": "Organization",
+              "name": "10 Cent Agency",
+              "url": "https://www.10centagency.com"
+            },
+            "areaServed": {
+              "@type": "Country",
+              "name": "Bangladesh"
+            },
+            "description": "Consistent, strategic social media presence — without taking your time. We handle content planning, posting, and community engagement."
+          })
+        }}
+      />
       {/* Hero Section */}
       <section className="relative bg-brand-bgAlt pt-32 pb-16 overflow-hidden">
         {/* Decorative rings */}

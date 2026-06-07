@@ -108,6 +108,32 @@ export default function BlogSinglePage() {
 
    return (
      <div className="min-h-screen bg-white pt-28 pb-20">
+       <script
+         type="application/ld+json"
+         dangerouslySetInnerHTML={{
+           __html: JSON.stringify({
+             "@context": "https://schema.org",
+             "@type": "BlogPosting",
+             "headline": post.title,
+             "url": `https://www.10centagency.com/blog/${post.slug}`,
+             "datePublished": post.created_at || "",
+             "dateModified": post.updated_at || post.created_at || "",
+             "author": {
+               "@type": "Person",
+               "name": "Al Amin"
+             },
+             "publisher": {
+               "@type": "Organization",
+               "name": "10 Cent Agency",
+               "logo": {
+                 "@type": "ImageObject",
+                 "url": "https://www.10centagency.com/Logo.png"
+               }
+             },
+              "description": post.excerpt || post.meta_description || post.title
+           })
+         }}
+       />
        <article className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Link */}
         <Link href="/blog" className="flex items-center gap-2 text-brand-blue hover:text-brand-blue/70 transition-colors mb-8">

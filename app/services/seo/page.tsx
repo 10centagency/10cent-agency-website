@@ -39,6 +39,27 @@ const subServices = [
 export default function SEOPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "SEO Services in Bangladesh",
+            "url": "https://www.10centagency.com/services/seo",
+            "provider": {
+              "@type": "Organization",
+              "name": "10 Cent Agency",
+              "url": "https://www.10centagency.com"
+            },
+            "areaServed": {
+              "@type": "Country",
+              "name": "Bangladesh"
+            },
+            "description": "Get found on Google when customers in Bangladesh search for your products. On-page SEO, technical SEO & local SEO for small businesses in Dhaka. Free consultation!"
+          })
+        }}
+      />
       {/* Hero Section */}
       <section className="relative bg-brand-bgAlt pt-32 pb-16 overflow-hidden">
         {/* Decorative rings */}
