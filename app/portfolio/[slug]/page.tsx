@@ -12,7 +12,7 @@ import ImageLightbox from '@/components/ui/ImageLightbox';
 export const dynamic = 'force-dynamic';
 
 interface Props {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
@@ -26,11 +26,12 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
   const supabase = createServerSupabaseClient();
   const { data: item } = await supabase
     .from('portfolio_items')
     .select('title, result_highlight, category, meta_description, excerpt')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .eq('status', 'published')
     .maybeSingle();
 
@@ -50,11 +51,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProjectPage({ params }: Props) {
+  const { slug } = await params;
   const supabase = createServerSupabaseClient();
   const { data: item } = await supabase
     .from('portfolio_items')
     .select('*')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .eq('status', 'published')
     .maybeSingle();
 
