@@ -93,7 +93,7 @@ export default function AboutPage() {
         alt="Why We Built 10 Cent Agency"
         fill
         className="object-cover"
-        priority
+        priority={true}
       />
     </div>
 

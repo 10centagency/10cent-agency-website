@@ -7,9 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import CTABanner from '@/components/home/CTABanner';
 
 export const metadata: Metadata = {
-  title: 'SEO Services | 10 Cent Agency',
+  title: 'SEO Services in Bangladesh | 10 Cent Agency',
   description:
-    'Get found on Google when customers search for your products or services. On-page SEO, technical optimization, and local SEO.',
+    'Get found on Google when customers in Bangladesh search for your products. On-page SEO, technical SEO & local SEO for small businesses in Dhaka. Free consultation!',
+  alternates: {
+    canonical: 'https://www.10centagency.com/services/seo',
+  },
 };
 
 const subServices = [

@@ -67,7 +67,6 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       { url: "/favicon-48x48.png", sizes: "48x48", type: "image/png" },
     ],
@@ -79,13 +78,19 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
 };
 
+export const viewport = {
+  themeColor: '#00346D',
+  width: 'device-width',
+  initialScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${outfit.variable} ${anekBangla.variable}`}>
+    <html lang="en-BD" className={`${outfit.variable} ${anekBangla.variable}`}>
       <head>
         {/* Preload critical above-the-fold image */}
         <link

@@ -37,7 +37,7 @@ export default function Footer() {
             <Link href="/" className="inline-block mb-4">
               <Image
                 src="/10cent-agency-logo.png"
-                alt="10 Cent Agency Logo"
+                alt="10 Cent Agency — Best Digital Marketing Agency in BD"
                 width={160}
                 height={40}
                 className="h-10 w-auto"

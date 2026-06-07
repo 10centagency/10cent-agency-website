@@ -7,9 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import CTABanner from '@/components/home/CTABanner';
 
 export const metadata: Metadata = {
-  title: 'Graphic Design Services | 10 Cent Agency',
+  title: 'Graphic Design Services in Bangladesh | 10 Cent Agency',
   description:
-    'Professional visual identity and marketing materials that make your brand look polished and trustworthy.',
+    'Professional logo, branding & graphic design services in Dhaka, Bangladesh. Make your business look polished and trustworthy. Get a free quote today!',
+  alternates: {
+    canonical: 'https://www.10centagency.com/services/graphic-design',
+  },
 };
 
 const subServices = [

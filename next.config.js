@@ -2,7 +2,7 @@
 
 const nextConfig = {
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   images: {
     formats: ['image/webp', 'image/avif'],
