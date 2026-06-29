@@ -448,6 +448,36 @@ export default function BlogForm({ postId }: BlogFormProps) {
 
         {block.type === 'image' && (
           <>
+            {/* Width control */}
+            <div className="flex gap-2 flex-wrap">
+              <span className="text-xs font-medium text-brand-textMid self-center">Width:</span>
+              {(['full', 'half', 'third'] as const).map((w) => (
+                <button key={w} type="button"
+                  onClick={() => updateContentBlock(block.id, { width: w })}
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                    (block as any).width === w
+                      ? 'bg-brand-blue text-white'
+                      : 'bg-brand-bgAlt border border-brand-border text-brand-textMid hover:text-brand-textDark'
+                  }`}
+                >
+                  {w === 'full' ? 'Full' : w === 'half' ? '1/2' : '1/3'}
+                </button>
+              ))}
+              <span className="text-xs font-medium text-brand-textMid self-center ml-3">Ratio:</span>
+              {(['16/9', '4/3', '1/1', '3/4', 'free'] as const).map((r) => (
+                <button key={r} type="button"
+                  onClick={() => updateContentBlock(block.id, { aspect_ratio: r })}
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                    (block as any).aspect_ratio === r
+                      ? 'bg-brand-blue text-white'
+                      : 'bg-brand-bgAlt border border-brand-border text-brand-textMid hover:text-brand-textDark'
+                  }`}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+
             <UploadZone
               uploadKey={`${block.id}-image`}
               imageUrl={(block as any).image_url}

@@ -132,6 +132,24 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ content, onUpdate }) =>
           ❝ Quote
         </button>
 
+        <button
+          type="button"
+          onMouseDown={prevent}
+          onClick={() => {
+            if (editor.isActive('link')) {
+              editor.chain().focus().unsetLink().run();
+            } else {
+              const url = window.prompt('Enter URL:', 'https://');
+              if (url) {
+                editor.chain().focus().setLink({ href: url, target: '_blank' }).run();
+              }
+            }
+          }}
+          className={btnClass(editor.isActive('link'))}
+        >
+          🔗 Link
+        </button>
+
         <div className="w-px bg-gray-300 mx-1" />
 
         <button

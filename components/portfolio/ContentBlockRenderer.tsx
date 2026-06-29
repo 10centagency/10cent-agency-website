@@ -63,7 +63,7 @@ export default function ContentBlockRenderer({ blocks }: { blocks: ContentBlock[
                   <img
                     src={block.image_url}
                     alt={block.caption || ''}
-                    className={`w-full object-cover ${aClass}`}
+                    className={`w-full object-cover rounded-xl ${aClass}`}
                   />
                 </div>
               );

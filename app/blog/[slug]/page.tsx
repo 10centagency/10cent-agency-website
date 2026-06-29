@@ -143,52 +143,56 @@ export default function BlogSinglePage() {
 
         {/* Featured Image */}
         {post.featured_image_url && (
-          <div className="relative h-96 bg-gradient-to-br rounded-2xl overflow-hidden mb-8 group">
-            <img
-              src={post.featured_image_url}
-              alt={post.title}
-              className="w-full h-full object-cover"
-            />
-            {post.featured_image_link && (
+          <div className="mb-8">
+            {post.featured_image_link ? (
               <a
                 href={post.featured_image_link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="absolute inset-0 bg-brand-navy/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2"
+                className="block relative group"
               >
-                <ExternalLink className="w-5 h-5 text-white" />
-                <span className="text-white font-medium">Visit</span>
+                <img
+                  src={post.featured_image_url}
+                  alt={post.title}
+                  className="w-full rounded-2xl lg:h-[420px] lg:object-cover"
+                />
+                <div className="absolute inset-0 bg-brand-navy/70 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+                  <ExternalLink className="w-5 h-5 text-white" />
+                  <span className="text-white font-medium">Visit</span>
+                </div>
               </a>
+            ) : (
+              <img
+                src={post.featured_image_url}
+                alt={post.title}
+                className="w-full rounded-2xl lg:h-[420px] lg:object-cover"
+              />
             )}
           </div>
         )}
 
         {/* Meta Row */}
-        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-brand-border">
+        <div className="flex flex-wrap items-center gap-2 mb-6 pb-6 border-b border-brand-border">
           {category && (
-            <span className="px-3 py-1 bg-brand-blue/10 text-brand-blue text-xs font-semibold rounded-full">
+            <span className="px-3 py-1.5 bg-brand-blue/10 text-brand-blue text-xs font-semibold rounded-full">
               {category.name}
             </span>
           )}
-          <span className="text-sm text-brand-textMid">
-            {new Date(post.created_at).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
+          <span className="px-3 py-1.5 border border-brand-blue/30 text-brand-blue/80 text-xs font-medium rounded-full bg-brand-blue/5">
+            {new Date(post.created_at).toLocaleDateString('en-GB', {
               day: 'numeric',
+              month: 'long',
+              year: 'numeric',
             })}
           </span>
-          {post.tags && post.tags.length > 0 && (
-            <div className="flex gap-2">
-              {post.tags.slice(0, 3).map((tag) => (
-                <span
-                  key={tag}
-                  className="text-xs text-brand-textMid bg-gray-100 px-2 py-1 rounded"
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
-          )}
+          {post.tags && post.tags.map((tag) => (
+            <span
+              key={tag}
+              className="px-3 py-1.5 border border-brand-border text-brand-textMid text-xs font-medium rounded-full bg-white"
+            >
+              #{tag}
+            </span>
+          ))}
         </div>
 
         {/* Title */}
