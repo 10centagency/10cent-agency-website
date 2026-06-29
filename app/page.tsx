@@ -1,6 +1,18 @@
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 import HeroSection from '@/components/home/HeroSection';
-import HomeContent from '@/components/home/HomeContent';
+import ServicesOverview from '@/components/home/ServicesOverview';
+
+// Dynamic imports for below-the-fold and animation-heavy components
+const MarqueeStrip = dynamic(() => import('@/components/home/MarqueeStrip'), { ssr: true });
+const WhyChooseUs = dynamic(() => import('@/components/home/WhyChooseUs'), { ssr: true });
+const HowWeWork = dynamic(() => import('@/components/home/HowWeWork'), { ssr: true });
+const ServicesDetail = dynamic(() => import('@/components/home/ServicesDetail'), { ssr: true });
+const AddOnServices = dynamic(() => import('@/components/home/AddOnServices'), { ssr: true });
+const PortfolioPreview = dynamic(() => import('@/components/home/PortfolioPreview'), { ssr: true });
+const Testimonials = dynamic(() => import('@/components/home/Testimonials'), { ssr: true });
+const HomeFAQ = dynamic(() => import('@/components/home/HomeFAQ'), { ssr: true });
+const CTABanner = dynamic(() => import('@/components/home/CTABanner'), { ssr: true });
 
 export const metadata: Metadata = {
   title: "10 Cent Agency | Best Digital Marketing Agency in BD",
@@ -131,7 +143,16 @@ export default function Home() {
         }}
       />
       <HeroSection />
-      <HomeContent />
+      <MarqueeStrip />
+      <ServicesOverview />
+      <WhyChooseUs />
+      <HowWeWork />
+      <ServicesDetail />
+      <AddOnServices />
+      <PortfolioPreview />
+      <Testimonials />
+      <HomeFAQ />
+      <CTABanner />
     </>
   );
 }

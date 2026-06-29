@@ -12,7 +12,7 @@ make sense for growing businesses.
 - **Founded:** 2026
 - **Founder:** Md Al Amin
 - **Location:** East Monipur, Mirpur, Dhaka, Bangladesh-1216
-- **Website:** https://www.10centagency.com
+- **Website:** [10 Cent Agency](https://www.10centagency.com)
 - **Email:** hello@10centagency.com
 - **Phone/WhatsApp:** +880 1615-144114
 - **Business Hours:** Saturday–Thursday, 10AM–9PM (BST)
@@ -38,7 +38,7 @@ revenue-generating ad campaigns.
 - Ad Creative Production with A/B testing (Per Project/Monthly)
 - Facebook & Instagram Ads Management with Conversions API (Monthly)
 - Monthly Performance Reports with ROAS tracking (Included)
-More info: https://www.10centagency.com/services/facebook-meta-marketing
+More info: [Facebook & Meta Marketing](https://www.10centagency.com/services/facebook-meta-marketing)
 
 ### Core Service 02 — Website Development
 WordPress + Elementor websites that convert visitors into customers.
@@ -47,7 +47,7 @@ WordPress + Elementor websites that convert visitors into customers.
 - E-Commerce Websites with bKash, Nagad, SSLCommerz (One-time)
 - All websites include mobile-responsive design, SSL, SEO setup, GA4
 - 1 month free post-delivery support included
-More info: https://www.10centagency.com/services/website-development
+More info: [Website Development](https://www.10centagency.com/services/website-development)
 
 ### Core Service 03 — AI Automation & Chatbot
 24/7 intelligent automation powered by AI and n8n workflows.
@@ -56,14 +56,14 @@ More info: https://www.10centagency.com/services/website-development
 - AI Automation Workflows via n8n (lead gen, order management)
 - Multilingual support: Bangla & English
 - 3-day free trial available
-More info: https://www.10centagency.com/services/ai-automation-chatbot
+More info: [AI Automation & Chatbot](https://www.10centagency.com/services/ai-automation-chatbot)
 
 ### Core Service 04 — Social Media Management
 Full monthly management of social media presence.
 - Monthly content calendar, post design, copywriting
 - Community management and AI-powered engagement tools
 - Bangla & English content creation
-More info: https://www.10centagency.com/services/social-media-management
+More info: [Social Media Management](https://www.10centagency.com/services/social-media-management)
 
 ### Add-On Service 05 — SEO
 - On-Page SEO: keyword research, meta optimization, sitemap setup
@@ -107,13 +107,13 @@ More info: https://www.10centagency.com/services/social-media-management
 
 ## Website Pages
 
-- Homepage: https://www.10centagency.com
-- All Services: https://www.10centagency.com/services
-- Facebook & Meta Marketing: https://www.10centagency.com/services/facebook-meta-marketing
-- Website Development: https://www.10centagency.com/services/website-development
-- AI Automation & Chatbot: https://www.10centagency.com/services/ai-automation-chatbot
-- Social Media Management: https://www.10centagency.com/services/social-media-management
-- About Us: https://www.10centagency.com/about
-- Portfolio: https://www.10centagency.com/portfolio
-- Blog: https://www.10centagency.com/blog
-- Contact: https://www.10centagency.com/contact
+- Homepage: [10 Cent Agency](https://www.10centagency.com)
+- All Services: [Services](https://www.10centagency.com/services)
+- Facebook & Meta Marketing: [Facebook & Meta Marketing](https://www.10centagency.com/services/facebook-meta-marketing)
+- Website Development: [Website Development](https://www.10centagency.com/services/website-development)
+- AI Automation & Chatbot: [AI Automation & Chatbot](https://www.10centagency.com/services/ai-automation-chatbot)
+- Social Media Management: [Social Media Management](https://www.10centagency.com/services/social-media-management)
+- About Us: [About Us](https://www.10centagency.com/about)
+- Portfolio: [Portfolio](https://www.10centagency.com/portfolio)
+- Blog: [Blog](https://www.10centagency.com/blog)
+- Contact: [Contact](https://www.10centagency.com/contact)
