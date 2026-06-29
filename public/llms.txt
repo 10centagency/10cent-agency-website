@@ -1,9 +1,6 @@
 # 10 Cent Agency
 
-> 10 Cent Agency is a Bangladesh-based full-service digital 
-> marketing agency built specifically for small and medium-sized 
-> businesses, startups, and entrepreneurs.
-> Tagline: Professional | Affordable | Unstoppable.
+10 Cent Agency is a Bangladesh-based full-service digital marketing agency built specifically for small and medium-sized businesses, startups, and entrepreneurs. Tagline: Professional | Affordable | Unstoppable.
 
 10 Cent Agency was founded to level the playing field — giving 
 small businesses in Bangladesh access to the same quality of 

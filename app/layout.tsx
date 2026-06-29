@@ -95,9 +95,9 @@ export default function RootLayout({
         {/* Preload critical above-the-fold image */}
         <link
           rel="preload"
-          href="/10cent-agency-logo.png"
+          href="/Logo.webp"
           as="image"
-          type="image/png"
+          type="image/webp"
         />
         
         {/* Preconnect hints for external resources */}

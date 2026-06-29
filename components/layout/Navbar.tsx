@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
 const navLinks = [
@@ -44,7 +43,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
             <Image
-              src="/Logo.png"
+              src="/Logo.webp"
               alt="10 Cent Agency - Best Digital Marketing Agency in BD"
               width={160}
               height={40}
@@ -99,43 +98,39 @@ rel="noopener noreferrer"
       </div>
 
       {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="lg:hidden bg-white/95 backdrop-blur-md border-b border-brand-border overflow-hidden"
-          >
-            <div className="px-4 py-4 space-y-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`block py-3 px-4 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                    pathname === link.href
-                      ? 'text-brand-blue bg-brand-bgAlt'
-                      : 'text-brand-textDark hover:text-brand-blue hover:bg-brand-bgAlt'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <div className="pt-3">
-                <Link
-                  href="https://calendly.com/10centagency/free-consultation"
-                  target="_blank"
+      <div
+        className={`lg:hidden bg-white/95 backdrop-blur-md border-b border-brand-border overflow-hidden transition-all duration-200 ${
+          isMenuOpen
+            ? 'translate-y-0 opacity-100'
+            : '-translate-y-2 opacity-0 pointer-events-none'
+        }`}
+      >
+        <div className="px-4 py-4 space-y-1">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`block py-3 px-4 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                pathname === link.href
+                  ? 'text-brand-blue bg-brand-bgAlt'
+                  : 'text-brand-textDark hover:text-brand-blue hover:bg-brand-bgAlt'
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
+          <div className="pt-3">
+            <Link
+              href="https://calendly.com/10centagency/free-consultation"
+              target="_blank"
 rel="noopener noreferrer"
-                  className="block w-full text-center bg-brand-navy text-white text-sm font-semibold rounded-lg px-5 py-3 hover:bg-brand-blue transition-colors duration-200"
-                >
-                  Get Free Consultation
-                </Link>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              className="block w-full text-center bg-brand-navy text-white text-sm font-semibold rounded-lg px-5 py-3 hover:bg-brand-blue transition-colors duration-200"
+            >
+              Get Free Consultation
+            </Link>
+          </div>
+        </div>
+      </div>
     </header>
   );
 }
