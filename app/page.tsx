@@ -41,7 +41,7 @@ export default function Home() {
               "@type": "LocalBusiness",
               "name": "10 Cent Agency",
               "url": "https://www.10centagency.com",
-              "logo": "https://www.10centagency.com/Logo.png",
+               "logo": "https://www.10centagency.com/Logo.webp",
               "image": "https://www.10centagency.com/og-image.png",
               "description": "Affordable digital marketing agency in Bangladesh helping small businesses grow online with Facebook ads, websites & AI automation.",
               "telephone": "+8801615144114",

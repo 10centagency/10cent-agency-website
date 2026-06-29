@@ -21,10 +21,13 @@ export default function Navbar() {
   const pathname = usePathname();
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 80);
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 80);
+      if (isMenuOpen) setIsMenuOpen(false);
+    };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isMenuOpen]);
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -101,8 +104,8 @@ rel="noopener noreferrer"
       <div
         className={`lg:hidden bg-white/95 backdrop-blur-md border-b border-brand-border overflow-hidden transition-all duration-200 ${
           isMenuOpen
-            ? 'translate-y-0 opacity-100'
-            : '-translate-y-2 opacity-0 pointer-events-none'
+            ? 'max-h-screen opacity-100'
+            : 'max-h-0 opacity-0 pointer-events-none'
         }`}
       >
         <div className="px-4 py-4 space-y-1">

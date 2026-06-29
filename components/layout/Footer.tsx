@@ -34,15 +34,15 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
           {/* Column 1: Brand */}
           <div>
-            <Link href="/" className="inline-block mb-4">
-              <Image
-                src="/10cent-agency-logo.png"
-                alt="10 Cent Agency — Best Digital Marketing Agency in BD"
-                width={160}
-                height={40}
-                className="h-10 w-auto"
-              />
-            </Link>
+             <Link href="/" className="inline-block mb-4">
+               <Image
+                 src="/10cent-agency-logo.webp"
+                 alt="10 Cent Agency — Best Digital Marketing Agency in BD"
+                 width={160}
+                 height={40}
+                 className="h-10 w-auto"
+               />
+             </Link>
             <p className="text-brand-accent italic text-sm font-medium mb-4">
               Professional | Affordable | Unstoppable
             </p>
