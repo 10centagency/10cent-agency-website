@@ -8,6 +8,13 @@ const nextConfig = {
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'rpgygdjptsxryewxaeys.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
   },
   compress: true,
   poweredByHeader: false,

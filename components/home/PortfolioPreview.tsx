@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ExternalLink } from 'lucide-react';
 import SectionLabel from '@/components/ui/SectionLabel';
@@ -99,26 +100,36 @@ export default function PortfolioPreview() {
                  className="group rounded-2xl overflow-hidden border border-brand-border hover:shadow-card-hover transition-shadow duration-300 bg-white"
                >
                 <Link href={`/portfolio/${project.slug}`}>
-                  <div
-                    className="relative h-48 flex items-center justify-center overflow-hidden"
-                    style={{
-                      background: project.featured_image_url
-                        ? `url(${project.featured_image_url}) center/cover`
-                        : `linear-gradient(135deg, ${project.thumbnail_gradient_from}, ${project.thumbnail_gradient_to})`,
-                    }}
-                  >
-                    {!project.featured_image_url && (
-                      <span className="text-5xl font-black text-white/20">
-                        {project.category.charAt(0)}
-                      </span>
-                    )}
-                    <div className="absolute inset-0 bg-brand-navy/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="flex items-center gap-2 text-white font-semibold">
-                        <ExternalLink className="w-5 h-5" />
-                        View Project
-                      </div>
-                    </div>
-                  </div>
+                   <div className="relative h-48 flex items-center justify-center overflow-hidden">
+                     {project.featured_image_url ? (
+                       <Image
+                         src={project.featured_image_url}
+                         alt={project.title}
+                         fill
+                         className="object-cover"
+                         quality={75}
+                         sizes="(max-width: 768px) 100vw, 50vw"
+                       />
+                     ) : (
+                       <div
+                         className="absolute inset-0"
+                         style={{
+                           background: `linear-gradient(135deg, ${project.thumbnail_gradient_from}, ${project.thumbnail_gradient_to})`,
+                         }}
+                       />
+                     )}
+                     {!project.featured_image_url && (
+                       <span className="text-5xl font-black text-white/20 relative z-10">
+                         {project.category.charAt(0)}
+                       </span>
+                     )}
+                     <div className="absolute inset-0 bg-brand-navy/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                       <div className="flex items-center gap-2 text-white font-semibold">
+                         <ExternalLink className="w-5 h-5" />
+                         View Project
+                       </div>
+                     </div>
+                   </div>
                 </Link>
                 <div className="p-5">
                   <span
