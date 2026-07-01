@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Suspense } from "react";
 import { Outfit, Anek_Bangla } from 'next/font/google'
 import { LazyMotion, domAnimation } from "framer-motion";
 import "./globals.css";
@@ -135,7 +136,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         </LazyMotion>
         <WhatsAppButton />
         <ScrollToTop />
-        <CustomCursor />
+        <Suspense fallback={null}>
+          <CustomCursor />
+        </Suspense>
       </body>
     </html>
   );
