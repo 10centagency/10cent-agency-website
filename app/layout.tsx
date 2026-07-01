@@ -4,11 +4,9 @@ import { Outfit, Anek_Bangla } from 'next/font/google'
 import { LazyMotion, domAnimation } from "framer-motion";
 import "./globals.css";
 import PublicLayoutWrapper from "@/components/layout/PublicLayoutWrapper";
-import MetaPixel from "@/components/MetaPixel";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import CustomCursor from "@/components/ui/CustomCursor";
-import { META_PIXEL_ID } from "@/lib/pixel";
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -132,33 +130,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         >
           Skip to main content
         </a>
-        {/* ── Meta Pixel base code ─────────────────────────────────────────
-            strategy="afterInteractive": loads after hydration, non-blocking.
-            id="meta-pixel": Next.js deduplicates by id — can never load twice.
-            fbq('init'): registers the pixel with your ID.
-            fbq('track', 'PageView'): fires the initial PageView on hard load.
-            MetaPixel component below handles all subsequent SPA route changes.
-        ──────────────────────────────────────────────────────────────────── */}
-        <Script
-          id="meta-pixel"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              !function(f,b,e,v,n,t,s)
-              {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-              n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-              if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-              n.queue=[];t=b.createElement(e);t.async=!0;
-              t.src=v;s=b.getElementsByTagName(e)[0];
-              s.parentNode.insertBefore(t,s)}(window, document,'script',
-              'https://connect.facebook.net/en_US/fbevents.js');
-              fbq('init', '${META_PIXEL_ID}');
-              fbq('track', 'PageView');
-            `,
-          }}
-        />
-        {/* Fires PageView on every App Router SPA navigation */}
-        <MetaPixel />
         <LazyMotion features={domAnimation}>
           <PublicLayoutWrapper>{children}</PublicLayoutWrapper>
         </LazyMotion>
