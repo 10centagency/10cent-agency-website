@@ -4,7 +4,6 @@ import { Outfit, Anek_Bangla } from 'next/font/google'
 import { LazyMotion, domAnimation } from "framer-motion";
 import "./globals.css";
 import PublicLayoutWrapper from "@/components/layout/PublicLayoutWrapper";
-import CAPIPageView from "@/components/CAPIPageView";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import CustomCursor from "@/components/ui/CustomCursor";
@@ -131,7 +130,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         >
           Skip to main content
         </a>
-        <CAPIPageView />
         <LazyMotion features={domAnimation}>
           <PublicLayoutWrapper>{children}</PublicLayoutWrapper>
         </LazyMotion>
