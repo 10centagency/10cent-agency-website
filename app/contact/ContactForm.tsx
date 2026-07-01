@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { CircleCheck as CheckCircle2, Loader as Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { trackContact } from '@/lib/pixel';
 
 interface FormData {
   fullName: string;
@@ -77,6 +78,26 @@ export default function ContactForm() {
     }
 
     setSubmitted(true);
+
+    // Browser Pixel tracking
+    if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+      const eventId = crypto.randomUUID();
+      window.fbq('track', 'Lead', {
+        content_name: 'Contact Form Submit',
+      }, { eventID: eventId });
+
+      // CAPI tracking
+      fetch('/api/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventName: 'Lead',
+          eventId: eventId,
+          eventSourceUrl: window.location.href,
+          contentName: 'Contact Form Submit',
+        }),
+      });
+    }
   };
 
   const inputClass = (field: string) =>
