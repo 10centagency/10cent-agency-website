@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
-import { pageView, META_PIXEL_ID } from '@/lib/pixel';
+import { META_PIXEL_ID } from '@/lib/pixel';
 
 export default function MetaPixel() {
   const pathname = usePathname();
@@ -11,16 +11,31 @@ export default function MetaPixel() {
   useEffect(() => {
     if (!META_PIXEL_ID) return;
 
-    // On the very first render, the inline <Script> in layout.tsx has already
-    // called fbq('init') and fbq('track', 'PageView').
-    // We skip this first effect run to prevent a duplicate PageView.
     if (!initialized.current) {
       initialized.current = true;
       return;
     }
 
-    // Every subsequent pathname change = SPA navigation = fire PageView.
-    pageView();
+    // Generate shared eventID for deduplication
+    const eventId = crypto.randomUUID();
+    const eventSourceUrl = window.location.href;
+
+    // Browser Pixel
+    if (typeof window.fbq === 'function') {
+      window.fbq('track', 'PageView', {}, { eventID: eventId });
+    }
+
+    // CAPI
+    fetch('/api/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        eventName: 'PageView',
+        eventId: eventId,
+        eventSourceUrl: eventSourceUrl,
+      }),
+    });
+
   }, [pathname]);
 
   return null;
