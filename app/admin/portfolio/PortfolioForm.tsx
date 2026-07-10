@@ -63,8 +63,7 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
   const [tags, setTags] = useState('');
   const [featuredImageUrl, setFeaturedImageUrl] = useState('');
   const [featuredImageLink, setFeaturedImageLink] = useState('');
-  const [gradientFrom, setGradientFrom] = useState('#2F85F3');
-  const [gradientTo, setGradientTo] = useState('#B6D7FF');
+  const [featuredImageAlt, setFeaturedImageAlt] = useState('');
   const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
   const [isFeatured, setIsFeatured] = useState(false);
   const [sortOrder, setSortOrder] = useState(0);
@@ -101,8 +100,7 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
         setTags(data.tags?.join(', ') || '');
         setFeaturedImageUrl(data.featured_image_url || '');
         setFeaturedImageLink(data.featured_image_link || '');
-        setGradientFrom(data.thumbnail_gradient_from);
-        setGradientTo(data.thumbnail_gradient_to);
+        setFeaturedImageAlt(data.featured_image_alt || '');
         setContentBlocks((data.content_blocks as ContentBlock[]) || []);
         setIsFeatured(data.is_featured);
         setSortOrder(data.sort_order);
@@ -113,22 +111,23 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
     loadItem();
   }, [itemId, isEditing]);
 
-  // ── Image upload helper ────────────────────────────────────────────────
-  const uploadImage = useCallback(
-    async (file: File, bucket: string): Promise<string | null> => {
-      const client = await getAuthenticatedClient();
-      if (!client) return null;
-      const ext = file.name.split('.').pop();
-      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error: uploadError } = await client.storage
-        .from(bucket)
-        .upload(path, file, { cacheControl: '3600', upsert: false });
-      if (uploadError) { setError('Image upload failed'); return null; }
-      const { data: { publicUrl } } = client.storage.from(bucket).getPublicUrl(path);
-      return publicUrl;
-    },
-    []
-  );
+   // ── Image upload helper ────────────────────────────────────────────────
+   const uploadImage = useCallback(
+     async (file: File, bucket: string): Promise<string | null> => {
+       const client = await getAuthenticatedClient();
+       if (!client) return null;
+       const ext = file.name.split('.').pop();
+       const sanitizedName = file.name.toLowerCase().replace(/[^a-z0-9.\-_]/g, '-').replace(/-+/g, '-');
+       const path = `${Date.now()}-${sanitizedName}`;
+       const { error: uploadError } = await client.storage
+         .from(bucket)
+         .upload(path, file, { cacheControl: '3600', upsert: false });
+       if (uploadError) { setError('Image upload failed'); return null; }
+       const { data: { publicUrl } } = client.storage.from(bucket).getPublicUrl(path);
+       return publicUrl;
+     },
+     []
+   );
 
   const handleFeaturedUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -273,8 +272,7 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
       tags: tagsArray,
       featured_image_url: featuredImageUrl || null,
       featured_image_link: featuredImageLink || null,
-      thumbnail_gradient_from: gradientFrom,
-      thumbnail_gradient_to: gradientTo,
+      featured_image_alt: featuredImageAlt || null,
       content_blocks: contentBlocks as unknown as Record<string, unknown>[],
       is_featured: isFeatured,
       sort_order: sortOrder,
@@ -1029,29 +1027,6 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
           </label>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-brand-textDark mb-1.5">Gradient From</label>
-            <div className="flex items-center gap-2">
-              <input type="color" value={gradientFrom} onChange={(e) => setGradientFrom(e.target.value)}
-                className="w-8 h-8 rounded border border-brand-border cursor-pointer" />
-              <input type="text" value={gradientFrom} onChange={(e) => setGradientFrom(e.target.value)}
-                className="flex-1 px-3 py-2 rounded-lg border border-brand-border bg-white text-sm text-brand-textDark focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue transition-colors"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-brand-textDark mb-1.5">Gradient To</label>
-            <div className="flex items-center gap-2">
-              <input type="color" value={gradientTo} onChange={(e) => setGradientTo(e.target.value)}
-                className="w-8 h-8 rounded border border-brand-border cursor-pointer" />
-              <input type="text" value={gradientTo} onChange={(e) => setGradientTo(e.target.value)}
-                className="flex-1 px-3 py-2 rounded-lg border border-brand-border bg-white text-sm text-brand-textDark focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue transition-colors"
-              />
-            </div>
-          </div>
-        </div>
-
         <div>
           <label className="block text-sm font-medium text-brand-textDark mb-1.5">Image Link URL (Optional)</label>
           <input type="url" value={featuredImageLink} onChange={(e) => setFeaturedImageLink(e.target.value)}
@@ -1061,7 +1036,19 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
           <p className="text-xs text-brand-textMid mt-1">If added, clicking this image opens the URL in a new tab</p>
         </div>
 
-        <div className="h-12 rounded-lg" style={{ background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})` }} />
+        <div>
+          <label className="block text-sm font-medium text-brand-textDark mb-1.5">Alt Text (SEO)</label>
+          <input
+            type="text"
+            value={featuredImageAlt}
+            onChange={(e) => setFeaturedImageAlt(e.target.value)}
+            placeholder="Describe the image for search engines and accessibility"
+            className="w-full px-4 py-2 border border-brand-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+          />
+          <p className="text-xs text-brand-textMid mt-1">
+            Keep it concise and descriptive (e.g. "Portfolio project showcase")
+          </p>
+        </div>
       </div>
 
       {/* ── Content Blocks ── */}

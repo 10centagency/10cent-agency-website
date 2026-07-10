@@ -202,7 +202,7 @@ function ServiceSection({ service, reversed = false }: { service: typeof mainSer
                 href="/contact"
                 className="inline-flex items-center justify-center gap-2 bg-brand-navy text-white font-semibold rounded-xl px-6 py-3 hover:bg-brand-blue transition-colors duration-200"
               >
-                {service.id === 'ai' ? 'Start Free Trial' : 'Get a Quote'}
+                {service.id === 'ai' ? 'Start Free Trial' : 'Start Project →'}
               </Link>
             </div>
           </AnimatedSection>
@@ -372,13 +372,13 @@ export default function ServicesPage() {
                         </li>
                       ))}
                     </ul>
-                    <div className="flex flex-col sm:flex-row gap-3 mt-auto">
-                      <Link
-                        href={`/services/${service.slug}`}
-                        className="text-brand-navy text-sm font-semibold hover:underline inline-flex items-center justify-center gap-1 border border-brand-navy rounded-lg px-4 py-2 hover:bg-brand-navy hover:text-white transition-colors duration-200"
-                      >
-                        View Details
-                      </Link>
+                     <div className="flex flex-col sm:flex-row gap-3 mt-auto">
+                       <Link
+                         href={`/services/${service.slug}`}
+                         className="text-brand-navy text-sm font-semibold hover:underline inline-flex items-center justify-center gap-1 border border-brand-navy rounded-lg px-4 py-2 hover:bg-brand-navy hover:text-white transition-colors duration-200"
+                       >
+                         Explore →
+                       </Link>
                       <Link
                         href="/contact"
                         className="text-white bg-brand-navy text-sm font-semibold rounded-lg px-4 py-2 hover:bg-brand-blue transition-colors duration-200 inline-flex items-center justify-center gap-1"

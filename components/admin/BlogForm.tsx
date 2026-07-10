@@ -45,11 +45,10 @@ export default function BlogForm({ postId }: BlogFormProps) {
   const [excerpt, setExcerpt] = useState('')
   const [metaDescription, setMetaDescription] = useState('')
   const [tags, setTags] = useState('')
-  const [featuredImageUrl, setFeaturedImageUrl] = useState('')
-  const [featuredImageLink, setFeaturedImageLink] = useState('')
-  const [gradientFrom, setGradientFrom] = useState('#2F85F3')
-  const [gradientTo, setGradientTo] = useState('#B6D7FF')
-  const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([])
+   const [featuredImageUrl, setFeaturedImageUrl] = useState('')
+   const [featuredImageLink, setFeaturedImageLink] = useState('')
+   const [featuredImageAlt, setFeaturedImageAlt] = useState('')
+   const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([])
   const [isFeatured, setIsFeatured] = useState(false)
   const [sortOrder, setSortOrder] = useState(0)
   const [status, setStatus] = useState<'draft' | 'published'>('draft')
@@ -95,8 +94,7 @@ export default function BlogForm({ postId }: BlogFormProps) {
         setTags(data.tags?.join(', ') || '')
         setFeaturedImageUrl(data.featured_image_url || '')
         setFeaturedImageLink(data.featured_image_link || '')
-        setGradientFrom(data.thumbnail_gradient_from)
-        setGradientTo(data.thumbnail_gradient_to)
+        setFeaturedImageAlt(data.featured_image_alt || '')
         setContentBlocks((data.content_blocks as ContentBlock[]) || [])
         setIsFeatured(data.is_featured)
         setSortOrder(data.sort_order)
@@ -107,28 +105,29 @@ export default function BlogForm({ postId }: BlogFormProps) {
     loadPost()
   }, [postId, isEditing])
 
-  const uploadImage = useCallback(
-    async (file: File, bucket: string): Promise<string | null> => {
-      const client = await getAuthenticatedClient()
-      if (!client) return null
+   const uploadImage = useCallback(
+     async (file: File, bucket: string): Promise<string | null> => {
+       const client = await getAuthenticatedClient()
+       if (!client) return null
 
-      const ext = file.name.split('.').pop()
-      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-      const { error: uploadError } = await client.storage
-        .from(bucket)
-        .upload(path, file, { cacheControl: '3600', upsert: false })
-      if (uploadError) {
-        setError('Image upload failed')
-        return null
-      }
+       const ext = file.name.split('.').pop()
+       const sanitizedName = file.name.toLowerCase().replace(/[^a-z0-9.\-_]/g, '-').replace(/-+/g, '-')
+       const path = `${Date.now()}-${sanitizedName}`
+       const { error: uploadError } = await client.storage
+         .from(bucket)
+         .upload(path, file, { cacheControl: '3600', upsert: false })
+       if (uploadError) {
+         setError('Image upload failed')
+         return null
+       }
 
-      const { data: publicUrl } = client.storage
-        .from(bucket)
-        .getPublicUrl(path)
-      return publicUrl?.publicUrl || null
-    },
-    []
-  )
+       const { data: publicUrl } = client.storage
+         .from(bucket)
+         .getPublicUrl(path)
+       return publicUrl?.publicUrl || null
+     },
+     []
+   )
 
   const handleFeaturedImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>
@@ -297,8 +296,7 @@ export default function BlogForm({ postId }: BlogFormProps) {
       meta_description: metaDescription || null,
       featured_image_url: featuredImageUrl || null,
       featured_image_link: featuredImageLink || null,
-      thumbnail_gradient_from: gradientFrom,
-      thumbnail_gradient_to: gradientTo,
+      featured_image_alt: featuredImageAlt || null,
       content_blocks: contentBlocks as unknown as Record<string, unknown>[],
       tags: tagsArray,
       is_featured: isFeatured,
@@ -492,6 +490,10 @@ export default function BlogForm({ postId }: BlogFormProps) {
               onChange={(e) => updateContentBlock(block.id, { link_url: e.target.value })}
               className="w-full px-3 py-2 rounded-lg border border-brand-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
             />
+            <input type="text" placeholder="Alt text (for accessibility & SEO)" value={(block as any).alt_text || ''}
+              onChange={(e) => updateContentBlock(block.id, { alt_text: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg border border-brand-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+            />
           </>
         )}
 
@@ -509,6 +511,10 @@ export default function BlogForm({ postId }: BlogFormProps) {
             />
             <input type="url" placeholder="Image link URL (optional)" value={(block as any).link_url || ''}
               onChange={(e) => updateContentBlock(block.id, { link_url: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg border border-brand-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+            />
+            <input type="text" placeholder="Alt text (for accessibility & SEO)" value={(block as any).alt_text || ''}
+              onChange={(e) => updateContentBlock(block.id, { alt_text: e.target.value })}
               className="w-full px-3 py-2 rounded-lg border border-brand-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
             />
           </>
@@ -542,8 +548,16 @@ export default function BlogForm({ postId }: BlogFormProps) {
               onChange={(e) => updateContentBlock(block.id, { left_label: e.target.value })}
               className="w-full px-3 py-2 rounded-lg border border-brand-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
             />
+            <input type="text" placeholder="Left alt text" value={(block as any).left_alt_text || ''}
+              onChange={(e) => updateContentBlock(block.id, { left_alt_text: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg border border-brand-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+            />
             <input type="text" placeholder="Right label" value={(block as any).right_label || ''}
               onChange={(e) => updateContentBlock(block.id, { right_label: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg border border-brand-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+            />
+            <input type="text" placeholder="Right alt text" value={(block as any).right_alt_text || ''}
+              onChange={(e) => updateContentBlock(block.id, { right_alt_text: e.target.value })}
               className="w-full px-3 py-2 rounded-lg border border-brand-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
             />
             <input type="text" placeholder="Caption (optional)" value={(block as any).caption || ''}
@@ -588,6 +602,14 @@ export default function BlogForm({ postId }: BlogFormProps) {
                     onChange={(e) => {
                       const images = [...(block as any).images];
                       images[i] = { ...images[i], caption: e.target.value };
+                      updateContentBlock(block.id, { images });
+                    }}
+                    className="w-full px-3 py-2 rounded-lg border border-brand-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+                  />
+                  <input type="text" placeholder="Alt text" value={img.alt || ''}
+                    onChange={(e) => {
+                      const images = [...(block as any).images];
+                      images[i] = { ...images[i], alt: e.target.value };
                       updateContentBlock(block.id, { images });
                     }}
                     className="w-full px-3 py-2 rounded-lg border border-brand-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
@@ -640,6 +662,10 @@ export default function BlogForm({ postId }: BlogFormProps) {
             />
             <input type="url" placeholder="Image link URL (optional)" value={(block as any).link_url || ''}
               onChange={(e) => updateContentBlock(block.id, { link_url: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg border border-brand-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+            />
+            <input type="text" placeholder="Alt text (for accessibility & SEO)" value={(block as any).alt_text || ''}
+              onChange={(e) => updateContentBlock(block.id, { alt_text: e.target.value })}
               className="w-full px-3 py-2 rounded-lg border border-brand-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
             />
           </>
@@ -923,46 +949,20 @@ export default function BlogForm({ postId }: BlogFormProps) {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          <div>
-            <label className="block text-sm font-medium text-brand-textDark mb-2">
-              Gradient From
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="color"
-                value={gradientFrom}
-                onChange={(e) => setGradientFrom(e.target.value)}
-                className="w-12 h-10 rounded cursor-pointer"
-              />
-              <input
-                type="text"
-                value={gradientFrom}
-                onChange={(e) => setGradientFrom(e.target.value)}
-                className="flex-1 px-3 py-2 border border-brand-border rounded-lg text-sm"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-brand-textDark mb-2">
-              Gradient To
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="color"
-                value={gradientTo}
-                onChange={(e) => setGradientTo(e.target.value)}
-                className="w-12 h-10 rounded cursor-pointer"
-              />
-              <input
-                type="text"
-                value={gradientTo}
-                onChange={(e) => setGradientTo(e.target.value)}
-                className="flex-1 px-3 py-2 border border-brand-border rounded-lg text-sm"
-              />
-            </div>
-          </div>
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-brand-textDark mb-2">
+            Alt Text (SEO)
+          </label>
+          <input
+            type="text"
+            value={featuredImageAlt}
+            onChange={(e) => setFeaturedImageAlt(e.target.value)}
+            placeholder="Describe the image for search engines and accessibility"
+            className="w-full px-4 py-2 border border-brand-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+          />
+          <p className="text-xs text-brand-textMid mt-1">
+            Keep it concise and descriptive (e.g. "Digital marketing agency team in Dhaka")
+          </p>
         </div>
       </div>
 

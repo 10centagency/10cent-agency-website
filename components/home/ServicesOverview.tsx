@@ -54,26 +54,22 @@ export default function ServicesOverview() {
             const Icon = service.icon;
             return (
               <StaggerItem key={service.title}>
-                <div className="group bg-white rounded-2xl p-8 shadow-card border border-brand-border border-t-4 border-t-brand-blue transition-all duration-300 hover:shadow-card-hover h-full flex flex-col">
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center flex-shrink-0">
-                      <Icon className="w-6 h-6 text-brand-blue" />
+                <Link href={service.href}>
+                  <div className="group cursor-pointer bg-white rounded-2xl p-8 shadow-card border border-brand-border border-t-4 border-t-brand-blue transition-all duration-300 hover:shadow-card-hover hover:border-t-brand-blue h-full flex flex-col">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-6 h-6 text-brand-blue" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-xl text-brand-textDark">{service.title}</h3>
+                        <span className="inline-block mt-1 text-xs font-medium bg-brand-accent/40 text-brand-navy rounded-full px-3 py-0.5">
+                          {service.tag}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-bold text-xl text-brand-textDark">{service.title}</h3>
-                      <span className="inline-block mt-1 text-xs font-medium bg-brand-accent/40 text-brand-navy rounded-full px-3 py-0.5">
-                        {service.tag}
-                      </span>
-                    </div>
+                    <p className="text-brand-textMid text-sm leading-relaxed flex-1 mb-4">{service.description}</p>
                   </div>
-                  <p className="text-brand-textMid text-sm leading-relaxed flex-1 mb-4">{service.description}</p>
-                  <Link
-                    href={service.href}
-                    className="text-brand-blue text-sm font-semibold hover:underline inline-flex items-center gap-1"
-                  >
-                    Learn More <span aria-hidden>→</span>
-                  </Link>
-                </div>
+                </Link>
               </StaggerItem>
             );
           })}

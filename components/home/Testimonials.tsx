@@ -70,44 +70,44 @@ export default function Testimonials() {
             <ChevronLeft className="w-5 h-5 text-brand-textDark" />
           </button>
 
-          {/* Cards */}
-          <div className="overflow-hidden px-2">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={current}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4, ease: 'easeOut' }}
-                className="bg-white rounded-3xl p-8 lg:p-12 shadow-card border border-brand-border"
-              >
-                {/* Quote mark */}
-                <div className="text-8xl font-serif text-brand-blue/20 leading-none mb-2 select-none h-12 flex items-start">
-                  &ldquo;
-                </div>
-                {/* Stars */}
-                <div className="flex gap-1 mb-4">
-                  {Array.from({ length: testimonials[current].rating }).map((_, i) => (
-                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                  ))}
-                </div>
-                {/* Quote */}
-                <p className="text-brand-textDark text-lg leading-relaxed italic mb-8">
-                  {testimonials[current].quote}
-                </p>
-                {/* Author */}
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-brand-navy flex items-center justify-center text-white font-bold text-base flex-shrink-0">
-                    {testimonials[current].initials}
-                  </div>
-                  <div>
-                    <div className="font-semibold text-brand-textDark">{testimonials[current].name}</div>
-                    <div className="text-sm text-brand-textMid">{testimonials[current].business}</div>
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
+           {/* Cards */}
+           <div className="overflow-hidden px-2 flex flex-col">
+             <AnimatePresence mode="wait">
+               <motion.div
+                 key={current}
+                 initial={{ opacity: 0 }}
+                 animate={{ opacity: 1 }}
+                 exit={{ opacity: 0 }}
+                 transition={{ duration: 0.4, ease: 'easeOut' }}
+                 className="bg-white rounded-3xl p-8 lg:p-12 shadow-card border border-brand-border min-h-[520px] md:min-h-[480px] flex flex-col justify-between"
+               >
+                 {/* Quote mark */}
+                 <div className="text-8xl font-serif text-brand-blue/20 leading-none mb-2 select-none h-12 flex items-start">
+                   &ldquo;
+                 </div>
+                 {/* Stars */}
+                 <div className="flex gap-1 mb-4">
+                   {Array.from({ length: testimonials[current].rating }).map((_, i) => (
+                     <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                   ))}
+                 </div>
+                 {/* Quote */}
+                 <p className="text-brand-textDark text-lg leading-relaxed italic mb-8 flex-1">
+                   {testimonials[current].quote}
+                 </p>
+                 {/* Author */}
+                 <div className="flex items-center gap-4">
+                   <div className="w-12 h-12 rounded-full bg-brand-navy flex items-center justify-center text-white font-bold text-base flex-shrink-0">
+                     {testimonials[current].initials}
+                   </div>
+                   <div>
+                     <div className="font-semibold text-brand-textDark">{testimonials[current].name}</div>
+                     <div className="text-sm text-brand-textMid">{testimonials[current].business}</div>
+                   </div>
+                 </div>
+               </motion.div>
+             </AnimatePresence>
+           </div>
 
           {/* Next button */}
           <button
