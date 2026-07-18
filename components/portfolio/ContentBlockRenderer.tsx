@@ -140,31 +140,31 @@ export default function ContentBlockRenderer({ blocks }: { blocks: ContentBlock[
               );
             }
 
-            case 'image-text': {
-              const b = block as Extract<ContentBlock, { type: 'image-text' }>;
-              const colStyle =
-                b.image_width === '1/3' ? '1fr 2fr' :
-                b.image_width === '2/3' ? '2fr 1fr' : '1fr 1fr';
-              const aClass =
-                b.aspect_ratio === '16/9' ? 'aspect-video' :
-                b.aspect_ratio === '4/3'  ? 'aspect-[4/3]' :
-                b.aspect_ratio === '3/4'  ? 'aspect-[3/4]' : 'aspect-square';
-              const imgEl = b.image_url ? (
-                <div className={`overflow-hidden rounded-xl ${aClass}`}>
-                  <img src={b.image_url} alt={b.heading || ''} className="w-full h-full object-cover" />
-                </div>
-              ) : null;
-              return (
-                <div key={b.id}
-                  className="grid gap-6 sm:gap-8 items-center"
-                  style={{ gridTemplateColumns: `${colStyle}` }}
-                >
-                  <div className={b.image_position === 'right' ? 'order-2' : 'order-1'}>
-                    {b.link_url && b.image_url ? (
-                      <a href={b.link_url} target="_blank" rel="noopener noreferrer">{imgEl}</a>
-                    ) : imgEl}
-                  </div>
-                  <div className={`space-y-3 ${b.image_position === 'right' ? 'order-1' : 'order-2'}`}>
+             case 'image-text': {
+               const b = block as Extract<ContentBlock, { type: 'image-text' }>;
+               const colStyle =
+                 b.image_width === '1/3' ? '1fr 2fr' :
+                 b.image_width === '2/3' ? '2fr 1fr' : '1fr 1fr';
+               const aClass =
+                 b.aspect_ratio === '16/9' ? 'aspect-video' :
+                 b.aspect_ratio === '4/3'  ? 'aspect-[4/3]' :
+                 b.aspect_ratio === '3/4'  ? 'aspect-[3/4]' : 'aspect-square';
+               const imgEl = b.image_url ? (
+                 <div className={`overflow-hidden rounded-xl ${aClass}`}>
+                   <img src={b.image_url} alt={b.heading || ''} className="w-full h-full object-cover" />
+                 </div>
+               ) : null;
+               return (
+                 <div key={b.id}
+                   className="flex flex-col sm:grid gap-6 sm:gap-8 items-center"
+                   style={{ gridTemplateColumns: colStyle }}
+                 >
+                   <div className={`order-2 ${b.image_position === 'right' ? 'sm:order-2' : 'sm:order-1'}`}>
+                     {b.link_url && b.image_url ? (
+                       <a href={b.link_url} target="_blank" rel="noopener noreferrer">{imgEl}</a>
+                     ) : imgEl}
+                   </div>
+                   <div className={`space-y-3 order-1 ${b.image_position === 'right' ? 'sm:order-1' : 'sm:order-2'}`}>
                     {b.heading && (
                       <h3 className="text-xl font-bold text-brand-textDark">{b.heading}</h3>
                     )}
