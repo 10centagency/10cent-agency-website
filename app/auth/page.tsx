@@ -14,26 +14,24 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-   const handleLogin = async (e: React.FormEvent) => {
-     e.preventDefault();
-     setError('');
-     setLoading(true);
+    const handleLogin = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setError('');
+      setLoading(true);
 
-     const { error } = await supabase.auth.signInWithPassword({
-       email: email,
-       password: password,
-     });
-
-     if (error) {
-       setError('Invalid email or password. Please try again.');
-       setLoading(false);
-       return;
-     }
-
-     // Refresh to sync cookies with middleware, then navigate
-     router.refresh();
-     router.push('/admin/dashboard');
-   };
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (error) {
+        setError(error.message)
+        return
+      }
+      if (data.session) {
+        router.refresh()
+        router.push('/admin/dashboard')
+      }
+    };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-brand-bg px-4">
