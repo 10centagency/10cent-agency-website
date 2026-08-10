@@ -19,7 +19,7 @@ export default function AuthPage() {
      setError('');
      setLoading(true);
 
-     const { data, error } = await supabase.auth.signInWithPassword({
+     const { error } = await supabase.auth.signInWithPassword({
        email: email,
        password: password,
      });
@@ -30,11 +30,9 @@ export default function AuthPage() {
        return;
      }
 
-     if (data.session) {
-       // Use router.push() instead of window.location.replace()
-       // This ensures proper Next.js routing and middleware handling
-       router.push('/admin/dashboard');
-     }
+     // Refresh to sync cookies with middleware, then navigate
+     router.refresh();
+     router.push('/admin/dashboard');
    };
 
   return (

@@ -36,6 +36,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/auth', req.url))
   }
 
+  // Return response with updated cookies from Supabase auth
   return response
 }
 
