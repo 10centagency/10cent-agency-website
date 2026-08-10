@@ -28,8 +28,7 @@ export default function AuthPage() {
         return
       }
       if (data.session) {
-        router.refresh()
-        router.push('/admin/dashboard')
+        window.location.href = '/admin/dashboard'
       }
     };
 
