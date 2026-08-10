@@ -14,26 +14,28 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+   const handleLogin = async (e: React.FormEvent) => {
+     e.preventDefault();
+     setError('');
+     setLoading(true);
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
-    });
+     const { data, error } = await supabase.auth.signInWithPassword({
+       email: email,
+       password: password,
+     });
 
-    if (error) {
-      setError('Invalid email or password. Please try again.');
-      setLoading(false);
-      return;
-    }
+     if (error) {
+       setError('Invalid email or password. Please try again.');
+       setLoading(false);
+       return;
+     }
 
-    if (data.session) {
-      window.location.replace('/admin/dashboard')
-    }
-  };
+     if (data.session) {
+       // Use router.push() instead of window.location.replace()
+       // This ensures proper Next.js routing and middleware handling
+       router.push('/admin/dashboard');
+     }
+   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-brand-bg px-4">
