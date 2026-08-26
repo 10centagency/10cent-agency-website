@@ -6,10 +6,10 @@ import AnimatedSection, { StaggerContainer, StaggerItem } from '@/components/ui/
 const addOns = [
   {
     icon: Search,
-    title: 'Search Engine Optimization',
+    title: 'SEO, AEO & GEO',
     description: 'Get found on Google with on-page and local SEO optimization. Rank for keywords your customers are searching for.',
-    tag: 'SEO',
-    href: '/services/seo',
+    tag: 'SEO, AEO & GEO',
+    href: '/services/seo-aeo-geo',
   },
   {
     icon: Palette,

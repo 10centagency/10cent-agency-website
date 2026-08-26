@@ -9,26 +9,25 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/api/', '/admin/'],
       },
       {
-        userAgent: 'GPTBot',
+        userAgent: [
+          'Googlebot',
+          'Bingbot',
+          'OAI-SearchBot',
+          'ChatGPT-User',
+          'Claude-SearchBot',
+          'Claude-User',
+          'PerplexityBot',
+          'Perplexity-User',
+        ],
         allow: '/',
+        disallow: ['/api/', '/admin/'],
       },
       {
-        userAgent: 'ChatGPT-User',
-        allow: '/',
-      },
-      {
-        userAgent: 'Claude-Web',
-        allow: '/',
-      },
-      {
-        userAgent: 'PerplexityBot',
-        allow: '/',
-      },
-      {
-        userAgent: 'Googlebot',
-        allow: '/',
+        userAgent: ['GPTBot', 'ClaudeBot', 'Google-Extended'],
+        disallow: '/',
       },
     ],
     sitemap: 'https://www.10centagency.com/sitemap.xml',
+    host: 'https://www.10centagency.com',
   };
 }

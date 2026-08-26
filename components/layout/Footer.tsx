@@ -16,7 +16,7 @@ const services = [
   { label: 'Website Development', href: '/services/website-development' },
   { label: 'AI Automation & Chatbot', href: '/services/ai-automation-chatbot' },
   { label: 'Social Media Management', href: '/services/social-media-management' },
-  { label: 'SEO', href: '/services/seo' },
+  { label: 'SEO, AEO & GEO', href: '/services/seo-aeo-geo' },
   { label: 'Graphic Design', href: '/services/graphic-design' },
 ];
 

@@ -1,0 +1,331 @@
+/* ==========================================================================
+   RELATED SERVICES (Infinite Carousel on Desktop/Tablet, Load More on Mobile)
+   ========================================================================== */
+
+.carouselContainer {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Arrow Navigation Buttons (Desktop/Tablet - Always Enabled for Infinite Loop) */
+.arrowButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1.5px solid #e7eef8;
+  color: #0b1c3d;
+  box-shadow: 0 4px 14px rgba(11, 28, 61, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+  font-size: 15px;
+}
+
+.arrowButton:hover {
+  background: #0066FF;
+  color: #ffffff;
+  border-color: #0066FF;
+  box-shadow: 0 6px 20px rgba(0, 102, 255, 0.28);
+}
+
+.arrowButton:active {
+  transform: translateY(-50%) scale(0.94);
+}
+
+.arrowButton:focus-visible {
+  outline: 2px solid #0066FF;
+  outline-offset: 2px;
+}
+
+.arrowPrev {
+  left: -22px;
+}
+
+.arrowNext {
+  right: -22px;
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .arrowPrev {
+    left: -14px;
+  }
+  .arrowNext {
+    right: -14px;
+  }
+}
+
+@media (max-width: 767px) {
+  .arrowButton {
+    display: none;
+  }
+}
+
+/* Carousel Viewport */
+.viewport {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .viewport {
+    overflow: hidden;
+    padding: 14px 2px;
+  }
+}
+
+@media (max-width: 767px) {
+  .viewport {
+    overflow: visible;
+    padding: 4px 0;
+  }
+}
+
+/* Track */
+.track {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .track {
+    display: flex;
+    gap: 20px;
+    will-change: transform;
+  }
+}
+
+@media (min-width: 1024px) {
+  .track {
+    transform: translateX(calc(-1 * var(--active-index, 6) * (100% + 20px) / 4));
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .track {
+    transform: translateX(calc(-1 * var(--active-index, 6) * (100% + 20px) / 2));
+  }
+}
+
+.trackTransition {
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Mobile 1-Column Stack */
+@media (max-width: 767px) {
+  .track {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    transform: none !important;
+  }
+}
+
+/* Service Card */
+.card {
+  background: #ffffff;
+  border: 1px solid #e7eef8;
+  border-radius: 16px;
+  padding: 26px 22px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  border-color: #0066FF;
+  box-shadow: 0 12px 30px rgba(0, 102, 255, 0.08);
+}
+
+.card:focus-visible {
+  outline: 2px solid #0066FF;
+  outline-offset: 2px;
+}
+
+/* Breakpoint-specific card sizing */
+@media (min-width: 1024px) {
+  .card {
+    flex: 0 0 calc((100% - 60px) / 4);
+    width: calc((100% - 60px) / 4);
+    max-width: calc((100% - 60px) / 4);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .card {
+    flex: 0 0 calc((100% - 20px) / 2);
+    width: calc((100% - 20px) / 2);
+    max-width: calc((100% - 20px) / 2);
+  }
+}
+
+@media (max-width: 767px) {
+  .card {
+    width: 100%;
+  }
+
+  /* Desktop clones are completely hidden on mobile */
+  .desktopClone {
+    display: none !important;
+  }
+
+  /* When mounted on mobile and not expanded, hide cards past index 3 */
+  .mobileHidden {
+    display: none !important;
+  }
+
+  /* When expanded, reveal with gentle stagger */
+  .revealed {
+    animation: revealFadeIn 0.35s ease-out forwards;
+  }
+
+  .revealed:nth-child(5) {
+    animation-delay: 0.04s;
+  }
+
+  .revealed:nth-child(6) {
+    animation-delay: 0.1s;
+  }
+}
+
+/* Card Inner Content */
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Navy icon color (#0f2547) for all service cards */
+.iconWrapper {
+  font-size: 26px;
+  color: #0f2547;
+  margin-bottom: 14px;
+  display: inline-flex;
+  flex-shrink: 0;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.card:hover .iconWrapper {
+  color: #0066FF;
+  transform: scale(1.08);
+}
+
+.title {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #0b1c3d;
+  margin: 0 0 8px 0;
+  line-height: 1.35;
+}
+
+.description {
+  font-size: 13px;
+  color: #5a6e85;
+  line-height: 1.55;
+  margin: 0 0 16px 0;
+  flex: 1;
+}
+
+.linkText {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0066FF;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: gap 0.2s ease;
+}
+
+.card:hover .linkText {
+  gap: 8px;
+}
+
+/* Mobile Load More Button */
+.loadMoreWrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .loadMoreWrapper {
+    display: none;
+  }
+}
+
+.loadMoreBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border: 1.5px solid #0066FF;
+  border-radius: 9999px;
+  background: transparent;
+  color: #0066FF;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: inherit;
+}
+
+.loadMoreBtn:hover {
+  background: #0066FF;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 102, 255, 0.2);
+}
+
+.loadMoreBtn:active {
+  transform: scale(0.98);
+}
+
+.loadMoreBtn:focus-visible {
+  outline: 2px solid #0066FF;
+  outline-offset: 2px;
+}
+
+/* Keyframes */
+@keyframes revealFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .trackTransition {
+    transition: none !important;
+  }
+
+  .card,
+  .arrowButton,
+  .loadMoreBtn,
+  .linkText,
+  .iconWrapper {
+    transition: none !important;
+  }
+
+  .revealed {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

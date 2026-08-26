@@ -107,10 +107,10 @@ const addOnServices = [
   },
   {
     id: 'seo',
-    slug: 'seo',
+    slug: 'seo-aeo-geo',
     number: '05',
     icon: Search,
-    title: 'Search Engine Optimization',
+    title: 'SEO, AEO & GEO',
     type: 'Monthly Retainer',
     description:
       'Get found on Google when customers search for your products or services. We handle on-page SEO, technical optimization, and local SEO to improve your rankings and organic traffic.',
