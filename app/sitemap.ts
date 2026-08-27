@@ -49,7 +49,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: 'https://www.10centagency.com/services',
-      lastModified: new Date('2026-07-10'),
+      lastModified: new Date('2026-08-28'),
       changeFrequency: 'monthly',
       priority: 0.9,
     },
