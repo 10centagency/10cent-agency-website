@@ -1,89 +1,176 @@
+import React from 'react';
 import Link from 'next/link';
-import { ChartBar as BarChart2, Monitor, Bot, Calendar } from 'lucide-react';
-import SectionLabel from '@/components/ui/SectionLabel';
-import { StaggerContainer, StaggerItem } from '@/components/ui/AnimatedSection';
-import AnimatedSection from '@/components/ui/AnimatedSection';
+import styles from './HomeSections.module.css';
+import {
+  whatWeDoHeader,
+  whatWeDoServices,
+  whatWeDoCta,
+} from './homeSectionsData';
+import HomeSectionReveal from './visuals/HomeSectionReveal.client';
 
-const services = [
-  {
-    icon: BarChart2,
-    title: 'Facebook & Meta Marketing',
-    description: 'Drive real results with data-driven Facebook and Instagram campaigns. From ad creation to conversion tracking — we handle it all for your business growth.',
-    tag: 'Monthly Retainer',
-    href: '/services/facebook-meta-marketing',
-  },
-  {
-    icon: Monitor,
-    title: 'Website Development',
-    description: 'Professional websites built to convert visitors into customers. E-commerce, landing pages, business sites — all optimized for performance and conversions.',
-    tag: 'One-time Project',
-    href: '/services/website-development',
-  },
-  {
-    icon: Bot,
-    title: 'AI Automation & Chatbot',
-    description: 'Smart automation that works while you sleep. Messenger, WhatsApp, and Telegram chatbots that handle leads, orders, and customer support automatically.',
-    tag: 'Free Trial Available',
-    href: '/services/ai-automation-chatbot',
-  },
-  {
-    icon: Calendar,
-    title: 'Social Media Management',
-    description: 'Full monthly management of your social media presence with AI-powered engagement tools, consistent content, and community management.',
-    tag: 'Monthly Retainer',
-    href: '/services/social-media-management',
-  },
-];
+function getServiceIcon(slug: string) {
+  switch (slug) {
+    case 'facebook-meta-marketing':
+      return (
+        <svg viewBox="0 0 320 512" fill="currentColor" aria-hidden="true">
+          <path d="M80 299.3V512H196V299.3h86.5l18-97.8H196V166.9c0-51.7 20.3-71.5 72.7-71.5c16.3 0 29.4 .4 37 1.2V7.9C291.4 4 256.4 0 236.2 0C129.3 0 80 50.5 80 159.4v42.1H14v97.8H80z" />
+        </svg>
+      );
+    case 'google-ads':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+          <path d="M19.8 7.5A9 9 0 1 0 21 12" />
+          <path d="M12 12h9" />
+        </svg>
+      );
+    case 'website-development':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="2" y="3" width="20" height="14" rx="2" />
+          <line x1="8" y1="21" x2="16" y2="21" />
+          <line x1="12" y1="17" x2="12" y2="21" />
+        </svg>
+      );
+    case 'ai-automation-chatbot':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 8V4H8" />
+          <rect x="4" y="8" width="16" height="12" rx="2" />
+          <path d="M2 14h2" />
+          <path d="M20 14h2" />
+          <path d="M15 13v2" />
+          <path d="M9 13v2" />
+        </svg>
+      );
+    case 'social-media-management':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="18" cy="5" r="3" />
+          <circle cx="6" cy="12" r="3" />
+          <circle cx="18" cy="19" r="3" />
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+        </svg>
+      );
+    case 'seo-aeo-geo':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" />
+          <path d="M8.5 13.5v-2" />
+          <path d="M11 13.5v-4" />
+          <path d="M13.5 13.5v-1.5" />
+        </svg>
+      );
+    case 'graphic-design':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+          <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+          <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+          <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+          <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+function getTintClass(tint: string) {
+  switch (tint) {
+    case 'meta':
+      return { tint: styles.tintMeta, acc: styles.accMeta };
+    case 'google':
+      return { tint: styles.tintGoogle, acc: styles.accGoogle };
+    case 'web':
+      return { tint: styles.tintWeb, acc: styles.accWeb };
+    case 'ai':
+      return { tint: styles.tintAi, acc: styles.accAi };
+    case 'social':
+      return { tint: styles.tintSocial, acc: styles.accSocial };
+    case 'seo':
+      return { tint: styles.tintSeo, acc: styles.accSeo };
+    case 'design':
+      return { tint: styles.tintDesign, acc: styles.accDesign };
+    default:
+      return { tint: '', acc: styles.accBlue };
+  }
+}
 
 export default function ServicesOverview() {
   return (
-    <section className="bg-brand-bgAlt py-16 lg:py-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <AnimatedSection className="text-center mb-12">
-          <SectionLabel className="mx-auto">What We Do</SectionLabel>
-          <h2 className="text-3xl lg:text-5xl font-bold text-brand-textDark mt-2 mb-4">
-            Everything Your Business Needs to Win Online
-          </h2>
-          <p className="text-brand-textMid text-lg max-w-2xl mx-auto">
-            From social media marketing to AI automation — one agency, every digital need your business has.
-          </p>
-        </AnimatedSection>
+    <section className={`${styles.sectionWrapper} ${styles.section} ${styles.sectionWhatWeDo}`} id="what-we-do">
+      <div className={styles.container}>
+        <HomeSectionReveal className={styles.sectionHead}>
+          <span className={styles.sectionLabel}>{whatWeDoHeader.label}</span>
+          <h2 className={styles.sectionTitle}>{whatWeDoHeader.title}</h2>
+          <p className={styles.sectionDesc}>{whatWeDoHeader.description}</p>
+        </HomeSectionReveal>
 
-        <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {services.map((service) => {
-            const Icon = service.icon;
+        <div className={styles.svcGrid}>
+          {whatWeDoServices.map((service) => {
+            const { tint, acc } = getTintClass(service.tint);
             return (
-              <StaggerItem key={service.title}>
-                <Link href={service.href}>
-                  <div className="group cursor-pointer bg-white rounded-2xl p-8 shadow-card border border-brand-border border-t-4 border-t-brand-blue transition-all duration-300 hover:shadow-card-hover hover:border-t-brand-blue h-full flex flex-col">
-                    <div className="flex items-start gap-4 mb-4">
-                      <div className="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center flex-shrink-0">
-                        <Icon className="w-6 h-6 text-brand-blue" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-xl text-brand-textDark">{service.title}</h3>
-                        <span className="inline-block mt-1 text-xs font-medium bg-brand-accent/40 text-brand-navy rounded-full px-3 py-0.5">
-                          {service.tag}
-                        </span>
-                      </div>
-                    </div>
-                    <p className="text-brand-textMid text-sm leading-relaxed flex-1 mb-4">{service.description}</p>
+              <HomeSectionReveal key={service.id} delay={service.delay}>
+                <Link
+                  href={service.href}
+                  className={`${styles.svcCard} ${tint}`}
+                >
+                  <div className={styles.svcTop}>
+                    <span className={`${styles.svcIcon} ${acc}`}>
+                      {getServiceIcon(service.slug)}
+                    </span>
+                    <span className={styles.svcBadge}>{service.badge}</span>
                   </div>
+                  <h3 className={styles.svcCardTitle}>{service.title}</h3>
+                  <p className={styles.svcCardDesc}>{service.description}</p>
+                  <span className={styles.svcLink}>
+                    Learn More
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M5 12h14" />
+                      <path d="m12 5 7 7-7 7" />
+                    </svg>
+                  </span>
                 </Link>
-              </StaggerItem>
+              </HomeSectionReveal>
             );
           })}
-        </StaggerContainer>
 
-        <AnimatedSection className="text-center mt-10 lg:mt-12">
-          <Link
-            href="/services"
-            className="inline-flex items-center justify-center bg-brand-navy text-white font-medium rounded-xl px-8 py-4 shadow-[0_4px_24px_rgba(47,133,243,0.10)] hover:bg-brand-blue transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:ring-offset-2"
-            aria-label="Explore all services offered by 10 Cent Agency"
-          >
-            Explore All Services
-          </Link>
-        </AnimatedSection>
+          {/* 08 · CTA card */}
+          <HomeSectionReveal delay={whatWeDoCta.delay}>
+            <Link
+              href={whatWeDoCta.href}
+              className={styles.svcCta}
+              aria-label="See full service breakdowns"
+            >
+              <span className={styles.ctaArrow}>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
+              </span>
+              <h3 className={styles.svcCtaTitle}>{whatWeDoCta.title}</h3>
+              <p className={styles.svcCtaDesc}>{whatWeDoCta.description}</p>
+            </Link>
+          </HomeSectionReveal>
+        </div>
       </div>
     </section>
   );

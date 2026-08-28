@@ -1,67 +1,121 @@
+import React from 'react';
 import Link from 'next/link';
-import { Search, Palette, Share2 } from 'lucide-react';
-import SectionLabel from '@/components/ui/SectionLabel';
-import AnimatedSection, { StaggerContainer, StaggerItem } from '@/components/ui/AnimatedSection';
+import styles from './HomeSections.module.css';
+import {
+  addOnServicesHeader,
+  addOnServices,
+} from './homeSectionsData';
+import HomeSectionReveal from './visuals/HomeSectionReveal.client';
 
-const addOns = [
-  {
-    icon: Search,
-    title: 'SEO, AEO & GEO',
-    description: 'Get found on Google with on-page and local SEO optimization. Rank for keywords your customers are searching for.',
-    tag: 'SEO, AEO & GEO',
-    href: '/services/seo-aeo-geo',
-  },
-  {
-    icon: Palette,
-    title: 'Graphic Design',
-    description: 'Logos, social media graphics, banners, and marketing materials — all designed to reflect your brand professionally.',
-    tag: 'Design',
-    href: '/services/graphic-design',
-  },
-  {
-    icon: Share2,
-    title: 'Social Media Management',
-    description: 'Full monthly management with AI-powered engagement tools, consistent posting, and community management for your brand.',
-    tag: 'Management',
-    href: '/services/social-media-management',
-  },
-];
+function getAddOnIcon(slug: string) {
+  switch (slug) {
+    case 'google-ads':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+          <path d="M19.8 7.5A9 9 0 1 0 21 12" />
+          <path d="M12 12h9" />
+        </svg>
+      );
+    case 'seo-aeo-geo':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" />
+          <path d="M8.5 13.5v-2" />
+          <path d="M11 13.5v-4" />
+          <path d="M13.5 13.5v-1.5" />
+        </svg>
+      );
+    case 'graphic-design':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+          <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+          <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+          <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+          <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
+        </svg>
+      );
+    case 'social-media-management':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="18" cy="5" r="3" />
+          <circle cx="6" cy="12" r="3" />
+          <circle cx="18" cy="19" r="3" />
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+function getAddOnStyles(tint: string) {
+  switch (tint) {
+    case 'google':
+      return { tint: styles.tintGoogle, acc: styles.accGoogle };
+    case 'seo':
+      return { tint: styles.tintSeo, acc: styles.accSeo };
+    case 'design':
+      return { tint: styles.tintDesign, acc: styles.accDesign };
+    case 'social':
+      return { tint: styles.tintSocial, acc: styles.accSocial };
+    default:
+      return { tint: '', acc: styles.accBlue };
+  }
+}
 
 export default function AddOnServices() {
   return (
-    <section className="bg-brand-bgAlt py-16 lg:py-24" id="social">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <AnimatedSection className="text-center mb-12">
-          <SectionLabel className="mx-auto">Additional Services</SectionLabel>
-          <h2 className="text-3xl lg:text-5xl font-bold text-brand-textDark mt-2 mb-4">
-            More Ways We Can Help
-          </h2>
-          <p className="text-brand-textMid text-lg max-w-xl mx-auto">
-            Complement your core marketing strategy with these powerful add-on services.
-          </p>
-        </AnimatedSection>
+    <section className={`${styles.sectionWrapper} ${styles.section} ${styles.sectionAddon}`} id="additional-services">
+      <div className={styles.container}>
+        <HomeSectionReveal className={styles.sectionHead}>
+          <span className={styles.sectionLabel}>{addOnServicesHeader.label}</span>
+          <h2 className={styles.sectionTitle}>{addOnServicesHeader.title}</h2>
+          <p className={styles.sectionDesc}>{addOnServicesHeader.description}</p>
+        </HomeSectionReveal>
 
-        <StaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {addOns.map((service) => {
-            const Icon = service.icon;
+        <div className={styles.addonGrid}>
+          {addOnServices.map((service) => {
+            const { tint, acc } = getAddOnStyles(service.tint);
+
             return (
-              <StaggerItem key={service.title}>
-                <Link href={service.href}>
-                  <div className="group cursor-pointer bg-white rounded-2xl p-8 shadow-card border border-brand-border border-t-4 border-t-brand-blue transition-all duration-300 hover:shadow-card-hover hover:border-t-brand-blue h-full flex flex-col">
-                    <div className="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center mb-4">
-                      <Icon className="w-6 h-6 text-brand-blue" />
-                    </div>
-                    <span className="text-xs font-semibold bg-brand-accent/40 text-brand-navy rounded-full px-3 py-0.5 mb-3 w-fit">
-                      {service.tag}
+              <HomeSectionReveal key={service.id} delay={service.delay}>
+                <Link
+                  href={service.href}
+                  className={`${styles.addonCard} ${tint}`}
+                >
+                  <div className={styles.addonTop}>
+                    <span className={`${styles.addonIcon} ${acc}`}>
+                      {getAddOnIcon(service.slug)}
                     </span>
-                    <h3 className="font-bold text-lg text-brand-textDark mb-3">{service.title}</h3>
-                    <p className="text-brand-textMid text-sm leading-relaxed flex-1">{service.description}</p>
+                    <span className={styles.addonBadge}>
+                      {service.badge}
+                    </span>
                   </div>
+                  <h3 className={styles.addonCardTitle}>{service.title}</h3>
+                  <p className={styles.addonCardDesc}>{service.description}</p>
+                  <span className={styles.addonLink}>
+                    Learn More
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M5 12h14" />
+                      <path d="m12 5 7 7-7 7" />
+                    </svg>
+                  </span>
                 </Link>
-              </StaggerItem>
+              </HomeSectionReveal>
             );
           })}
-        </StaggerContainer>
+        </div>
       </div>
     </section>
   );

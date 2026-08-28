@@ -2,9 +2,12 @@
 
 import Link from 'next/link';
 import { BadgeDollarSign, Eye, ChartLine as LineChart, Languages } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useRef, useLayoutEffect, useEffect } from 'react';
 import SectionLabel from '@/components/ui/SectionLabel';
 import AnimatedSection, { StaggerContainer, StaggerItem } from '@/components/ui/AnimatedSection';
+
+const useIsomorphicLayoutEffect =
+  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 const features = [
   {
@@ -30,48 +33,96 @@ const features = [
 ];
 
 const stats = [
-  { value: 20, suffix: '+', label: 'Projects Completed' },
-  { value: 100, suffix: '%', label: 'Delivery Rate' },
-  { value: 3, suffix: '', label: 'Core Services' },
+  { value: 40, suffix: '+', label: 'Projects Completed' },
+  { value: 98, suffix: '%', label: 'Delivery Rate' },
+  { value: 7, suffix: '', label: 'Core Services' },
   { value: 24, suffix: '/7', label: 'Support' },
 ];
 
-function CountUp({ target, suffix }: { target: number; suffix: string }) {
-  const [isInView, setIsInView] = useState(false);
-  const [count, setCount] = useState(0);
-  const [hasStarted, setHasStarted] = useState(false);
+function StatsRow() {
+  const statsRef = useRef<HTMLDivElement>(null);
+  const rafIdRef = useRef<number | null>(null);
+  const [displayValues, setDisplayValues] = useState<number[]>([40, 98, 7, 24]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsInView(true), 300);
-    return () => clearTimeout(timer);
+  useIsomorphicLayoutEffect(() => {
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion) {
+      setDisplayValues(stats.map((s) => s.value));
+      return;
+    }
+
+    // Reset to 0 on client before animating into view
+    setDisplayValues([0, 0, 0, 0]);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry && entry.isIntersecting) {
+          const duration = 1300;
+          const startTime = performance.now();
+
+          const animate = (currentTime: number) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            // Ease-out cubic
+            const easeProgress = 1 - Math.pow(1 - progress, 3);
+
+            setDisplayValues(
+              stats.map((s) => Math.floor(easeProgress * s.value))
+            );
+
+            if (progress < 1) {
+              rafIdRef.current = requestAnimationFrame(animate);
+            } else {
+              setDisplayValues(stats.map((s) => s.value));
+            }
+          };
+
+          rafIdRef.current = requestAnimationFrame(animate);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.4 }
+    );
+
+    if (statsRef.current) {
+      observer.observe(statsRef.current);
+    }
+
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+      observer.disconnect();
+    };
   }, []);
 
-  useEffect(() => {
-    if (!isInView || hasStarted) return;
-    setHasStarted(true);
-
-    let start = 0;
-    const duration = 1500;
-    const step = 16;
-    const increment = target / (duration / step);
-
-    const interval = setInterval(() => {
-      start += increment;
-      if (start >= target) {
-        setCount(target);
-        clearInterval(interval);
-      } else {
-        setCount(Math.floor(start));
-      }
-    }, step);
-
-    return () => clearInterval(interval);
-  }, [isInView, target, hasStarted]);
-
   return (
-    <span className="text-5xl font-black text-brand-navy">
-      {count || target}{suffix}
-    </span>
+    <div
+      ref={statsRef}
+      className="bg-white rounded-2xl border border-brand-border shadow-card py-8 px-6"
+    >
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+        {stats.map((stat, i) => (
+          <div
+            key={stat.label}
+            className={`text-center ${
+              i < stats.length - 1 ? 'lg:border-r lg:border-brand-border' : ''
+            }`}
+          >
+            <div className="mb-2">
+              <span className="text-5xl font-black text-brand-navy">
+                {`${displayValues[i]}${stat.suffix}`}
+              </span>
+            </div>
+            <p className="text-sm text-brand-textMid">{stat.label}</p>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -118,18 +169,7 @@ export default function WhyChooseUs() {
 
         {/* Stats row */}
         <AnimatedSection>
-          <div className="bg-white rounded-2xl border border-brand-border shadow-card py-8 px-6">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-              {stats.map((stat, i) => (
-                <div key={stat.label} className={`text-center ${i < stats.length - 1 ? 'lg:border-r lg:border-brand-border' : ''}`}>
-                  <div className="mb-2">
-                    <CountUp target={stat.value} suffix={stat.suffix} />
-                  </div>
-                  <p className="text-sm text-brand-textMid">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+          <StatsRow />
         </AnimatedSection>
       </div>
     </section>

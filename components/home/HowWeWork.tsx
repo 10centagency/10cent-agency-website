@@ -1,4 +1,4 @@
-import { Search, Lightbulb, Rocket, TrendingUp } from 'lucide-react';
+import { Search, Lightbulb, Code2, Rocket, TrendingUp } from 'lucide-react';
 import SectionLabel from '@/components/ui/SectionLabel';
 import AnimatedSection, { StaggerContainer, StaggerItem } from '@/components/ui/AnimatedSection';
 
@@ -12,20 +12,26 @@ const steps = [
   {
     number: '02',
     icon: Lightbulb,
-    title: 'Strategy Planning',
-    description: 'We build a custom digital strategy tailored to your industry, budget, and growth goals.',
+    title: 'Strategy & Proposal',
+    description: 'We build a custom strategy and a transparent, itemized proposal — tailored to your industry, budget, and growth goals.',
   },
   {
     number: '03',
-    icon: Rocket,
-    title: 'Build & Launch',
-    description: 'Our team executes the plan — from design and development to campaigns and automation.',
+    icon: Code2,
+    title: 'Build / Setup',
+    description: 'Our team executes the plan — design, development, campaign setup, and content production.',
   },
   {
     number: '04',
+    icon: Rocket,
+    title: 'Launch & Optimize',
+    description: 'Your project goes live with real-time monitoring and quick, data-driven iteration.',
+  },
+  {
+    number: '05',
     icon: TrendingUp,
-    title: 'Report & Optimize',
-    description: 'We track results, share transparent reports, and continuously optimize for better performance.',
+    title: 'Report & Scale',
+    description: "We track results, share plain-language reports, and scale what's working month after month.",
   },
 ];
 
@@ -39,18 +45,21 @@ export default function HowWeWork() {
             Simple. Clear. Effective.
           </h2>
           <p className="text-brand-textMid text-lg max-w-xl mx-auto">
-            Our proven 4-step process ensures every project is delivered with clarity, quality, and results.
+            Our proven 5-step process ensures every project is delivered with clarity, quality, and results.
           </p>
         </AnimatedSection>
 
-        <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
+        <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 relative">
           {/* Connecting line — desktop only */}
-          <div className="hidden lg:block absolute top-[52px] left-[12.5%] right-[12.5%] h-px border-t-2 border-dashed border-brand-blue/30 z-0" />
+          <div className="hidden lg:block absolute top-[52px] left-[10%] right-[10%] h-px border-t-2 border-dashed border-brand-blue/30 z-0" />
 
-          {steps.map((step) => {
+          {steps.map((step, index) => {
             const Icon = step.icon;
             return (
-              <StaggerItem key={step.number}>
+              <StaggerItem
+                key={step.number}
+                className={index === 4 ? 'md:col-span-2 lg:col-span-1' : ''}
+              >
                 <div className="relative flex flex-col items-center text-center z-10">
                   {/* Faded number */}
                   <div className="text-7xl font-black text-brand-blue/10 leading-none mb-2 select-none">
@@ -61,7 +70,7 @@ export default function HowWeWork() {
                     <Icon className="w-6 h-6 text-brand-blue" />
                   </div>
                   <h3 className="font-bold text-brand-textDark text-lg mb-2">{step.title}</h3>
-                  <p className="text-brand-textMid text-sm leading-relaxed max-w-[200px]">{step.description}</p>
+                  <p className="text-brand-textMid text-sm leading-relaxed max-w-[180px]">{step.description}</p>
                 </div>
               </StaggerItem>
             );

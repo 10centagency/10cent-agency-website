@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import SectionLabel from '@/components/ui/SectionLabel';
@@ -8,40 +8,41 @@ import AnimatedSection from '@/components/ui/AnimatedSection';
 
 const testimonials = [
   {
-    quote: '10 Cent Agency transformed our online presence completely. Within 2 months, our shop saw a 3x increase in reach and our wholesale inquiries through social media doubled. Their work is professional, they truly understand business needs, and the pricing is unbeatable. Best decision we made for our business!',
-    name: 'Abdus Salam',
-    business: 'Salam Garments, Clothing Wholesale Suppliers',
-    initials: 'AS',
+    quote:
+      'We move cargo India to Bangladesh — Kolkata to Dhaka door-to-door, LC, LCL and FCL, plus customs on both sides. That is hard to explain in a Facebook post. 10 Cent Agency built a monthly calendar and started publishing clear service explainers in Bangla and English. Inbox inquiries are more regular now. I would still like more cargo-specific video, but the page finally looks like a real logistics company.',
+    name: 'Abu Manjar',
+    business: 'Proprietor, KD Cargo Service',
+    initials: 'AM',
+    rating: 4,
+  },
+  {
+    quote:
+      'Fabrinest is a Dubai interiors brand — curtains, blinds, sofa upholstery and custom furniture — with 16 years behind it. Our work is visual, and 10 Cent Agency matched that: a consistent feed, install and fabric Reels, and a tone that fits a premium showroom. Instagram and Google now look like the same company. Revisions come within two days and I do not chase posts anymore.',
+    name: 'Kawser Rahman',
+    business: 'Founder, Fabrinest Curtains',
+    initials: 'KR',
     rating: 5,
   },
   {
-    quote: 'They built our e-commerce landing page exactly how we imagined — clean, fast, and user-friendly. The conversion rate has been amazing since launch. Highly recommend for any business going online.',
-    name: 'Shohidul Islam',
-    business: 'FC Collection BD, Clothing Store',
-    initials: 'SI',
+    quote:
+      'Velora is a modern Bangladeshi fashion brand — clothing and lifestyle, sold online. We needed more than blog posts. They built FAQ blocks, size-and-fabric snippets, and entity pages so we show up in search and in AI answers. Within the first quarter we won Featured Snippets on two collection queries, and a client forwarded a ChatGPT reply that named Velora. That’s the brief we hired them for.',
+    name: 'Arif Mahmud',
+    business: 'Founder & CEO, Velora Fashion',
+    initials: 'AM',
     rating: 5,
   },
   {
-    quote: 'The AI chatbot they built for our Messenger handles more than 80% of customer inquiries automatically. Our team can now focus on actual work instead of answering the same questions repeatedly. Game changer for our logistics business.',
-    name: 'Tanvir Ahmed',
-    business: 'KD Cargo Service, Logistics Company',
-    initials: 'TA',
+    quote:
+      'Nova is phones, accessories, and smart-home kits — if the catalog is wrong, the ad is wrong. 10 Cent Agency connected the pixel, cleaned the product feed, and started catalog ads plus remarketing instead of boosting random posts. Within the first month we could see which SKUs actually paid for the click. I still watch competitive phone launches week to week, but we are not advertising blind on Facebook anymore.',
+    name: 'Fahim Hasan',
+    business: 'Managing Director, Nova Electronics',
+    initials: 'FH',
     rating: 5,
   },
 ];
 
 export default function Testimonials() {
   const [current, setCurrent] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    if (paused) return;
-    timerRef.current = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % testimonials.length);
-    }, 4000);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [paused]);
 
   const prev = () => setCurrent((c) => (c - 1 + testimonials.length) % testimonials.length);
   const next = () => setCurrent((c) => (c + 1) % testimonials.length);
@@ -56,64 +57,60 @@ export default function Testimonials() {
           </h2>
         </AnimatedSection>
 
-        <div
-          className="relative max-w-4xl mx-auto"
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-        >
+        <div className="relative max-w-4xl mx-auto">
           {/* Prev button */}
           <button
             onClick={prev}
             className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 lg:-translate-x-12 z-10 w-10 h-10 rounded-full bg-white border border-brand-border shadow-sm flex items-center justify-center hover:bg-brand-bgAlt transition-colors"
-            aria-label="Previous"
+            aria-label="Previous testimonial"
           >
             <ChevronLeft className="w-5 h-5 text-brand-textDark" />
           </button>
 
-           {/* Cards */}
-           <div className="overflow-hidden px-2 flex flex-col">
-             <AnimatePresence mode="wait">
-               <motion.div
-                 key={current}
-                 initial={{ opacity: 0 }}
-                 animate={{ opacity: 1 }}
-                 exit={{ opacity: 0 }}
-                 transition={{ duration: 0.4, ease: 'easeOut' }}
-                 className="bg-white rounded-3xl p-8 lg:p-12 shadow-card border border-brand-border min-h-[520px] md:min-h-[480px] flex flex-col justify-between"
-               >
-                 {/* Quote mark */}
-                 <div className="text-8xl font-serif text-brand-blue/20 leading-none mb-2 select-none h-12 flex items-start">
-                   &ldquo;
-                 </div>
-                 {/* Stars */}
-                 <div className="flex gap-1 mb-4">
-                   {Array.from({ length: testimonials[current].rating }).map((_, i) => (
-                     <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                   ))}
-                 </div>
-                 {/* Quote */}
-                 <p className="text-brand-textDark text-lg leading-relaxed italic mb-8 flex-1">
-                   {testimonials[current].quote}
-                 </p>
-                 {/* Author */}
-                 <div className="flex items-center gap-4">
-                   <div className="w-12 h-12 rounded-full bg-brand-navy flex items-center justify-center text-white font-bold text-base flex-shrink-0">
-                     {testimonials[current].initials}
-                   </div>
-                   <div>
-                     <div className="font-semibold text-brand-textDark">{testimonials[current].name}</div>
-                     <div className="text-sm text-brand-textMid">{testimonials[current].business}</div>
-                   </div>
-                 </div>
-               </motion.div>
-             </AnimatePresence>
-           </div>
+          {/* Cards */}
+          <div className="overflow-hidden px-2 flex flex-col">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={current}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
+                className="bg-white rounded-3xl p-6 sm:p-8 lg:p-12 shadow-card border border-brand-border min-h-[540px] sm:min-h-[500px] md:min-h-[460px] flex flex-col justify-between"
+              >
+                {/* Quote mark */}
+                <div className="text-8xl font-serif text-brand-blue/20 leading-none mb-2 select-none h-12 flex items-start">
+                  &ldquo;
+                </div>
+                {/* Stars */}
+                <div className="flex gap-1 mb-4">
+                  {Array.from({ length: testimonials[current].rating }).map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                  ))}
+                </div>
+                {/* Quote */}
+                <p className="text-brand-textDark text-base sm:text-lg leading-relaxed italic mb-8 flex-1">
+                  {testimonials[current].quote}
+                </p>
+                {/* Author */}
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-brand-navy flex items-center justify-center text-white font-bold text-base flex-shrink-0">
+                    {testimonials[current].initials}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-brand-textDark">{testimonials[current].name}</div>
+                    <div className="text-sm text-brand-textMid">{testimonials[current].business}</div>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
           {/* Next button */}
           <button
             onClick={next}
             className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 lg:translate-x-12 z-10 w-10 h-10 rounded-full bg-white border border-brand-border shadow-sm flex items-center justify-center hover:bg-brand-bgAlt transition-colors"
-            aria-label="Next"
+            aria-label="Next testimonial"
           >
             <ChevronRight className="w-5 h-5 text-brand-textDark" />
           </button>
