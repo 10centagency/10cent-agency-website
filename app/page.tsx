@@ -17,9 +17,6 @@ export const metadata: Metadata = {
     "social media marketing agency Bangladesh",
     "social media marketing agency for small business",
   ],
-  alternates: {
-    canonical: "https://www.10centagency.com/",
-  },
 };
 
 export default async function Home() {

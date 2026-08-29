@@ -1,0 +1,4 @@
+Contact: mailto:hello@10centagency.com
+Expires: 2027-12-31T23:59:00+06:00
+Preferred-Languages: en, bn
+Canonical: https://www.10centagency.com/.well-known/security.txt

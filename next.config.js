@@ -66,6 +66,14 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      {
+        source: '/.well-known/security.txt',
+        destination: '/security.txt',
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

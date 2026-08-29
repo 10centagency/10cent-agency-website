@@ -36,6 +36,14 @@ export const metadata: Metadata = {
   ],
   alternates: {
     canonical: "https://www.10centagency.com/",
+    types: {
+      'application/rss+xml': [
+        {
+          url: 'https://www.10centagency.com/feed.xml',
+          title: '10 Cent Agency Blog',
+        },
+      ],
+    },
   },
   // ✅ OPEN GRAPH — Facebook/WhatsApp share preview
   openGraph: {
