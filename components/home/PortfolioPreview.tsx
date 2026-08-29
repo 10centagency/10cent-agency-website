@@ -104,11 +104,11 @@ export default function PortfolioPreview() {
                      {project.featured_image_url ? (
                        <Image
                          src={project.featured_image_url}
-                         alt={project.title}
+                         alt={`10 Cent Agency — ${project.title} website & growth case study`}
                          fill
                          className="object-cover"
                          quality={75}
-                         sizes="(max-width: 768px) 100vw, 50vw"
+                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                        />
                      ) : (
                        <div

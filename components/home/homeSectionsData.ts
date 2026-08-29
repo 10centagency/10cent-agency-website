@@ -51,7 +51,7 @@ export const whatWeDoHeader = {
   label: 'What We Do',
   title: 'Digital Marketing Services for Bangladeshi Businesses',
   description:
-    'Facebook & Google ads, high-converting websites, AI automation, SEO, social media and design — one accountable team, transparent pricing, and measurable results in Bangla and English.',
+    "From Meta ads to full account management, we're the social media marketing agency for small business budgets that still expects big-brand quality — with transparent pricing and measurable results.",
 };
 
 export const whatWeDoServices: WhatWeDoService[] = [

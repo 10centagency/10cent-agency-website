@@ -217,10 +217,11 @@ export default function ContactForm() {
         >
           <option value="">Select a service...</option>
           <option>Facebook & Meta Marketing</option>
+          <option>Google Ads</option>
           <option>Website Development</option>
           <option>AI Automation & Chatbot</option>
           <option>Social Media Management</option>
-          <option>SEO</option>
+          <option>SEO, AEO & GEO</option>
           <option>Graphic Design</option>
           <option>Multiple Services</option>
           <option>Not Sure Yet</option>

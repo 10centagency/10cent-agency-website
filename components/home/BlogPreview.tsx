@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { FaArrowRight, FaCalendarDays } from 'react-icons/fa6';
 import styles from './HomeSections.module.css';
 import HomeSectionReveal from './visuals/HomeSectionReveal.client';
@@ -128,11 +129,13 @@ export default function BlogPreview({ posts = [] }: BlogPreviewProps) {
                 {/* 16:9 Cover Image */}
                 <div className={styles.blogFeaturedMedia}>
                   {featuredPost.featured_image_url ? (
-                    <img
+                    <Image
                       src={featuredPost.featured_image_url}
-                      alt={featuredPost.title}
+                      alt={`10 Cent Agency Blog — ${featuredPost.title}`}
+                      fill
                       className={styles.blogFeaturedImg}
-                      loading="lazy"
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      quality={80}
                     />
                   ) : (
                     <div
@@ -213,11 +216,13 @@ export default function BlogPreview({ posts = [] }: BlogPreviewProps) {
                       <div className={styles.blogCompactOnlyMob}>
                         <div className={styles.blogCompactBigImg}>
                           {post.featured_image_url ? (
-                            <img
+                            <Image
                               src={post.featured_image_url}
-                              alt={post.title}
+                              alt={`10 Cent Agency Blog — ${post.title}`}
+                              fill
                               className={styles.blogFeaturedImg}
-                              loading="lazy"
+                              sizes="(max-width: 768px) 100vw, 33vw"
+                              quality={75}
                             />
                           ) : (
                             <div
@@ -238,11 +243,13 @@ export default function BlogPreview({ posts = [] }: BlogPreviewProps) {
                       <div className={styles.blogCompactHead}>
                         <div className={styles.blogCompactThumb}>
                           {post.featured_image_url ? (
-                            <img
+                            <Image
                               src={post.featured_image_url}
-                              alt={post.title}
+                              alt={`10 Cent Agency Blog — ${post.title}`}
+                              fill
                               className={styles.blogCompactImg}
-                              loading="lazy"
+                              sizes="104px"
+                              quality={75}
                             />
                           ) : (
                             <div

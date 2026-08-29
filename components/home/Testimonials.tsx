@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import SectionLabel from '@/components/ui/SectionLabel';
 import AnimatedSection from '@/components/ui/AnimatedSection';
@@ -70,7 +70,7 @@ export default function Testimonials() {
           {/* Cards */}
           <div className="overflow-hidden px-2 flex flex-col">
             <AnimatePresence mode="wait">
-              <motion.div
+              <m.div
                 key={current}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -102,7 +102,7 @@ export default function Testimonials() {
                     <div className="text-sm text-brand-textMid">{testimonials[current].business}</div>
                   </div>
                 </div>
-              </motion.div>
+              </m.div>
             </AnimatePresence>
           </div>
 

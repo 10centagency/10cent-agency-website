@@ -91,6 +91,14 @@ html {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee,
+  .animate-marquee-reverse,
+  .marquee-track {
+    animation: none !important;
+  }
+}
+
 ::-webkit-scrollbar {
   width: 6px;
 }

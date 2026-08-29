@@ -31,26 +31,38 @@ function Tag({ label, icon: Icon }: { label: string; icon: React.ElementType }) 
 }
 
 export default function MarqueeStrip() {
-  const doubled = [...industries, ...industries];
-
   return (
-    <section className="bg-white py-8 border-y border-brand-border overflow-hidden">
+    <section className="bg-white py-8 border-y border-brand-border overflow-hidden" aria-label="Businesses We Help">
       <p className="text-center text-brand-textMid text-sm font-medium mb-5">Businesses We Help</p>
       <div className="space-y-4 marquee-container">
         {/* Row 1 */}
         <div className="flex overflow-hidden">
           <div className="flex marquee-track animate-marquee">
-            {doubled.map((item, i) => (
-              <Tag key={i} label={item.label} icon={item.icon} />
-            ))}
+            <div className="flex">
+              {industries.map((item, i) => (
+                <Tag key={`r1-${i}`} label={item.label} icon={item.icon} />
+              ))}
+            </div>
+            <div className="flex" aria-hidden="true">
+              {industries.map((item, i) => (
+                <Tag key={`r1-dup-${i}`} label={item.label} icon={item.icon} />
+              ))}
+            </div>
           </div>
         </div>
-        {/* Row 2 — reverse */}
-        <div className="flex overflow-hidden">
+        {/* Row 2 — reverse (visual duplicate in opposite direction, hidden from screen readers) */}
+        <div className="flex overflow-hidden" aria-hidden="true">
           <div className="flex marquee-track animate-marquee-reverse">
-            {doubled.map((item, i) => (
-              <Tag key={i} label={item.label} icon={item.icon} />
-            ))}
+            <div className="flex">
+              {industries.map((item, i) => (
+                <Tag key={`r2-${i}`} label={item.label} icon={item.icon} />
+              ))}
+            </div>
+            <div className="flex">
+              {industries.map((item, i) => (
+                <Tag key={`r2-dup-${i}`} label={item.label} icon={item.icon} />
+              ))}
+            </div>
           </div>
         </div>
       </div>

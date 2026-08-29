@@ -43,6 +43,7 @@ export default function CTABannerInteractive() {
   const flipBtnRef = useRef<HTMLButtonElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const isFlippedRef = useRef(false);
+  const [isBannerActive, setIsBannerActive] = useState(false);
 
   // Accessible unique IDs for form fields
   const nameId = useId();
@@ -58,6 +59,42 @@ export default function CTABannerInteractive() {
     isFlippedRef.current = isFlipped;
   }, [isFlipped]);
 
+  // Viewport & Tab Visibility Gating
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    let isIntersecting = false;
+    let isTabVisible = document.visibilityState === 'visible';
+
+    const updateActiveState = () => {
+      setIsBannerActive(isIntersecting && isTabVisible);
+    };
+
+    const handleVisibilityChange = () => {
+      isTabVisible = document.visibilityState === 'visible';
+      updateActiveState();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isIntersecting = entry ? entry.isIntersecting : false;
+        updateActiveState();
+      },
+      { threshold: 0.15 }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      observer.disconnect();
+    };
+  }, []);
+
   // AI Typing effect
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -70,13 +107,19 @@ export default function CTABannerInteractive() {
       return;
     }
 
+    if (!isBannerActive) {
+      return;
+    }
+
     let cancelled = false;
-    let hasStarted = false;
+    let activeTimer: ReturnType<typeof setTimeout> | null = null;
 
     const wait = (ms: number) =>
       new Promise<void>((resolve) => {
-        const timer = setTimeout(() => resolve(), ms);
-        if (cancelled) clearTimeout(timer);
+        activeTimer = setTimeout(() => {
+          activeTimer = null;
+          resolve();
+        }, ms);
       });
 
     const typeDelay = () => 50 + Math.random() * 50;
@@ -136,27 +179,16 @@ export default function CTABannerInteractive() {
       }
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry?.isIntersecting && !hasStarted) {
-          hasStarted = true;
-          observer.disconnect();
-          loop();
-        }
-      },
-      { threshold: 0.4 }
-    );
-
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
+    loop();
 
     return () => {
       cancelled = true;
-      observer.disconnect();
+      if (activeTimer) {
+        clearTimeout(activeTimer);
+        activeTimer = null;
+      }
     };
-  }, []);
+  }, [isBannerActive]);
 
   const handleFlipToBack = () => {
     setIsFlipped(true);
@@ -274,6 +306,7 @@ export default function CTABannerInteractive() {
           <button
             ref={flipBtnRef}
             className={styles.flipBtn}
+            style={!isBannerActive ? { animationPlayState: 'paused' } : undefined}
             type="button"
             onClick={handleFlipToBack}
             aria-label="Open contact form"
@@ -286,6 +319,7 @@ export default function CTABannerInteractive() {
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden="true"
+              style={!isBannerActive ? { animationPlayState: 'paused' } : undefined}
             >
               <path d="M14 4.1 12 6" />
               <path d="m5.1 8-2.9-.8" />

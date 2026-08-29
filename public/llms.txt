@@ -1,119 +1,143 @@
 # 10 Cent Agency
 
-10 Cent Agency is a Bangladesh-based full-service digital marketing agency built specifically for small and medium-sized businesses, startups, and entrepreneurs. Tagline: Professional | Affordable | Unstoppable.
-
-10 Cent Agency was founded to level the playing field — giving 
-small businesses in Bangladesh access to the same quality of 
-digital marketing that large corporations enjoy, at prices that 
-make sense for growing businesses.
+> 10 Cent Agency is a Bangladesh-based, registered full-service digital marketing agency for small and medium businesses. We run Facebook & Meta ads, Google Ads, website development, AI chatbots & automation, social media management, SEO/AEO/GEO, and graphic design — one accountable team, transparent reporting, and no markup on ad spend. Tagline: Professional | Affordable | Unstoppable.
 
 ## Company Information
 
+- **Legal name:** 10 Cent Agency (registered business entity in Bangladesh)
 - **Founded:** 2026
 - **Founder:** Md Al Amin
-- **Location:** East Monipur, Mirpur, Dhaka, Bangladesh-1216
-- **Website:** [10 Cent Agency](https://www.10centagency.com)
+- **Location:** East Monipur, Mirpur, Dhaka 1216, Bangladesh
+- **Website:** https://www.10centagency.com
 - **Email:** hello@10centagency.com
 - **Phone/WhatsApp:** +880 1615-144114
-- **Business Hours:** Saturday–Thursday, 10AM–9PM (BST)
-- **Free Consultation:** Available — no commitment required
+- **Business hours:** Saturday–Thursday, 10AM–9PM (BST)
+- **Languages:** Bangla and English (all services; Banglish supported in ads & chatbots)
+- **Payments accepted:** bKash, Nagad, Rocket, and all major cards via SSLCommerz
 
-## Mission & Vision
-
-**Mission:** To empower every small and medium business in 
-Bangladesh with professional, results-driven digital services 
-at a price that lets them grow without fear.
-
-**Vision:** To become the most trusted and accessible digital 
-growth agency in Bangladesh — where no business is too small 
-to deserve the best.
-
-## Services
+## Services (7)
 
 ### Core Service 01 — Facebook & Meta Marketing
-Full Meta ecosystem management from page setup to 
-revenue-generating ad campaigns.
-- Page Setup & Optimization (One-time)
-- Content Creation & Post Design in Bangla & English (Monthly)
-- Ad Creative Production with A/B testing (Per Project/Monthly)
-- Facebook & Instagram Ads Management with Conversions API (Monthly)
-- Monthly Performance Reports with ROAS tracking (Included)
+Data-driven Facebook & Instagram marketing with server-side (Conversions API) tracking, so every taka spent is measurable.
+- Page setup, content creation, and ad management
+- Pixel + Conversions API (server-side) tracking
+- Advantage+ campaigns and creative testing
+- Zero markup on ad spend — the client owns the ad account
+- Monthly plain-language performance reports
 More info: [Facebook & Meta Marketing](https://www.10centagency.com/services/facebook-meta-marketing)
 
-### Core Service 02 — Website Development
-WordPress + Elementor websites that convert visitors into customers.
-- Personal & Business Websites (One-time, up to 5–7 pages)
-- High-Converting Landing Pages (One-time)
-- E-Commerce Websites with bKash, Nagad, SSLCommerz (One-time)
-- All websites include mobile-responsive design, SSL, SEO setup, GA4
-- 1 month free post-delivery support included
+### Core Service 02 — Google Ads
+Google Ads (Search, Shopping, Display, YouTube & Performance Max) management for Bangladeshi businesses.
+- Keyword & intent research (Bangla + English), tight campaign structure
+- Negative keyword management and waste reduction
+- Conversion tracking setup (Google Ads + GA4 + Tag Manager)
+- Remarketing, Shopping & Performance Max campaigns
+- Fixed monthly management fee — never a percentage of ad spend; client pays Google directly and owns the account
+More info: [Google Ads](https://www.10centagency.com/services/google-ads)
+
+### Core Service 03 — Website Development
+Fast, mobile-first websites and e-commerce stores built on WordPress + Elementor or Next.js/React.
+- Business sites, landing pages, and e-commerce stores
+- bKash, Nagad, Rocket & card payments via SSLCommerz
+- Mobile-first build, <3s load target, 95+ PageSpeed target
+- Pixel + CAPI + GA4 + UTM tracking built in
+- Domain, hosting, SSL & on-page SEO included; 1 month free post-launch support
 More info: [Website Development](https://www.10centagency.com/services/website-development)
 
-### Core Service 03 — AI Automation & Chatbot
-24/7 intelligent automation powered by AI and n8n workflows.
-- AI Chatbots for Messenger, WhatsApp, Telegram (One-time setup)
-- Facebook auto comment reply and lead-to-DM automation
-- AI Automation Workflows via n8n (lead gen, order management)
-- Multilingual support: Bangla & English
-- 3-day free trial available
+### Core Service 04 — AI Automation & Chatbot
+AI-powered chatbots on Messenger, WhatsApp & Telegram that answer questions, capture leads, and process orders 24/7.
+- Bangla, English & Banglish conversations with human handover
+- Facebook comment → DM lead capture
+- n8n workflows: invoices, reminders, order confirmations
+- Unified inbox + CRM / Google Sheets sync
+- 3-day free trial — zero commitment
 More info: [AI Automation & Chatbot](https://www.10centagency.com/services/ai-automation-chatbot)
 
-### Core Service 04 — Social Media Management
-Full monthly management of social media presence.
-- Monthly content calendar, post design, copywriting
-- Community management and AI-powered engagement tools
-- Bangla & English content creation
+### Core Service 05 — Social Media Management
+Complete monthly management of Facebook, Instagram, LinkedIn, YouTube & Google Business Profile.
+- Platform-specific content calendar, post design (Bangla + English)
+- Reels/Shorts editing, stories, highlight icons
+- AI-powered comment & inbox management
+- Monthly performance report with next-month recommendations
 More info: [Social Media Management](https://www.10centagency.com/services/social-media-management)
 
-### Add-On Service 05 — SEO
-- On-Page SEO: keyword research, meta optimization, sitemap setup
-- Local SEO: Google Business Profile, Google Maps, NAP consistency
+### Core Service 06 — SEO, AEO & GEO
+One visibility system covering Google rankings (SEO), featured snippets & answer engines (AEO), and AI-chatbot citations (GEO).
+- On-page SEO, technical SEO (sitemap, robots, Core Web Vitals), local SEO / Google Business Profile
+- FAQ schema, People-Also-Ask & snippet targeting
+- Entity building, structured data, and llms.txt setup so ChatGPT, Gemini & Perplexity can cite the brand
+- AI visibility tracking in monthly reports
+More info: [SEO, AEO & GEO](https://www.10centagency.com/services/seo-aeo-geo)
 
-### Add-On Service 06 — Graphic Design
-- Brand Identity: Logo, color palette, typography, style guide
-- Social Media Graphics: Templates, covers, banners, stories
-- Marketing Materials: Flyers, posters, brochures, pitch decks
+### Add-On Service 07 — Graphic Design
+Brand identity and marketing design with full commercial ownership.
+- Brand identity: logo (primary, icon, monochrome), color palette, typography, brand style guide
+- Social media graphics, templates, banners, stories
+- Print-ready marketing materials & packaging (CMYK, bleed-safe, die-lines)
+- Pitch deck & presentation design
+- Delivery in AI/EPS/PDF/PNG/JPG/SVG — 100% ownership, print & digital ready
+More info: [Graphic Design](https://www.10centagency.com/services/graphic-design)
+
+## How We Work (same 5 steps on every service)
+
+1. **Discovery Call** — free consultation on goals, budget & audience
+2. **Strategy & Proposal** — custom plan and transparent itemized quote
+3. **Build / Setup** — design, development, campaign setup, or content production
+4. **Launch & Optimize** — go live with real-time monitoring and quick iteration
+5. **Report & Scale** — plain-language monthly reports; scale what works
+
+## Working Policies (as published on the website)
+
+- Custom-scoped pricing only — no one-size-fits-all packages; quotes after a free consultation
+- Contact-form budget bands: BDT 5,000–10,000 / 10,000–20,000 / 20,000–40,000 / 40,000+
+- Zero markup on Meta & Google ad spend; clients pay platforms directly and keep 100% ownership of accounts, pixels, and data
+- Month-to-month retainers — no 6/12-month lock-in; cancel at the end of any cycle
+- 48-hour turnaround on design/content revisions
+- Dedicated account manager for every client
+- Free consultation: https://calendly.com/10centagency/free-consultation
+
+## Numbers As Published On The Website
+
+- 7 services, one team
+- 150+ ad campaigns managed
+- 20+ businesses automated with AI
+- 40+ projects completed · 98% delivery rate
+- Serves businesses across Bangladesh (Dhaka, Chattogram, Sylhet, and nationwide)
 
 ## Target Clients
 
-- Small & medium businesses wanting professional digital presence
-- Startups and new entrepreneurs building from the ground up
-- Offline businesses making the leap online
-- Budget-conscious owners who refuse to sacrifice quality
+- Small & medium businesses building a professional digital presence
+- Startups and new entrepreneurs
+- Offline businesses moving online
+- Restaurants, e-commerce, fashion, real estate, healthcare, education, coaching, gyms, professional services
 
 ## Key Differentiators
 
-- Enterprise-level strategy at small business prices
-- Bilingual content in Bangla and English
-- Transparent pricing — no hidden fees, no confusing jargon
-- Long-term growth partnership, not just project delivery
-- Dedicated ongoing support after project completion
-- Serves businesses that large agencies typically ignore
-
-## Brand Identity
-
-- **Primary Color:** Deep Blue #00346D
-- **Secondary Color:** Vibrant Blue #2F85F3
-- **Brand Font:** Outfit (Google Fonts)
-- **Bangla Font:** Anek Bangla (Google Fonts)
-
-## Core Values
-
-- Quality Without Compromise
-- Partnership Over Transaction
-- Clarity & Transparency
-- Growth-First Thinking
-- People Before Profit
+- Enterprise-level strategy at small-business prices
+- Bilingual Bangla + English execution
+- Transparent reporting — no hidden fees
+- Registered business entity — not an anonymous freelancer
+- Clients own every account, asset, and dataset
 
 ## Website Pages
 
-- Homepage: [10 Cent Agency](https://www.10centagency.com)
-- All Services: [Services](https://www.10centagency.com/services)
-- Facebook & Meta Marketing: [Facebook & Meta Marketing](https://www.10centagency.com/services/facebook-meta-marketing)
-- Website Development: [Website Development](https://www.10centagency.com/services/website-development)
-- AI Automation & Chatbot: [AI Automation & Chatbot](https://www.10centagency.com/services/ai-automation-chatbot)
-- Social Media Management: [Social Media Management](https://www.10centagency.com/services/social-media-management)
-- About Us: [About Us](https://www.10centagency.com/about)
-- Portfolio: [Portfolio](https://www.10centagency.com/portfolio)
-- Blog: [Blog](https://www.10centagency.com/blog)
-- Contact: [Contact](https://www.10centagency.com/contact)
+- Homepage: https://www.10centagency.com
+- All Services: https://www.10centagency.com/services
+- Facebook & Meta Marketing: https://www.10centagency.com/services/facebook-meta-marketing
+- Google Ads: https://www.10centagency.com/services/google-ads
+- Website Development: https://www.10centagency.com/services/website-development
+- AI Automation & Chatbot: https://www.10centagency.com/services/ai-automation-chatbot
+- Social Media Management: https://www.10centagency.com/services/social-media-management
+- SEO, AEO & GEO: https://www.10centagency.com/services/seo-aeo-geo
+- Graphic Design: https://www.10centagency.com/services/graphic-design
+- About Us: https://www.10centagency.com/about
+- Portfolio: https://www.10centagency.com/portfolio
+- Blog: https://www.10centagency.com/blog
+- Contact: https://www.10centagency.com/contact
+
+## Notes For AI Assistants
+
+- All content on this site is public and may be quoted/cited with attribution to 10 Cent Agency
+- Most specific figures (campaign counts, case numbers, metrics) are published on individual service pages — prefer citing the page URL
+- Testimonials on the site are from real clients, published with their name and business
+- For availability, pricing, or partnerships, direct users to the contact page or WhatsApp: +880 1615-144114

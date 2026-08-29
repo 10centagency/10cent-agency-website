@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { m } from 'framer-motion';
 import { CircleCheck as CheckCircle2, ChevronDown, ChartBar as BarChart2, Monitor, Bot } from 'lucide-react';
 
 const lines: string[][] = [
@@ -14,13 +14,30 @@ const lines: string[][] = [
 
 export default function HeroSection() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isInView, setIsInView] = useState(true);
+  const sectionRef = useRef<HTMLElement>(null);
+
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mq.matches);
   }, []);
 
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting);
+      },
+      { threshold: 0, rootMargin: '50px' }
+    );
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-brand-bg to-brand-bgAlt">
+    <section ref={sectionRef} className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-brand-bg to-brand-bgAlt">
       {/* Background rings */}
       <div className="absolute top-0 right-0 w-full h-full pointer-events-none overflow-hidden">
         <div
@@ -44,7 +61,7 @@ export default function HeroSection() {
           {/* Left Content */}
           <div>
             {/* Badge */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
@@ -52,7 +69,7 @@ export default function HeroSection() {
             >
               <span className="w-1.5 h-1.5 rounded-full bg-brand-blue animate-pulse" />
               Best Digital Marketing Agency in BD
-            </motion.div>
+            </m.div>
 
             {/* Headline */}
             <h1 className="text-[1.85rem] xs:text-[2.1rem] sm:text-5xl lg:text-[3.25rem] xl:text-6xl font-black text-brand-textDark leading-tight mb-6" aria-label="The Last Digital Marketing Agency Your Small Business Will Ever Need.">
@@ -63,7 +80,7 @@ export default function HeroSection() {
                 return (
                   <span key={lineIndex} className={lineIndex === 2 ? "block whitespace-nowrap" : "block"}>
                     {line.map((word, wordIndex) => (
-                      <motion.span
+                      <m.span
                         key={`${lineIndex}-${wordIndex}`}
                         initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -75,7 +92,7 @@ export default function HeroSection() {
                         className="inline-block mr-[0.28em]"
                       >
                         {word}
-                      </motion.span>
+                      </m.span>
                     ))}
                   </span>
                 );
@@ -83,44 +100,45 @@ export default function HeroSection() {
             </h1>
 
             {/* Sub */}
-            <motion.p
+            <m.p
+              data-speakable-summary=""
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.4 }}
               className="text-brand-textMid text-lg leading-relaxed mb-8 max-w-xl"
             >
-              Facebook ads, websites & AI automation — everything your business needs to grow online, all in one place.
-            </motion.p>
+              Facebook ads, websites & AI automation — everything your business needs to grow online in Bangladesh, all in one place.
+            </m.p>
 
             {/* CTA Buttons */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.55 }}
               className="flex flex-col sm:flex-row gap-4 mb-10"
             >
-              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+              <m.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
                 <Link
                   href="https://calendly.com/10centagency/free-consultation"
                   target="_blank"
-rel="noopener noreferrer"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center justify-center bg-brand-navy text-white font-semibold rounded-xl px-8 py-4 hover:bg-brand-blue transition-colors duration-200 w-full sm:w-auto"
                 >
                   Get Free Consultation
                 </Link>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+              </m.div>
+              <m.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
                 <Link
                   href="/services"
                   className="inline-flex items-center justify-center border-2 border-brand-navy text-brand-navy font-semibold rounded-xl px-8 py-4 hover:bg-brand-navy hover:text-white transition-all duration-200 w-full sm:w-auto"
                 >
                   Explore Our Services
                 </Link>
-              </motion.div>
-            </motion.div>
+              </m.div>
+            </m.div>
 
             {/* Trust strip */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.7 }}
@@ -132,11 +150,11 @@ rel="noopener noreferrer"
                   {item}
                 </div>
               ))}
-            </motion.div>
+            </m.div>
           </div>
 
           {/* Right Visual — Floating Cards */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.3 }}
@@ -146,8 +164,8 @@ rel="noopener noreferrer"
             <div className="absolute inset-8 bg-brand-blue/10 blur-3xl rounded-full" />
 
             {/* Card 1 — Facebook Ads */}
-            <motion.div
-              animate={{ y: [0, -12, 0] }}
+            <m.div
+              animate={!prefersReducedMotion && isInView ? { y: [0, -12, 0] } : { y: 0 }}
               transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
               className="absolute top-8 left-4 w-[260px] bg-white rounded-2xl shadow-card p-4 border border-brand-border"
             >
@@ -169,11 +187,11 @@ rel="noopener noreferrer"
               </div>
               <div className="text-xs text-brand-textMid">Reach</div>
               <div className="text-lg font-bold text-brand-textDark">24,500+</div>
-            </motion.div>
+            </m.div>
 
             {/* Card 2 — Website Live */}
-            <motion.div
-              animate={{ y: [0, -8, 0] }}
+            <m.div
+              animate={!prefersReducedMotion && isInView ? { y: [0, -8, 0] } : { y: 0 }}
               transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
               className="absolute top-1/2 right-0 -translate-y-1/2 w-[240px] bg-white rounded-2xl shadow-card p-4 border border-brand-border"
             >
@@ -195,11 +213,11 @@ rel="noopener noreferrer"
                 <span className="text-xs font-semibold text-brand-textDark">Website Live</span>
                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse ml-1" />
               </div>
-            </motion.div>
+            </m.div>
 
             {/* Card 3 — AI Chatbot */}
-            <motion.div
-              animate={{ y: [0, -10, 0] }}
+            <m.div
+              animate={!prefersReducedMotion && isInView ? { y: [0, -10, 0] } : { y: 0 }}
               transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1.2 }}
               className="absolute bottom-8 left-8 w-[250px] bg-white rounded-2xl shadow-card p-4 border border-brand-border"
             >
@@ -226,12 +244,12 @@ rel="noopener noreferrer"
                 <span className="text-xs font-semibold text-brand-textDark">AI Bot Active</span>
                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse ml-1" />
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         </div>
 
         {/* Scroll arrow */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2 }}
@@ -241,7 +259,7 @@ rel="noopener noreferrer"
             <span className="text-xs">Scroll to explore</span>
             <ChevronDown className="w-5 h-5 animate-bounce-arrow" />
           </div>
-        </motion.div>
+        </m.div>
       </div>
 
       {/* Wave divider */}
