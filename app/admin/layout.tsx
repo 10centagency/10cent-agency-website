@@ -1,39 +1,47 @@
-'use client';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { createServerClient } from '@supabase/ssr';
+import { isAdminEmail } from '@/lib/admin-auth';
+import AdminLayoutClient from '@/components/admin/AdminLayoutClient';
 
-import { useState } from 'react';
-import { usePathname } from 'next/navigation';
-import AdminSidebar from '@/components/admin/AdminSidebar';
-import AdminTopbar from '@/components/admin/AdminTopbar';
+async function createServerSupabaseClient() {
+  const cookieStore = await cookies();
 
-const pageTitles: Record<string, string> = {
-  '/admin/dashboard': 'Dashboard',
-  '/admin/portfolio': 'Portfolio',
-  '/admin/submissions': 'Submissions',
-  '/admin/settings': 'Settings',
-};
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // Cannot set cookies directly from Server Component layout
+          }
+        },
+      },
+    }
+  );
+}
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const pathname = usePathname();
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const title =
-    pageTitles[pathname] ||
-    (pathname.startsWith('/admin/portfolio/') ? 'Edit Portfolio Item' : 'Admin');
+  if (!user || !isAdminEmail(user.email)) {
+    redirect('/');
+  }
 
-  return (
-    <div className="min-h-screen bg-brand-bg">
-      <AdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="lg:ml-64">
-        <AdminTopbar
-          onMenuClick={() => setSidebarOpen(true)}
-          title={title}
-        />
-        <main className="p-4 sm:p-6 lg:p-8">{children}</main>
-      </div>
-    </div>
-  );
+  return <AdminLayoutClient>{children}</AdminLayoutClient>;
 }
