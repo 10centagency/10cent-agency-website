@@ -424,3 +424,336 @@ export const homeFaqs: HomeFaqItem[] = [
       'Getting started is quick and risk-free. Book a free 20–30 minute consultation or reach out via WhatsApp or phone. We will discuss your current marketing setup, review your website or social presence, and identify immediate opportunities for improvement. Within 24 to 48 hours, we send an itemized proposal with clear timelines, deliverables, and transparent pricing. You can also test our AI Automation services with a 3-day free trial. Once you approve the plan, onboarding begins immediately on Day 1.',
   },
 ];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION: OUR MISSION & VISION
+// ─────────────────────────────────────────────────────────────────────────────
+export interface MissionVisionCardData {
+  id: string;
+  tag: string;
+  statement: string;
+  items: string[];
+  variant: 'mission' | 'vision';
+  delay: string;
+}
+
+export interface MissionVisionValueData {
+  id: string;
+  title: string;
+  subtitle: string;
+  delay: string;
+}
+
+export const missionVisionHeader = {
+  label: 'Our Mission & Vision',
+  titlePrefix: 'One Mission. ',
+  titleAccent: 'One Vision.',
+  description:
+    "Everything we do starts with a simple belief — professional digital marketing shouldn't be a luxury reserved for big budgets.",
+};
+
+export const missionVisionCards: MissionVisionCardData[] = [
+  {
+    id: 'our-mission',
+    tag: 'Our Mission',
+    statement:
+      'To make professional digital marketing accessible to every business — regardless of size or budget.',
+    items: [
+      'Enterprise-level strategy at small-business pricing',
+      'Transparent reporting with zero hidden fees',
+      'Every campaign built around measurable results',
+    ],
+    variant: 'mission',
+    delay: '.08s',
+  },
+  {
+    id: 'our-vision',
+    tag: 'Our Vision',
+    statement:
+      'To be the most reliable growth partner for businesses in Bangladesh and beyond.',
+    items: [
+      'The trusted digital partner for scaling businesses in Bangladesh',
+      'Expanding to serve clients across the globe',
+      'Leading the AI-powered future of marketing',
+    ],
+    variant: 'vision',
+    delay: '.16s',
+  },
+];
+
+export const missionVisionValues: MissionVisionValueData[] = [
+  {
+    id: 'transparency',
+    title: 'Transparency',
+    subtitle: 'Honest pricing, clear reporting',
+    delay: '0s',
+  },
+  {
+    id: 'results-first',
+    title: 'Results First',
+    subtitle: 'Growth you can measure',
+    delay: '.09s',
+  },
+  {
+    id: 'full-ownership',
+    title: 'Full Ownership',
+    subtitle: 'Your accounts & data stay yours',
+    delay: '.18s',
+  },
+  {
+    id: 'always-evolving',
+    title: 'Always Evolving',
+    subtitle: 'Testing, learning, improving daily',
+    delay: '.27s',
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION: TRUSTED ACROSS BANGLADESH
+// ─────────────────────────────────────────────────────────────────────────────
+export interface BangladeshFeatureData {
+  id: string;
+  title: string;
+  description: string;
+  delay: string;
+}
+
+export interface BangladeshCityPinData {
+  id: string;
+  name: string;
+  tagline: string;
+  cx: number;
+  cy: number;
+  labelX: number;
+  labelY: number;
+  anchor: 'start' | 'end' | 'middle';
+  fontSize: number;
+  fontWeight: number;
+  colorVariant: 'blue' | 'teal';
+  pulseDelay: string;
+  circleRadius: number;
+  innerRadius: number;
+  pulseRadius: number;
+  hasOuterRing?: boolean;
+}
+
+export interface PaymentChipData {
+  id: string;
+  name: string;
+  chipClass: 'bk' | 'ng' | 'cd';
+}
+
+export const madeForBangladeshHeader = {
+  label: 'Trusted Across Bangladesh',
+  titlePrefix: 'We Understand the ',
+  titleAccent: 'Bangladeshi Market',
+  description:
+    "We don't just run digital marketing — we deeply understand Bangladeshi customer behavior, buying culture, and local market dynamics.",
+};
+
+export const bangladeshFeatures: BangladeshFeatureData[] = [
+  {
+    id: 'nationwide-coverage',
+    title: 'Nationwide Coverage',
+    description: 'Dhaka, Chattogram, Sylhet — serving businesses in all 64 districts',
+    delay: '.08s',
+  },
+  {
+    id: 'fluent-languages',
+    title: 'Fluent in Bangla & English',
+    description: 'Work with us in whichever language you prefer',
+    delay: '.16s',
+  },
+  {
+    id: 'local-payments',
+    title: 'Local Payments Accepted',
+    description: 'bKash, Nagad, Rocket and all major cards',
+    delay: '.24s',
+  },
+  {
+    id: 'global-standards',
+    title: 'Global Standards, Local Rates',
+    description: 'World-class quality at pricing built for growing businesses',
+    delay: '.32s',
+  },
+];
+
+export const bangladeshCities: BangladeshCityPinData[] = [
+  {
+    id: 'dhaka',
+    name: 'Dhaka',
+    tagline: 'The Capital',
+    cx: 206.4,
+    cy: 260.6,
+    labelX: 216,
+    labelY: 256.5,
+    anchor: 'start',
+    fontSize: 10.5,
+    fontWeight: 800,
+    colorVariant: 'blue',
+    pulseDelay: '0.0s',
+    circleRadius: 7.0,
+    innerRadius: 2.8,
+    pulseRadius: 6,
+    hasOuterRing: true,
+  },
+  {
+    id: 'chattogram',
+    name: 'Chattogram',
+    tagline: 'The Port City',
+    cx: 319.4,
+    cy: 387.0,
+    labelX: 311,
+    labelY: 383,
+    anchor: 'end',
+    fontSize: 9.0,
+    fontWeight: 700,
+    colorVariant: 'blue',
+    pulseDelay: '0.2s',
+    circleRadius: 5.5,
+    innerRadius: 2.2,
+    pulseRadius: 6,
+  },
+  {
+    id: 'sylhet',
+    name: 'Sylhet',
+    tagline: 'The Tea Capital',
+    cx: 322.4,
+    cy: 166.3,
+    labelX: 314.5,
+    labelY: 162.5,
+    anchor: 'end',
+    fontSize: 9.0,
+    fontWeight: 700,
+    colorVariant: 'blue',
+    pulseDelay: '0.4s',
+    circleRadius: 5.5,
+    innerRadius: 2.2,
+    pulseRadius: 6,
+  },
+  {
+    id: 'khulna',
+    name: 'Khulna',
+    tagline: 'Gateway to the Sundarbans',
+    cx: 136.9,
+    cy: 344.5,
+    labelX: 145,
+    labelY: 341,
+    anchor: 'start',
+    fontSize: 9.0,
+    fontWeight: 700,
+    colorVariant: 'blue',
+    pulseDelay: '0.6s',
+    circleRadius: 5.5,
+    innerRadius: 2.2,
+    pulseRadius: 6,
+  },
+  {
+    id: 'rajshahi',
+    name: 'Rajshahi',
+    tagline: 'The Silk City',
+    cx: 62.4,
+    cy: 211.6,
+    labelX: 70,
+    labelY: 208,
+    anchor: 'start',
+    fontSize: 9.0,
+    fontWeight: 700,
+    colorVariant: 'blue',
+    pulseDelay: '0.8s',
+    circleRadius: 5.5,
+    innerRadius: 2.2,
+    pulseRadius: 6,
+  },
+  {
+    id: 'barishal',
+    name: 'Barishal',
+    tagline: 'The City of Rivers',
+    cx: 201.7,
+    cy: 357.0,
+    labelX: 210,
+    labelY: 353.5,
+    anchor: 'start',
+    fontSize: 9.0,
+    fontWeight: 700,
+    colorVariant: 'blue',
+    pulseDelay: '1.0s',
+    circleRadius: 5.5,
+    innerRadius: 2.2,
+    pulseRadius: 6,
+  },
+  {
+    id: 'rangpur',
+    name: 'Rangpur',
+    tagline: 'The Northern Hub',
+    cx: 115.8,
+    cy: 92.5,
+    labelX: 124,
+    labelY: 88.5,
+    anchor: 'start',
+    fontSize: 9.0,
+    fontWeight: 700,
+    colorVariant: 'blue',
+    pulseDelay: '1.2s',
+    circleRadius: 5.5,
+    innerRadius: 2.2,
+    pulseRadius: 6,
+  },
+  {
+    id: 'mymensingh',
+    name: 'Mymensingh',
+    tagline: 'The Education Hub',
+    cx: 207.0,
+    cy: 179.2,
+    labelX: 215,
+    labelY: 175,
+    anchor: 'start',
+    fontSize: 9.0,
+    fontWeight: 700,
+    colorVariant: 'blue',
+    pulseDelay: '1.4s',
+    circleRadius: 5.5,
+    innerRadius: 2.2,
+    pulseRadius: 6,
+  },
+  {
+    id: 'cumilla',
+    name: 'Cumilla',
+    tagline: 'A Commercial Hub',
+    cx: 267.6,
+    cy: 291.0,
+    labelX: 259.5,
+    labelY: 295,
+    anchor: 'end',
+    fontSize: 8.5,
+    fontWeight: 700,
+    colorVariant: 'teal',
+    pulseDelay: '1.6s',
+    circleRadius: 4.5,
+    innerRadius: 1.8,
+    pulseRadius: 6,
+  },
+  {
+    id: 'coxs-bazar',
+    name: "Cox's Bazar",
+    tagline: "World's Longest Natural Sea Beach",
+    cx: 333.3,
+    cy: 467.9,
+    labelX: 325,
+    labelY: 472,
+    anchor: 'end',
+    fontSize: 8.5,
+    fontWeight: 700,
+    colorVariant: 'teal',
+    pulseDelay: '1.8s',
+    circleRadius: 4.5,
+    innerRadius: 1.8,
+    pulseRadius: 6,
+  },
+];
+
+export const paymentChips: PaymentChipData[] = [
+  { id: 'bkash', name: 'bKash', chipClass: 'bk' },
+  { id: 'nagad', name: 'Nagad', chipClass: 'ng' },
+  { id: 'card', name: 'Card', chipClass: 'cd' },
+];
