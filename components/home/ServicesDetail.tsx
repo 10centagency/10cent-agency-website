@@ -65,7 +65,11 @@ export default function ServicesDetail() {
                   </li>
                 ))}
               </ul>
-              <Link href={metaDetailData.ctaHref} className={styles.panelCta}>
+              <Link
+                href={metaDetailData.ctaHref}
+                className={styles.panelCta}
+                aria-label={`Learn more about ${metaDetailData.kicker}`}
+              >
                 {metaDetailData.ctaText}
                 <svg
                   viewBox="0 0 24 24"
@@ -138,7 +142,11 @@ export default function ServicesDetail() {
                   </li>
                 ))}
               </ul>
-              <Link href={websiteDetailData.ctaHref} className={styles.panelCta}>
+              <Link
+                href={websiteDetailData.ctaHref}
+                className={styles.panelCta}
+                aria-label={`Learn more about ${websiteDetailData.kicker}`}
+              >
                 {websiteDetailData.ctaText}
                 <svg
                   viewBox="0 0 24 24"
@@ -211,7 +219,11 @@ export default function ServicesDetail() {
                   </li>
                 ))}
               </ul>
-              <Link href={aiDetailData.ctaHref} className={styles.panelCta}>
+              <Link
+                href={aiDetailData.ctaHref}
+                className={styles.panelCta}
+                aria-label={`Start free trial for ${aiDetailData.kicker}`}
+              >
                 {aiDetailData.ctaText}
                 <svg
                   viewBox="0 0 24 24"

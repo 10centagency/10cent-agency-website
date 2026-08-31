@@ -119,3 +119,33 @@ html {
   font-family: var(--font-anek-bangla), sans-serif;
 }
 
+/* Hero Progressive Entrance Animation (CSS-only, pre-animation state is fully visible) */
+@keyframes heroEntrance {
+  0% {
+    opacity: 0.85;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-animate-badge {
+    animation: heroEntrance 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.05s backwards;
+  }
+  .hero-animate-word {
+    animation: heroEntrance 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+  .hero-animate-sub {
+    animation: heroEntrance 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.32s backwards;
+  }
+  .hero-animate-cta {
+    animation: heroEntrance 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.42s backwards;
+  }
+  .hero-animate-trust {
+    animation: heroEntrance 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.52s backwards;
+  }
+}
+

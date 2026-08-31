@@ -19,12 +19,23 @@ const categoryColors: Record<string, string> = {
   Automation: 'bg-green-100 text-green-700',
 };
 
-export default function PortfolioPreview() {
+interface PortfolioPreviewProps {
+  initialItems?: PortfolioItem[];
+}
+
+export default function PortfolioPreview({ initialItems = [] }: PortfolioPreviewProps) {
   const [activeFilter, setActiveFilter] = useState('All');
-  const [items, setItems] = useState<PortfolioItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<PortfolioItem[]>(initialItems);
+  const [loading, setLoading] = useState(initialItems.length === 0);
 
   useEffect(() => {
+    // If initialItems were provided server-side, no need to fetch again
+    if (initialItems && initialItems.length > 0) {
+      setItems(initialItems);
+      setLoading(false);
+      return;
+    }
+
     async function fetchFeatured() {
       const { data, error } = await supabase
         .from('portfolio_items')
@@ -49,7 +60,7 @@ export default function PortfolioPreview() {
       setLoading(false);
     }
     fetchFeatured();
-  }, []);
+  }, [initialItems]);
 
   const filtered =
     activeFilter === 'All'
@@ -99,7 +110,7 @@ export default function PortfolioPreview() {
                  transition={{ duration: 0.3 }}
                  className="group rounded-2xl overflow-hidden border border-brand-border hover:shadow-card-hover transition-shadow duration-300 bg-white"
                >
-                <Link href={`/portfolio/${project.slug}`}>
+                <Link href={`/portfolio/${project.slug}`} aria-label={`View ${project.title} case study`}>
                    <div className="relative h-48 flex items-center justify-center overflow-hidden">
                      {project.featured_image_url ? (
                        <Image

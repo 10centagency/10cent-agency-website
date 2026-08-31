@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { m } from 'framer-motion';
-import { CircleCheck as CheckCircle2, ChevronDown, ChartBar as BarChart2, Monitor, Bot } from 'lucide-react';
+import { CircleCheck as CheckCircle2, ChevronDown, Monitor, Bot } from 'lucide-react';
 
 const lines: string[][] = [
   ['The', 'Last', 'Digital'],
@@ -61,38 +61,29 @@ export default function HeroSection() {
           {/* Left Content */}
           <div>
             {/* Badge */}
-            <m.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 bg-brand-blue/10 text-brand-blue rounded-full px-4 py-1.5 text-sm font-semibold mb-6"
-            >
+            <div className="hero-animate-badge inline-flex items-center gap-2 bg-brand-blue/10 text-brand-blue rounded-full px-4 py-1.5 text-sm font-semibold mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-blue animate-pulse" />
               Best Digital Marketing Agency in BD
-            </m.div>
+            </div>
 
             {/* Headline */}
             <h1 className="text-[1.85rem] xs:text-[2.1rem] sm:text-5xl lg:text-[3.25rem] xl:text-6xl font-black text-brand-textDark leading-tight mb-6" aria-label="The Last Digital Marketing Agency Your Small Business Will Ever Need.">
               {lines.map((line, lineIndex) => {
-                const baseDelay = 0.1 + lines
+                const baseDelay = 0.08 + lines
                   .slice(0, lineIndex)
-                  .reduce((acc, l) => acc + l.length * 0.09, 0);
+                  .reduce((acc, l) => acc + l.length * 0.07, 0);
                 return (
                   <span key={lineIndex} className={lineIndex === 2 ? "block whitespace-nowrap" : "block"}>
                     {line.map((word, wordIndex) => (
-                      <m.span
+                      <span
                         key={`${lineIndex}-${wordIndex}`}
-                        initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{
-                          duration: 0.5,
-                          delay: baseDelay + wordIndex * 0.09,
-                          ease: [0.22, 1, 0.36, 1],
+                        style={{
+                          animationDelay: `${baseDelay + wordIndex * 0.07}s`,
                         }}
-                        className="inline-block mr-[0.28em]"
+                        className="hero-animate-word inline-block mr-[0.28em]"
                       >
                         {word}
-                      </m.span>
+                      </span>
                     ))}
                   </span>
                 );
@@ -100,24 +91,16 @@ export default function HeroSection() {
             </h1>
 
             {/* Sub */}
-            <m.p
+            <p
               data-speakable-summary=""
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="text-brand-textMid text-lg leading-relaxed mb-8 max-w-xl"
+              className="hero-animate-sub text-brand-textMid text-lg leading-relaxed mb-8 max-w-xl"
             >
               Facebook ads, websites & AI automation — everything your business needs to grow online in Bangladesh, all in one place.
-            </m.p>
+            </p>
 
             {/* CTA Buttons */}
-            <m.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.55 }}
-              className="flex flex-col sm:flex-row gap-4 mb-10"
-            >
-              <m.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+            <div className="hero-animate-cta flex flex-col sm:flex-row gap-4 mb-10">
+              <div className="transition-transform duration-200 hover:scale-[1.04] active:scale-[0.97]">
                 <Link
                   href="https://calendly.com/10centagency/free-consultation"
                   target="_blank"
@@ -126,31 +109,26 @@ export default function HeroSection() {
                 >
                   Get Free Consultation
                 </Link>
-              </m.div>
-              <m.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+              </div>
+              <div className="transition-transform duration-200 hover:scale-[1.04] active:scale-[0.97]">
                 <Link
                   href="/services"
                   className="inline-flex items-center justify-center border-2 border-brand-navy text-brand-navy font-semibold rounded-xl px-8 py-4 hover:bg-brand-navy hover:text-white transition-all duration-200 w-full sm:w-auto"
                 >
                   Explore Our Services
                 </Link>
-              </m.div>
-            </m.div>
+              </div>
+            </div>
 
             {/* Trust strip */}
-            <m.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.7 }}
-              className="flex flex-wrap items-center gap-5"
-            >
+            <div className="hero-animate-trust flex flex-wrap items-center gap-5">
               {['Meta Certified Strategies', 'Affordable Pricing', 'Fast Delivery'].map((item) => (
                 <div key={item} className="flex items-center gap-2 text-sm text-brand-textMid">
                   <CheckCircle2 className="w-4 h-4 text-brand-blue flex-shrink-0" />
                   {item}
                 </div>
               ))}
-            </m.div>
+            </div>
           </div>
 
           {/* Right Visual — Floating Cards */}
@@ -249,17 +227,12 @@ export default function HeroSection() {
         </div>
 
         {/* Scroll arrow */}
-        <m.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
-          className="flex justify-center mt-12"
-        >
+        <div className="flex justify-center mt-12">
           <div className="flex flex-col items-center gap-2 text-brand-textMid">
             <span className="text-xs">Scroll to explore</span>
             <ChevronDown className="w-5 h-5 animate-bounce-arrow" />
           </div>
-        </m.div>
+        </div>
       </div>
 
       {/* Wave divider */}

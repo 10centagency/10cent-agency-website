@@ -5,6 +5,7 @@ import AddOnServices from '@/components/home/AddOnServices';
 import MissionVision from '@/components/home/MissionVision';
 import MadeForBangladesh from '@/components/home/MadeForBangladesh';
 import type { HomeBlogPost } from '@/lib/blog';
+import type { PortfolioItem } from '@/lib/database.types';
 
 // Dynamic imports for below-the-fold and animation-heavy components
 const MarqueeStrip = dynamic(() => import('@/components/home/MarqueeStrip'), { ssr: true });
@@ -18,9 +19,10 @@ const CTABanner = dynamic(() => import('@/components/home/CTABanner'), { ssr: tr
 
 interface HomeContentProps {
   blogPosts?: HomeBlogPost[];
+  portfolioItems?: PortfolioItem[];
 }
 
-export default function HomeContent({ blogPosts = [] }: HomeContentProps) {
+export default function HomeContent({ blogPosts = [], portfolioItems = [] }: HomeContentProps) {
   return (
     <>
       <MarqueeStrip />
@@ -31,7 +33,7 @@ export default function HomeContent({ blogPosts = [] }: HomeContentProps) {
       <AddOnServices />
       <MissionVision />
       <MadeForBangladesh />
-      <PortfolioPreview />
+      <PortfolioPreview initialItems={portfolioItems} />
       <Testimonials />
       <BlogPreview posts={blogPosts} />
       <HomeFAQ />

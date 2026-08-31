@@ -3,6 +3,8 @@ import HeroSection from '@/components/home/HeroSection';
 import HomeContent from '@/components/home/HomeContent';
 import { homeFaqs } from '@/components/home/homeSectionsData';
 import { getLatestBlogPosts, type HomeBlogPost } from '@/lib/blog';
+import { getFeaturedPortfolioItems } from '@/lib/portfolio';
+import type { PortfolioItem } from '@/lib/database.types';
 
 export const revalidate = 3600;
 
@@ -21,11 +23,17 @@ export const metadata: Metadata = {
 
 export default async function Home() {
   let blogPosts: HomeBlogPost[] = [];
+  let portfolioItems: PortfolioItem[] = [];
+
   try {
-    blogPosts = await getLatestBlogPosts(3);
+    const [posts, portfolio] = await Promise.all([
+      getLatestBlogPosts(3),
+      getFeaturedPortfolioItems(6),
+    ]);
+    blogPosts = posts;
+    portfolioItems = portfolio;
   } catch (error) {
-    console.error('Failed to load homepage blog posts:', error);
-    blogPosts = [];
+    console.error('Failed to load homepage data:', error);
   }
 
   const schemaGraph = {
@@ -129,7 +137,7 @@ export default async function Home() {
         }}
       />
       <HeroSection />
-      <HomeContent blogPosts={blogPosts} />
+      <HomeContent blogPosts={blogPosts} portfolioItems={portfolioItems} />
     </>
   );
 }
