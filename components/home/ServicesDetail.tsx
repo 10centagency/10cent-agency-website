@@ -68,9 +68,9 @@ export default function ServicesDetail() {
               <Link
                 href={metaDetailData.ctaHref}
                 className={styles.panelCta}
-                aria-label={`Learn more about ${metaDetailData.kicker}`}
               >
-                {metaDetailData.ctaText}
+                <span aria-hidden="true">{metaDetailData.ctaText}</span>
+                <span className="sr-only"> about {metaDetailData.kicker}</span>
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -145,9 +145,9 @@ export default function ServicesDetail() {
               <Link
                 href={websiteDetailData.ctaHref}
                 className={styles.panelCta}
-                aria-label={`Learn more about ${websiteDetailData.kicker}`}
               >
-                {websiteDetailData.ctaText}
+                <span aria-hidden="true">{websiteDetailData.ctaText}</span>
+                <span className="sr-only"> about {websiteDetailData.kicker}</span>
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
