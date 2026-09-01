@@ -3,30 +3,43 @@
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+// Type declaration for dataLayer global
+declare global {
+  interface Window {
+    dataLayer?: Record<string, unknown>[];
+    _gtmLoaded?: boolean;
+  }
+}
+
 export default function GoogleTagManager() {
   const pathname = usePathname();
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(() => typeof window !== 'undefined' && Boolean(window._gtmLoaded));
 
+  // GTM script injection after idle or user interaction (excluded on /admin)
   useEffect(() => {
     // Never load GTM on admin routes
     if (pathname?.startsWith('/admin')) {
       return;
     }
 
-    if (isLoaded || typeof window === 'undefined') return;
+    if (isLoaded || typeof window === 'undefined' || window._gtmLoaded) {
+      if (window._gtmLoaded && !isLoaded) {
+        setIsLoaded(true);
+      }
+      return;
+    }
 
     let timeoutId: NodeJS.Timeout | null = null;
     let idleId: number | null = null;
 
     const loadGTM = () => {
       cleanup();
-      if ((window as unknown as { _gtmLoaded?: boolean })._gtmLoaded) return;
-      (window as unknown as { _gtmLoaded?: boolean })._gtmLoaded = true;
+      if (window._gtmLoaded) return;
+      window._gtmLoaded = true;
 
       // Initialize dataLayer
-      const win = window as unknown as { dataLayer: unknown[] };
-      win.dataLayer = win.dataLayer || [];
-      win.dataLayer.push({
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
         'gtm.start': new Date().getTime(),
         event: 'gtm.js',
       });
@@ -43,7 +56,7 @@ export default function GoogleTagManager() {
     const cleanup = () => {
       if (timeoutId) clearTimeout(timeoutId);
       if (idleId && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
-        (window as unknown as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
+        window.cancelIdleCallback(idleId);
       }
       window.removeEventListener('scroll', loadGTM);
       window.removeEventListener('mousemove', loadGTM);
@@ -58,16 +71,27 @@ export default function GoogleTagManager() {
     window.addEventListener('keydown', loadGTM, { passive: true, once: true });
 
     // Fallback: requestIdleCallback with 2.5s timeout or setTimeout
-    if ('requestIdleCallback' in window) {
-      idleId = (window as unknown as { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback(
-        loadGTM,
-        { timeout: 2500 }
-      );
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      idleId = window.requestIdleCallback(loadGTM, { timeout: 2500 });
     } else {
       timeoutId = setTimeout(loadGTM, 2500);
     }
 
     return cleanup;
+  }, [pathname, isLoaded]);
+
+  // SPA PageView Tracking: push route-change & initial-load event to dataLayer
+  useEffect(() => {
+    // Skip on admin routes or before GTM is loaded
+    if (!isLoaded || !pathname || pathname.startsWith('/admin')) return;
+
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: 'spaPageView',
+      pagePath: pathname,
+      pageLocation: window.location.href,
+      pageTitle: document.title,
+    });
   }, [pathname, isLoaded]);
 
   // Don't render noscript on admin routes

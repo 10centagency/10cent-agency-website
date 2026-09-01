@@ -5,6 +5,7 @@ import SectionLabel from '@/components/ui/SectionLabel';
 import AnimatedSection, { StaggerContainer, StaggerItem } from '@/components/ui/AnimatedSection';
 import CTABanner from '@/components/home/CTABanner';
 import Image from "next/image";
+import AboutNewSections from './AboutNewSections';
 
 export const metadata: Metadata = {
   title: 'About Us | 10 Cent Agency',
@@ -58,33 +59,115 @@ const values = [
 ];
 
 export default function AboutPage() {
+  const schemaGraph = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'LocalBusiness',
+        '@id': 'https://www.10centagency.com/#organization',
+        name: '10 Cent Agency',
+        url: 'https://www.10centagency.com',
+        logo: 'https://www.10centagency.com/Logo.webp',
+        image: 'https://www.10centagency.com/og-image.png',
+        description:
+          'Affordable digital marketing agency in Bangladesh helping small businesses grow online with Facebook ads, websites & AI automation.',
+        telephone: '+880 1615-144114',
+        email: 'hello@10centagency.com',
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: 'East Monipur, Mirpur',
+          addressLocality: 'Dhaka',
+          postalCode: '1216',
+          addressCountry: 'BD',
+        },
+        openingHoursSpecification: [
+          {
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek: [
+              'Saturday',
+              'Sunday',
+              'Monday',
+              'Tuesday',
+              'Wednesday',
+              'Thursday',
+            ],
+            opens: '10:00',
+            closes: '21:00',
+          },
+        ],
+        sameAs: [
+          'https://www.facebook.com/10centagency',
+          'https://www.instagram.com/10centagency',
+          'https://www.youtube.com/@10centagency',
+          'https://www.linkedin.com/company/10-cent-agency',
+        ],
+        priceRange: '৳৳',
+      },
+      {
+        '@type': 'WebSite',
+        '@id': 'https://www.10centagency.com/#website',
+        url: 'https://www.10centagency.com',
+        name: '10 Cent Agency',
+        description: 'Best Digital Marketing Agency in BD',
+        inLanguage: 'en-BD',
+        publisher: {
+          '@id': 'https://www.10centagency.com/#organization',
+        },
+      },
+      {
+        '@type': 'AboutPage',
+        '@id': 'https://www.10centagency.com/about#webpage',
+        url: 'https://www.10centagency.com/about',
+        name: 'About 10 Cent Agency',
+        description:
+          'Learn about 10 Cent Agency — a Bangladesh-based digital marketing agency built to serve small and medium businesses with professional, affordable services.',
+        inLanguage: 'en-BD',
+        isPartOf: {
+          '@id': 'https://www.10centagency.com/#website',
+        },
+        about: {
+          '@id': 'https://www.10centagency.com/#organization',
+        },
+        publisher: {
+          '@id': 'https://www.10centagency.com/#organization',
+        },
+        mainEntity: {
+          '@type': 'Person',
+          '@id': 'https://www.10centagency.com/#founder',
+          name: 'Al Amin',
+          jobTitle: 'Founder & CEO',
+          worksFor: {
+            '@id': 'https://www.10centagency.com/#organization',
+          },
+        },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        '@id': 'https://www.10centagency.com/about#breadcrumb',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Home',
+            item: 'https://www.10centagency.com',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: 'About',
+            item: 'https://www.10centagency.com/about',
+          },
+        ],
+      },
+    ],
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "AboutPage",
-            "url": "https://www.10centagency.com/about",
-            "name": "About 10 Cent Agency",
-            "description": "Learn about 10 Cent Agency — a Bangladesh-based digital marketing agency built to serve small and medium businesses.",
-            "publisher": {
-              "@type": "Organization",
-              "name": "10 Cent Agency",
-              "url": "https://www.10centagency.com",
-              "logo": "https://www.10centagency.com/Logo.png"
-            },
-            "mainEntity": {
-              "@type": "Person",
-              "name": "Al Amin",
-              "jobTitle": "Founder & CEO",
-              "worksFor": {
-                "@type": "Organization",
-                "name": "10 Cent Agency"
-              }
-            }
-          })
+          __html: JSON.stringify(schemaGraph).replace(/</g, '\\u003c'),
         }}
       />
       {/* Hero */}
@@ -227,6 +310,9 @@ export default function AboutPage() {
           </StaggerContainer>
         </div>
       </section>
+
+      {/* 7 New Sections (Why Choose Us, Results, Promise, By The Numbers, Problem, Industries, Community) */}
+      <AboutNewSections />
 
      {/* Founder section */}
 <section className="bg-brand-bgAlt py-16 lg:py-20">

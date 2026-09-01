@@ -97,7 +97,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: 'https://www.10centagency.com/about',
-      lastModified: new Date('2026-06-07'),
+      lastModified: new Date('2026-09-01'),
       changeFrequency: 'monthly',
       priority: 0.7,
     },
