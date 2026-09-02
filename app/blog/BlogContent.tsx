@@ -19,14 +19,29 @@ const categoryColors: Record<string, string> = {
   'Case Studies': 'bg-rose-100 text-rose-700',
 };
 
-export default function BlogContent() {
+interface BlogContentProps {
+  initialPosts?: BlogPost[];
+  initialCategories?: CategoryRow[];
+}
+
+export default function BlogContent({
+  initialPosts = [],
+  initialCategories = [],
+}: BlogContentProps) {
   const [activeFilter, setActiveFilter] = useState('All');
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [categories, setCategories] = useState<CategoryRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [posts, setPosts] = useState<BlogPost[]>(initialPosts);
+  const [categories, setCategories] = useState<CategoryRow[]>(initialCategories);
+  const [loading, setLoading] = useState(
+    initialPosts.length === 0 && initialCategories.length === 0
+  );
   const [visibleCount, setVisibleCount] = useState(6);
 
   useEffect(() => {
+    // Only fetch client-side if no initial data was supplied via SSR
+    if (initialPosts.length > 0 || initialCategories.length > 0) {
+      return;
+    }
+
     async function fetchData() {
       const [postsRes, categoriesRes] = await Promise.all([
         supabase
@@ -47,7 +62,7 @@ export default function BlogContent() {
       setLoading(false);
     }
     fetchData();
-  }, []);
+  }, [initialPosts, initialCategories]);
 
   // Reset visible count when filter changes
   useEffect(() => {

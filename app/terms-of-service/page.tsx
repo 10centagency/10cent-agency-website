@@ -3,8 +3,17 @@ import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service',
+  title: 'Terms of Service | 10 Cent Agency',
   description: 'Read the Terms of Service of 10 Cent Agency to understand the rules and conditions for using our services.',
+  alternates: {
+    canonical: 'https://www.10centagency.com/terms-of-service',
+  },
+  openGraph: {
+    type: 'website',
+    url: 'https://www.10centagency.com/terms-of-service',
+    title: 'Terms of Service | 10 Cent Agency',
+    description: 'Read the Terms of Service of 10 Cent Agency to understand the rules and conditions for using our services.',
+  },
 };
 
 export default function TermsOfServicePage() {

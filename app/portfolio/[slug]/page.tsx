@@ -3,11 +3,11 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronRight, ArrowLeft, ExternalLink } from 'lucide-react';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { getPortfolioItem } from '@/lib/portfolio';
 import SectionLabel from '@/components/ui/SectionLabel';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import CTABanner from '@/components/home/CTABanner';
 import ProjectContent from './ProjectContent';
-import ImageLightbox from '@/components/ui/ImageLightbox';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,40 +27,59 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = createServerSupabaseClient();
-  const { data: item } = await supabase
-    .from('portfolio_items')
-    .select('title, result_highlight, category, meta_description, excerpt')
-    .eq('slug', slug)
-    .eq('status', 'published')
-    .maybeSingle();
+  const item = await getPortfolioItem(slug);
 
   if (!item) {
-    return { title: 'Project Not Found' };
+    return {
+      title: 'Project Not Found | 10 Cent Agency',
+    };
   }
 
   const description =
     item.meta_description ||
     item.excerpt ||
     `${item.category} project — ${item.result_highlight}`;
+  const canonicalUrl = `https://www.10centagency.com/portfolio/${slug}`;
+  const imageUrl = item.featured_image_url || 'https://www.10centagency.com/og-image.png';
 
   return {
     title: item.title,
     description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      type: 'website',
+      url: canonicalUrl,
+      siteName: '10 Cent Agency',
+      title: item.title,
+      description,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: item.title,
+        },
+      ],
+      locale: 'en_US',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: item.title,
+      description,
+      images: [imageUrl],
+    },
   };
 }
 
 export default async function ProjectPage({ params }: Props) {
   const { slug } = await params;
-  const supabase = createServerSupabaseClient();
-  const { data: item } = await supabase
-    .from('portfolio_items')
-    .select('*')
-    .eq('slug', slug)
-    .eq('status', 'published')
-    .maybeSingle();
+  const item = await getPortfolioItem(slug);
 
-  if (!item) notFound();
+  if (!item) {
+    notFound();
+  }
 
   const categoryColors: Record<string, string> = {
     Meta: 'bg-blue-100 text-blue-700',

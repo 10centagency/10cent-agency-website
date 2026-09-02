@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import type { BlogPost, CategoryRow, ContentBlock } from '@/lib/database.types';
 
 export interface HomeBlogPost {
   slug: string;
@@ -68,4 +69,183 @@ export async function getLatestBlogPosts(limit = 3): Promise<HomeBlogPost[]> {
     console.error('getLatestBlogPosts failed:', error);
     return [];
   }
+}
+
+export async function getBlogPost(slug: string): Promise<BlogPost | null> {
+  try {
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('slug', slug)
+      .eq('status', 'published')
+      .maybeSingle();
+
+    if (error || !data) {
+      if (error) console.error(`Error fetching blog post "${slug}":`, error);
+      return null;
+    }
+
+    return data as BlogPost;
+  } catch (error) {
+    console.error(`getBlogPost("${slug}") failed:`, error);
+    return null;
+  }
+}
+
+export async function getPublishedBlogPosts(): Promise<BlogPost[]> {
+  try {
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('status', 'published')
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: false });
+
+    if (error || !data) {
+      if (error) console.error('Error fetching published blog posts:', error);
+      return [];
+    }
+
+    return data as BlogPost[];
+  } catch (error) {
+    console.error('getPublishedBlogPosts failed:', error);
+    return [];
+  }
+}
+
+export async function getBlogCategories(): Promise<CategoryRow[]> {
+  try {
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('type', 'blog')
+      .order('name');
+
+    if (error || !data) {
+      if (error) console.error('Error fetching blog categories:', error);
+      return [];
+    }
+
+    return data as CategoryRow[];
+  } catch (error) {
+    console.error('getBlogCategories failed:', error);
+    return [];
+  }
+}
+
+export async function getCategoryById(id: string): Promise<CategoryRow | null> {
+  try {
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return data as CategoryRow;
+  } catch (error) {
+    console.error(`getCategoryById("${id}") failed:`, error);
+    return null;
+  }
+}
+
+export async function getRelatedBlogPosts(
+  currentPostId: string,
+  categoryId?: string | null,
+  limit = 3
+): Promise<BlogPost[]> {
+  try {
+    const supabase = createServerSupabaseClient();
+    let query = supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('status', 'published')
+      .neq('id', currentPostId);
+
+    if (categoryId) {
+      query = query.eq('category_id', categoryId);
+    }
+
+    const { data, error } = await query.limit(limit);
+
+    if (error || !data) {
+      if (error) console.error('Error fetching related blog posts:', error);
+      return [];
+    }
+
+    return data as BlogPost[];
+  } catch (error) {
+    console.error('getRelatedBlogPosts failed:', error);
+    return [];
+  }
+}
+
+export function formatBlogTitle(title: string): string {
+  const suffix = ' | 10 Cent Agency';
+  const maxTotal = 65;
+  if (!title) return '10 Cent Agency Blog';
+  const cleanTitle = title.trim();
+  if (cleanTitle.length + suffix.length <= maxTotal) {
+    return `${cleanTitle}${suffix}`;
+  }
+  const maxTitleLen = maxTotal - suffix.length - 1;
+  let trimmed = cleanTitle.slice(0, maxTitleLen);
+  const lastSpace = trimmed.lastIndexOf(' ');
+  if (lastSpace > 20) {
+    trimmed = trimmed.slice(0, lastSpace);
+  }
+  return `${trimmed.trim()}…${suffix}`;
+}
+
+export function extractPlainTextFromBlocks(blocks?: ContentBlock[] | null): string {
+  if (!blocks || !Array.isArray(blocks)) return '';
+  const texts: string[] = [];
+  for (const block of blocks) {
+    if (!block) continue;
+    if (block.type === 'text') {
+      if (block.heading) texts.push(block.heading);
+      if (block.content) texts.push(block.content);
+    } else if (block.type === 'image-text') {
+      if (block.heading) texts.push(block.heading);
+      if (block.content) texts.push(block.content);
+    }
+  }
+  return texts.join(' ').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+}
+
+export function truncateDescription(text: string, maxLen = 155): string {
+  const clean = text.replace(/\s+/g, ' ').trim();
+  if (!clean) return '';
+  if (clean.length <= maxLen) return clean;
+  const truncated = clean.slice(0, maxLen);
+  const lastSpace = truncated.lastIndexOf(' ');
+  if (lastSpace > 50) {
+    return truncated.slice(0, lastSpace).trim() + '...';
+  }
+  return truncated.trim() + '...';
+}
+
+export function getBlogPostDescription(post: {
+  meta_description?: string | null;
+  excerpt?: string | null;
+  content_blocks?: ContentBlock[] | null;
+}): string {
+  if (post.meta_description && post.meta_description.trim()) {
+    return post.meta_description.trim();
+  }
+  if (post.excerpt && post.excerpt.trim()) {
+    return post.excerpt.trim();
+  }
+  const plain = extractPlainTextFromBlocks(post.content_blocks);
+  if (plain) {
+    return truncateDescription(plain, 155);
+  }
+  return 'Expert tips on Facebook ads, website development, and AI automation for small businesses in Bangladesh.';
 }

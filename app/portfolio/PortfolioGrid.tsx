@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ExternalLink } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { PortfolioItem } from '@/lib/database.types';
+import type { PortfolioItem } from '@/lib/database.types';
 
 const filters = ['All', 'Meta', 'Website', 'Design', 'Automation'];
 
@@ -16,12 +16,21 @@ const categoryColors: Record<string, string> = {
   Automation: 'bg-green-100 text-green-700',
 };
 
-export default function PortfolioGrid() {
+interface PortfolioGridProps {
+  initialItems?: PortfolioItem[];
+}
+
+export default function PortfolioGrid({ initialItems = [] }: PortfolioGridProps) {
   const [activeFilter, setActiveFilter] = useState('All');
-  const [items, setItems] = useState<PortfolioItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<PortfolioItem[]>(initialItems);
+  const [loading, setLoading] = useState(initialItems.length === 0);
 
   useEffect(() => {
+    // Only fetch client-side if no initial items were supplied via SSR
+    if (initialItems.length > 0) {
+      return;
+    }
+
     async function fetchPortfolio() {
       const { data, error } = await supabase
         .from('portfolio_items')
@@ -33,7 +42,7 @@ export default function PortfolioGrid() {
       setLoading(false);
     }
     fetchPortfolio();
-  }, []);
+  }, [initialItems]);
 
   const filtered =
     activeFilter === 'All'

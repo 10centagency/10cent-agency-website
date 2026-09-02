@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
+import { getPublishedBlogPosts, getBlogCategories } from '@/lib/blog';
 import BlogContent from './BlogContent';
+
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: 'Digital Marketing Blog | 10 Cent Agency',
@@ -34,6 +37,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function BlogPage() {
-  return <BlogContent />;
+export default async function BlogPage() {
+  const [initialPosts, initialCategories] = await Promise.all([
+    getPublishedBlogPosts(),
+    getBlogCategories(),
+  ]);
+
+  return (
+    <BlogContent
+      initialPosts={initialPosts}
+      initialCategories={initialCategories}
+    />
+  );
 }

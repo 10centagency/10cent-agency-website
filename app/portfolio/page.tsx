@@ -4,7 +4,10 @@ import { ChevronRight } from 'lucide-react';
 import SectionLabel from '@/components/ui/SectionLabel';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import CTABanner from '@/components/home/CTABanner';
+import { getPublishedPortfolioItems } from '@/lib/portfolio';
 import PortfolioGrid from './PortfolioGrid';
+
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: 'Our Portfolio | 10 Cent Agency',
@@ -18,25 +21,38 @@ export const metadata: Metadata = {
     url: 'https://www.10centagency.com/portfolio',
     siteName: '10 Cent Agency',
     title: 'Our Portfolio | 10 Cent Agency',
-    description: 'See our work — Facebook marketing campaigns, websites, AI automation projects, and graphic design for businesses across Bangladesh.',
-    images: [{ url: 'https://www.10centagency.com/og-image.png', width: 1200, height: 630, alt: '10 Cent Agency Portfolio' }],
+    description:
+      'See our work — Facebook marketing campaigns, websites, AI automation projects, and graphic design for businesses across Bangladesh.',
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: '10 Cent Agency Portfolio',
+      },
+    ],
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Our Portfolio | 10 Cent Agency',
-    description: 'See our work — Facebook campaigns, websites, AI automation for businesses across Bangladesh.',
+    description:
+      'See our work — Facebook campaigns, websites, AI automation for businesses across Bangladesh.',
   },
 };
 
-export default function PortfolioPage() {
+export default async function PortfolioPage() {
+  const initialItems = await getPublishedPortfolioItems();
+
   return (
     <>
       {/* Hero */}
       <section className="bg-brand-bgAlt pt-32 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 text-sm text-brand-textMid mb-8">
-            <Link href="/" className="hover:text-brand-blue transition-colors">Home</Link>
+            <Link href="/" className="hover:text-brand-blue transition-colors">
+              Home
+            </Link>
             <ChevronRight className="w-4 h-4" />
             <span className="text-brand-textDark font-medium">Portfolio</span>
           </div>
@@ -52,7 +68,7 @@ export default function PortfolioPage() {
         </div>
       </section>
 
-      <PortfolioGrid />
+      <PortfolioGrid initialItems={initialItems} />
 
       {/* CTA */}
       <section className="bg-brand-bgAlt py-16 text-center">

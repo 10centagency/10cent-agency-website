@@ -3,8 +3,17 @@ import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy',
+  title: 'Privacy Policy | 10 Cent Agency',
   description: 'Read the Privacy Policy of 10 Cent Agency to understand how we collect, use, and protect your information.',
+  alternates: {
+    canonical: 'https://www.10centagency.com/privacy-policy',
+  },
+  openGraph: {
+    type: 'website',
+    url: 'https://www.10centagency.com/privacy-policy',
+    title: 'Privacy Policy | 10 Cent Agency',
+    description: 'Read the Privacy Policy of 10 Cent Agency to understand how we collect, use, and protect your information.',
+  },
 };
 
 export default function PrivacyPolicyPage() {
