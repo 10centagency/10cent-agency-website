@@ -88,9 +88,9 @@ const industryIconMap: Record<string, React.ComponentType<{ className?: string }
 };
 
 export const metadata: Metadata = {
-  title: 'Social Media Management Services in Bangladesh | 10 Cent Agency',
+  title: 'Social Media Management in Bangladesh | 10 Cent Agency',
   description:
-    'Complete multi-platform social media management — Facebook, Instagram, LinkedIn, YouTube & Google Business Profile. Content calendar, design, AI-powered community management, and monthly reporting.',
+    'Social media management for Bangladeshi businesses — content calendar, post design, Reels & community management across Facebook, Instagram, LinkedIn & more.',
   alternates: {
     canonical: 'https://www.10centagency.com/services/social-media-management',
   },
@@ -98,9 +98,9 @@ export const metadata: Metadata = {
     type: 'website',
     url: 'https://www.10centagency.com/services/social-media-management',
     siteName: '10 Cent Agency',
-    title: 'Social Media Management Services in Bangladesh | 10 Cent Agency',
+    title: 'Social Media Management in Bangladesh | 10 Cent Agency',
     description:
-      'Complete multi-platform social media management — Facebook, Instagram, LinkedIn, YouTube & Google Business Profile. Content calendar, design, AI-powered community management, and monthly reporting.',
+      'Social media management for Bangladeshi businesses — content calendar, post design, Reels & community management across Facebook, Instagram, LinkedIn & more.',
     images: [
       {
         url: 'https://www.10centagency.com/og-image.png',
@@ -113,9 +113,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Social Media Management Services in Bangladesh | 10 Cent Agency',
+    title: 'Social Media Management in Bangladesh | 10 Cent Agency',
     description:
-      'Complete multi-platform social media management — Facebook, Instagram, LinkedIn, YouTube & Google Business Profile. Content calendar, design, AI-powered community management, and monthly reporting.',
+      'Social media management for Bangladeshi businesses — content calendar, post design, Reels & community management across Facebook, Instagram, LinkedIn & more.',
     images: ['https://www.10centagency.com/og-image.png'],
   },
   robots: {

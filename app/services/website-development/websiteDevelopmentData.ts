@@ -1065,9 +1065,9 @@ export function getWebsiteDevelopmentSchemaGraph() {
         '@type': 'WebPage',
         '@id': 'https://www.10centagency.com/services/website-development#webpage',
         url: 'https://www.10centagency.com/services/website-development',
-        name: 'Website Development Services in Bangladesh | 10 Cent Agency',
+        name: 'Website Development Services in BD | 10 Cent Agency',
         description:
-          'Professional website development in Bangladesh: business sites, landing pages, e-commerce and custom Next.js/React apps, built fast and SEO-ready.',
+          'Fast, mobile-first websites & e-commerce stores — WordPress, Next.js, bKash/Nagad payment, SEO setup & 1 month free support. Get a free quote today.',
         inLanguage: 'en-BD',
         isPartOf: {
           '@id': 'https://www.10centagency.com/#website',

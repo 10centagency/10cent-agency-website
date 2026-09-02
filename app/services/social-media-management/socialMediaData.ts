@@ -884,9 +884,9 @@ export function getSocialMediaSchemaGraph() {
         '@type': 'WebPage',
         '@id': 'https://www.10centagency.com/services/social-media-management#webpage',
         url: 'https://www.10centagency.com/services/social-media-management',
-        name: 'Social Media Management Services in Bangladesh | 10 Cent Agency',
+        name: 'Social Media Management in Bangladesh | 10 Cent Agency',
         description:
-          'Complete multi-platform social media management — Facebook, Instagram, LinkedIn, YouTube & Google Business Profile. Content calendar, design, AI-powered community management, and monthly reporting.',
+          'Social media management for Bangladeshi businesses — content calendar, post design, Reels & community management across Facebook, Instagram, LinkedIn & more.',
         inLanguage: 'en-BD',
         isPartOf: {
           '@id': 'https://www.10centagency.com/#website',

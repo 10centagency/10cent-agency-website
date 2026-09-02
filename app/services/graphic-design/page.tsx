@@ -124,7 +124,7 @@ const industryIconMap: Record<string, React.ComponentType<{ className?: string }
 export const metadata: Metadata = {
   title: 'Graphic Design Services in Bangladesh | 10 Cent Agency',
   description:
-    'Graphic design services in Bangladesh — logo & brand identity, social media graphics, marketing materials, packaging & pitch decks. Full ownership, print & digital ready files.',
+    'Logo design, brand identity, social media graphics & marketing materials for Bangladeshi businesses. Professional, affordable, fast delivery. Get a free quote.',
   alternates: {
     canonical: 'https://www.10centagency.com/services/graphic-design',
   },
@@ -134,7 +134,7 @@ export const metadata: Metadata = {
     siteName: '10 Cent Agency',
     title: 'Graphic Design Services in Bangladesh | 10 Cent Agency',
     description:
-      'Graphic design services in Bangladesh — logo & brand identity, social media graphics, marketing materials, packaging & pitch decks. Full ownership, print & digital ready files.',
+      'Logo design, brand identity, social media graphics & marketing materials for Bangladeshi businesses. Professional, affordable, fast delivery. Get a free quote.',
     images: [
       {
         url: 'https://www.10centagency.com/og-image.png',
@@ -149,7 +149,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Graphic Design Services in Bangladesh | 10 Cent Agency',
     description:
-      'Graphic design services in Bangladesh — logo & brand identity, social media graphics, marketing materials, packaging & pitch decks. Full ownership, print & digital ready files.',
+      'Logo design, brand identity, social media graphics & marketing materials for Bangladeshi businesses. Professional, affordable, fast delivery. Get a free quote.',
     images: ['https://www.10centagency.com/og-image.png'],
   },
   robots: {

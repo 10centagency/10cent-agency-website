@@ -126,7 +126,7 @@ const industryIconMap: Record<string, React.ComponentType<{ className?: string }
 export const metadata: Metadata = {
   title: 'SEO, AEO & GEO Services in Bangladesh | 10 Cent Agency',
   description:
-    'SEO, AEO & GEO services in Bangladesh — rank on Google, win Featured Snippets and get cited by ChatGPT, Gemini & AI Overviews. On-page, technical & local SEO for your business.',
+    'Rank on Google, win Featured Snippets & get cited by ChatGPT, Gemini & AI Overviews. On-page, technical & local SEO + AEO & GEO for Bangladeshi businesses.',
   alternates: {
     canonical: 'https://www.10centagency.com/services/seo-aeo-geo',
   },
@@ -136,7 +136,7 @@ export const metadata: Metadata = {
     siteName: '10 Cent Agency',
     title: 'SEO, AEO & GEO Services in Bangladesh | 10 Cent Agency',
     description:
-      'SEO, AEO & GEO services in Bangladesh — rank on Google, win Featured Snippets and get cited by ChatGPT, Gemini & AI Overviews. On-page, technical & local SEO for your business.',
+      'Rank on Google, win Featured Snippets & get cited by ChatGPT, Gemini & AI Overviews. On-page, technical & local SEO + AEO & GEO for Bangladeshi businesses.',
     images: [
       {
         url: 'https://www.10centagency.com/og-image.png',
@@ -151,7 +151,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'SEO, AEO & GEO Services in Bangladesh | 10 Cent Agency',
     description:
-      'SEO, AEO & GEO services in Bangladesh — rank on Google, win Featured Snippets and get cited by ChatGPT, Gemini & AI Overviews. On-page, technical & local SEO for your business.',
+      'Rank on Google, win Featured Snippets & get cited by ChatGPT, Gemini & AI Overviews. On-page, technical & local SEO + AEO & GEO for Bangladeshi businesses.',
     images: ['https://www.10centagency.com/og-image.png'],
   },
   robots: {

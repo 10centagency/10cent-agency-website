@@ -25,7 +25,7 @@ const anekBangla = Anek_Bangla({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.10centagency.com'),
-  title: "10 Cent Agency | Best Digital Marketing Agency in BD",
+  title: "Best Digital Marketing Agency in Bangladesh | 10 Cent Agency",
   description:
     "Affordable digital marketing agency in BD helping small businesses grow online with Facebook ads, websites & AI automation. Get a free consultation today!",
   keywords: [
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://www.10centagency.com/",
     siteName: "10 Cent Agency",
-    title: "10 Cent Agency | Best Digital Marketing Agency in BD",
+    title: "Best Digital Marketing Agency in Bangladesh | 10 Cent Agency",
     description:
       "Affordable digital marketing agency in BD helping small businesses grow online with Facebook ads, websites & AI automation. Get a free consultation today!",
     images: [
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
   // ✅ TWITTER CARD
   twitter: {
     card: "summary_large_image",
-    title: "10 Cent Agency | Best Digital Marketing Agency in BD",
+    title: "Best Digital Marketing Agency in Bangladesh | 10 Cent Agency",
     description:
       "Affordable digital marketing agency in BD helping small businesses grow online with Facebook ads, websites & AI automation. Get a free consultation today!",
     images: ["https://www.10centagency.com/og-image.png"],

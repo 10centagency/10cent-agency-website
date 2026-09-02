@@ -122,9 +122,9 @@ const industryIconMap: Record<string, React.ComponentType<{ className?: string }
 };
 
 export const metadata: Metadata = {
-  title: 'Google Ads Management Services in Bangladesh | 10 Cent Agency',
+  title: 'Google Ads Management Services in BD | 10 Cent Agency',
   description:
-    'Google Ads management in Bangladesh — Search, Shopping, Display, YouTube & Performance Max campaigns. Transparent reporting, no markup on ad spend. Book a free audit.',
+    'Search, Shopping, Display, YouTube & Performance Max campaigns for Bangladeshi businesses. Fixed fee management, no ad spend markup. Book a free audit.',
   alternates: {
     canonical: 'https://www.10centagency.com/services/google-ads',
   },
@@ -132,9 +132,9 @@ export const metadata: Metadata = {
     type: 'website',
     url: 'https://www.10centagency.com/services/google-ads',
     siteName: '10 Cent Agency',
-    title: 'Google Ads Management Services in Bangladesh | 10 Cent Agency',
+    title: 'Google Ads Management Services in BD | 10 Cent Agency',
     description:
-      'Google Ads management in Bangladesh — Search, Shopping, Display, YouTube & Performance Max campaigns. Transparent reporting, no markup on ad spend. Book a free audit.',
+      'Search, Shopping, Display, YouTube & Performance Max campaigns for Bangladeshi businesses. Fixed fee management, no ad spend markup. Book a free audit.',
     images: [
       {
         url: 'https://www.10centagency.com/og-image.png',
@@ -147,9 +147,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Google Ads Management Services in Bangladesh | 10 Cent Agency',
+    title: 'Google Ads Management Services in BD | 10 Cent Agency',
     description:
-      'Google Ads management in Bangladesh — Search, Shopping, Display, YouTube & Performance Max campaigns. Transparent reporting, no markup on ad spend. Book a free audit.',
+      'Search, Shopping, Display, YouTube & Performance Max campaigns for Bangladeshi businesses. Fixed fee management, no ad spend markup. Book a free audit.',
     images: ['https://www.10centagency.com/og-image.png'],
   },
   robots: {

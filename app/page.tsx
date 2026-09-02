@@ -9,7 +9,7 @@ import type { PortfolioItem } from '@/lib/database.types';
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "10 Cent Agency | Best Digital Marketing Agency in BD",
+  title: "Best Digital Marketing Agency in Bangladesh | 10 Cent Agency",
   description:
     "Affordable digital marketing agency in BD helping small businesses grow online with Facebook ads, websites & AI automation. Get a free consultation today!",
   keywords: [
@@ -95,7 +95,7 @@ export default async function Home() {
         '@type': 'WebPage',
         '@id': 'https://www.10centagency.com/#webpage',
         url: 'https://www.10centagency.com/',
-        name: '10 Cent Agency | Best Digital Marketing Agency in BD',
+        name: 'Best Digital Marketing Agency in Bangladesh | 10 Cent Agency',
         description:
           'Affordable digital marketing agency in BD helping small businesses grow online with Facebook ads, websites & AI automation. Get a free consultation today!',
         inLanguage: 'en-BD',

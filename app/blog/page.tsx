@@ -5,9 +5,9 @@ import BlogContent from './BlogContent';
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: 'Digital Marketing Blog | 10 Cent Agency',
+  title: 'Digital Marketing Blog | 10 Cent Agency Bangladesh',
   description:
-    'Expert tips on Facebook ads, website development, and AI automation for small businesses in Bangladesh.',
+    'Practical tips on Facebook ads, website development, SEO & AI automation for Bangladeshi small businesses. Free guides & insights from 10 Cent Agency.',
   alternates: {
     canonical: 'https://www.10centagency.com/blog',
   },
@@ -15,9 +15,9 @@ export const metadata: Metadata = {
     type: 'website',
     url: 'https://www.10centagency.com/blog',
     siteName: '10 Cent Agency',
-    title: 'Digital Marketing Blog | 10 Cent Agency',
+    title: 'Digital Marketing Blog | 10 Cent Agency Bangladesh',
     description:
-      'Expert tips on Facebook ads, website development, and AI automation for small businesses in Bangladesh.',
+      'Practical tips on Facebook ads, website development, SEO & AI automation for Bangladeshi small businesses. Free guides & insights from 10 Cent Agency.',
     images: [
       {
         url: 'https://www.10centagency.com/og-image.png',
@@ -30,9 +30,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Digital Marketing Blog | 10 Cent Agency',
+    title: 'Digital Marketing Blog | 10 Cent Agency Bangladesh',
     description:
-      'Expert tips on Facebook ads, website development, and AI automation for small businesses in Bangladesh.',
+      'Practical tips on Facebook ads, website development, SEO & AI automation for Bangladeshi small businesses. Free guides & insights from 10 Cent Agency.',
     images: ['https://www.10centagency.com/og-image.png'],
   },
 };

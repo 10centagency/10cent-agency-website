@@ -1191,7 +1191,7 @@ export function getSeoAeoGeoSchemaGraph() {
         url: 'https://www.10centagency.com/services/seo-aeo-geo',
         name: 'SEO, AEO & GEO Services in Bangladesh | 10 Cent Agency',
         description:
-          'SEO, AEO & GEO services in Bangladesh — rank on Google, win Featured Snippets and get cited by ChatGPT, Gemini & AI Overviews. On-page, technical & local SEO for your business.',
+          'Rank on Google, win Featured Snippets & get cited by ChatGPT, Gemini & AI Overviews. On-page, technical & local SEO + AEO & GEO for Bangladeshi businesses.',
         inLanguage: 'en-BD',
         isPartOf: {
           '@id': 'https://www.10centagency.com/#website',

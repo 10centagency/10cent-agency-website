@@ -705,9 +705,9 @@ export function getFacebookMetaSchemaGraph() {
         '@type': 'WebPage',
         '@id': 'https://www.10centagency.com/services/facebook-meta-marketing#webpage',
         url: 'https://www.10centagency.com/services/facebook-meta-marketing',
-        name: 'Facebook & Meta Marketing Services | 10 Cent Agency',
+        name: 'Facebook & Meta Marketing Services | 10 Cent Agency BD',
         description:
-          'Build a powerful, revenue-generating presence on Facebook and Instagram. From page setup to full-scale ad campaigns with measurable results.',
+          'Data-driven Facebook & Instagram campaigns for Bangladeshi businesses — Pixel, Conversions API, creative management & monthly reports. No ad spend markup.',
         inLanguage: 'en-BD',
         isPartOf: {
           '@id': 'https://www.10centagency.com/#website',

@@ -8,7 +8,7 @@ import Image from "next/image";
 import AboutNewSections from './AboutNewSections';
 
 export const metadata: Metadata = {
-  title: 'About Us | 10 Cent Agency',
+  title: 'About 10 Cent Agency | Digital Marketing Agency Dhaka, BD',
   description:
     'Learn about 10 Cent Agency — a Bangladesh-based digital marketing agency built to serve small and medium businesses with professional, affordable services.',
   alternates: {
@@ -18,15 +18,15 @@ export const metadata: Metadata = {
     type: 'website',
     url: 'https://www.10centagency.com/about',
     siteName: '10 Cent Agency',
-    title: 'About Us | 10 Cent Agency',
+    title: 'About 10 Cent Agency | Digital Marketing Agency Dhaka, BD',
     description: 'Learn about 10 Cent Agency — a Bangladesh-based digital marketing agency built to serve small and medium businesses with professional, affordable services.',
     images: [{ url: 'https://www.10centagency.com/og-image.png', width: 1200, height: 630, alt: '10 Cent Agency' }],
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'About Us | 10 Cent Agency',
-    description: 'Learn about 10 Cent Agency — a Bangladesh-based digital marketing agency built to serve small and medium businesses.',
+    title: 'About 10 Cent Agency | Digital Marketing Agency Dhaka, BD',
+    description: 'Learn about 10 Cent Agency — a Bangladesh-based digital marketing agency built to serve small and medium businesses with professional, affordable services.',
   },
 };
 
@@ -118,7 +118,7 @@ export default function AboutPage() {
         '@type': 'AboutPage',
         '@id': 'https://www.10centagency.com/about#webpage',
         url: 'https://www.10centagency.com/about',
-        name: 'About 10 Cent Agency',
+        name: 'About 10 Cent Agency | Digital Marketing Agency Dhaka, BD',
         description:
           'Learn about 10 Cent Agency — a Bangladesh-based digital marketing agency built to serve small and medium businesses with professional, affordable services.',
         inLanguage: 'en-BD',

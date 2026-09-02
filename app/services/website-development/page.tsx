@@ -88,9 +88,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Website Development Services in Bangladesh | 10 Cent Agency',
+  title: 'Website Development Services in BD | 10 Cent Agency',
   description:
-    'Professional website development in Bangladesh: business sites, landing pages, e-commerce and custom Next.js/React apps, built fast and SEO-ready.',
+    'Fast, mobile-first websites & e-commerce stores — WordPress, Next.js, bKash/Nagad payment, SEO setup & 1 month free support. Get a free quote today.',
   alternates: {
     canonical: 'https://www.10centagency.com/services/website-development',
   },
@@ -98,9 +98,9 @@ export const metadata: Metadata = {
     type: 'website',
     url: 'https://www.10centagency.com/services/website-development',
     siteName: '10 Cent Agency',
-    title: 'Website Development Services in Bangladesh | 10 Cent Agency',
+    title: 'Website Development Services in BD | 10 Cent Agency',
     description:
-      'Professional website development in Bangladesh: business sites, landing pages, e-commerce and custom Next.js/React apps, built fast and SEO-ready.',
+      'Fast, mobile-first websites & e-commerce stores — WordPress, Next.js, bKash/Nagad payment, SEO setup & 1 month free support. Get a free quote today.',
     images: [
       {
         url: 'https://www.10centagency.com/og-image.png',
@@ -113,9 +113,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Website Development Services in Bangladesh | 10 Cent Agency',
+    title: 'Website Development Services in BD | 10 Cent Agency',
     description:
-      'Professional website development in Bangladesh: business sites, landing pages, e-commerce and custom Next.js/React apps, built fast and SEO-ready.',
+      'Fast, mobile-first websites & e-commerce stores — WordPress, Next.js, bKash/Nagad payment, SEO setup & 1 month free support. Get a free quote today.',
     images: ['https://www.10centagency.com/og-image.png'],
   },
   robots: {

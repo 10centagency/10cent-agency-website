@@ -59,9 +59,9 @@ import {
 } from 'react-icons/fa6';
 
 export const metadata: Metadata = {
-  title: 'Facebook & Meta Marketing Services | 10 Cent Agency',
+  title: 'Facebook & Meta Marketing Services | 10 Cent Agency BD',
   description:
-    'Build a powerful, revenue-generating presence on Facebook and Instagram. From page setup to full-scale ad campaigns with measurable results.',
+    'Data-driven Facebook & Instagram campaigns for Bangladeshi businesses — Pixel, Conversions API, creative management & monthly reports. No ad spend markup.',
   alternates: {
     canonical: 'https://www.10centagency.com/services/facebook-meta-marketing',
   },
@@ -69,9 +69,9 @@ export const metadata: Metadata = {
     type: 'website',
     url: 'https://www.10centagency.com/services/facebook-meta-marketing',
     siteName: '10 Cent Agency',
-    title: 'Facebook & Meta Marketing Services | 10 Cent Agency',
+    title: 'Facebook & Meta Marketing Services | 10 Cent Agency BD',
     description:
-      'Build a powerful, revenue-generating presence on Facebook and Instagram. From page setup to full-scale ad campaigns with measurable results.',
+      'Data-driven Facebook & Instagram campaigns for Bangladeshi businesses — Pixel, Conversions API, creative management & monthly reports. No ad spend markup.',
     images: [
       {
         url: 'https://www.10centagency.com/og-image.png',
@@ -84,9 +84,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Facebook & Meta Marketing Services | 10 Cent Agency',
+    title: 'Facebook & Meta Marketing Services | 10 Cent Agency BD',
     description:
-      'Build a powerful, revenue-generating presence on Facebook and Instagram. From page setup to full-scale ad campaigns with measurable results.',
+      'Data-driven Facebook & Instagram campaigns for Bangladeshi businesses — Pixel, Conversions API, creative management & monthly reports. No ad spend markup.',
     images: ['https://www.10centagency.com/og-image.png'],
   },
   robots: {

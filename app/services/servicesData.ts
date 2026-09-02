@@ -864,9 +864,9 @@ export function getServicesSchemaGraph() {
         '@type': 'WebPage',
         '@id': 'https://www.10centagency.com/services#webpage',
         url: 'https://www.10centagency.com/services',
-        name: 'Our Services | 10 Cent Agency',
+        name: 'Digital Marketing Services in Bangladesh | 10 Cent Agency',
         description:
-          'A complete suite of 7 digital services designed to grow your business — Facebook & Meta Marketing, Google Ads, Website Development, AI Automation, Social Media Management, SEO/AEO/GEO, and Graphic Design.',
+          'Facebook ads, website development, AI chatbot, SEO, Google Ads & graphic design for Bangladeshi businesses. Transparent pricing. Get a free quote today.',
         inLanguage: 'en-BD',
         isPartOf: {
           '@id': 'https://www.10centagency.com/#website',

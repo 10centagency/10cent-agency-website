@@ -10,9 +10,9 @@ import PortfolioGrid from './PortfolioGrid';
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: 'Our Portfolio | 10 Cent Agency',
+  title: 'Our Portfolio & Case Studies | 10 Cent Agency Bangladesh',
   description:
-    'See our work — Facebook marketing campaigns, websites, AI automation projects, and graphic design for businesses across Bangladesh.',
+    'Browse real results — website builds, Facebook ad campaigns, AI chatbot setups & graphic design projects for businesses across Bangladesh. See our work.',
   alternates: {
     canonical: 'https://www.10centagency.com/portfolio',
   },
@@ -20,9 +20,9 @@ export const metadata: Metadata = {
     type: 'website',
     url: 'https://www.10centagency.com/portfolio',
     siteName: '10 Cent Agency',
-    title: 'Our Portfolio | 10 Cent Agency',
+    title: 'Our Portfolio & Case Studies | 10 Cent Agency Bangladesh',
     description:
-      'See our work — Facebook marketing campaigns, websites, AI automation projects, and graphic design for businesses across Bangladesh.',
+      'Browse real results — website builds, Facebook ad campaigns, AI chatbot setups & graphic design projects for businesses across Bangladesh. See our work.',
     images: [
       {
         url: 'https://www.10centagency.com/og-image.png',
@@ -35,9 +35,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Our Portfolio | 10 Cent Agency',
+    title: 'Our Portfolio & Case Studies | 10 Cent Agency Bangladesh',
     description:
-      'See our work — Facebook campaigns, websites, AI automation for businesses across Bangladesh.',
+      'Browse real results — website builds, Facebook ad campaigns, AI chatbot setups & graphic design projects for businesses across Bangladesh. See our work.',
   },
 };
 

@@ -43,13 +43,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     {
       url: 'https://www.10centagency.com',
-      lastModified: new Date('2026-08-29'),
+      lastModified: new Date('2026-09-02'),
       changeFrequency: 'weekly',
       priority: 1,
     },
     {
       url: 'https://www.10centagency.com/services',
-      lastModified: new Date('2026-08-28'),
+      lastModified: new Date('2026-09-02'),
       changeFrequency: 'monthly',
       priority: 0.9,
     },
@@ -97,25 +97,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: 'https://www.10centagency.com/about',
-      lastModified: new Date('2026-09-01'),
+      lastModified: new Date('2026-09-02'),
       changeFrequency: 'monthly',
       priority: 0.7,
     },
     {
       url: 'https://www.10centagency.com/portfolio',
-      lastModified: new Date('2026-06-06'),
+      lastModified: new Date('2026-09-02'),
       changeFrequency: 'weekly',
       priority: 0.7,
     },
     {
       url: 'https://www.10centagency.com/blog',
-      lastModified: new Date('2026-06-06'),
+      lastModified: new Date('2026-09-02'),
       changeFrequency: 'weekly',
       priority: 0.7,
     },
     {
       url: 'https://www.10centagency.com/contact',
-      lastModified: new Date('2026-06-06'),
+      lastModified: new Date('2026-09-02'),
       changeFrequency: 'monthly',
       priority: 0.6,
     },

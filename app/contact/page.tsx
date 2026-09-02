@@ -6,9 +6,9 @@ import AnimatedSection from '@/components/ui/AnimatedSection';
 import ContactForm from './ContactForm';
 
 export const metadata: Metadata = {
-  title: 'Contact 10 Cent Agency',
+  title: 'Contact 10 Cent Agency | Free Consultation — Dhaka, BD',
   description:
-    'Get in touch with 10 Cent Agency. Book a free consultation for Facebook marketing, website development, or AI automation services.',
+    'Book a free consultation with 10 Cent Agency. Reach us by WhatsApp, email or contact form. We deliver expert digital solutions across Bangladesh.',
   alternates: {
     canonical: 'https://www.10centagency.com/contact',
   },
@@ -16,9 +16,9 @@ export const metadata: Metadata = {
     type: 'website',
     url: 'https://www.10centagency.com/contact',
     siteName: '10 Cent Agency',
-    title: 'Contact 10 Cent Agency',
+    title: 'Contact 10 Cent Agency | Free Consultation — Dhaka, BD',
     description:
-      'Get in touch with 10 Cent Agency. Book a free consultation for Facebook marketing, website development, or AI automation services.',
+      'Book a free consultation with 10 Cent Agency. Reach us by WhatsApp, email or contact form. We deliver expert digital solutions across Bangladesh.',
     images: [
       {
         url: 'https://www.10centagency.com/og-image.png',
@@ -31,9 +31,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Contact 10 Cent Agency',
+    title: 'Contact 10 Cent Agency | Free Consultation — Dhaka, BD',
     description:
-      'Get in touch with 10 Cent Agency. Book a free consultation for Facebook marketing, website development, or AI automation services.',
+      'Book a free consultation with 10 Cent Agency. Reach us by WhatsApp, email or contact form. We deliver expert digital solutions across Bangladesh.',
     images: ['https://www.10centagency.com/og-image.png'],
   },
 };

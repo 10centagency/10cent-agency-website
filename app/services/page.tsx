@@ -39,9 +39,9 @@ import {
 } from 'react-icons/fa6';
 
 export const metadata: Metadata = {
-  title: 'Our Services | 10 Cent Agency',
+  title: 'Digital Marketing Services in Bangladesh | 10 Cent Agency',
   description:
-    'A complete suite of 7 digital services designed to grow your business — Facebook & Meta Marketing, Google Ads, Website Development, AI Automation, Social Media Management, SEO/AEO/GEO, and Graphic Design.',
+    'Facebook ads, website development, AI chatbot, SEO, Google Ads & graphic design for Bangladeshi businesses. Transparent pricing. Get a free quote today.',
   alternates: {
     canonical: 'https://www.10centagency.com/services',
   },
@@ -49,9 +49,9 @@ export const metadata: Metadata = {
     type: 'website',
     url: 'https://www.10centagency.com/services',
     siteName: '10 Cent Agency',
-    title: 'Our Services | 10 Cent Agency',
+    title: 'Digital Marketing Services in Bangladesh | 10 Cent Agency',
     description:
-      'A complete suite of 7 digital services designed to grow your business — Facebook & Meta Marketing, Google Ads, Website Development, AI Automation, Social Media Management, SEO/AEO/GEO, and Graphic Design.',
+      'Facebook ads, website development, AI chatbot, SEO, Google Ads & graphic design for Bangladeshi businesses. Transparent pricing. Get a free quote today.',
     images: [
       {
         url: 'https://www.10centagency.com/og-image.png',
@@ -64,9 +64,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Our Services | 10 Cent Agency',
+    title: 'Digital Marketing Services in Bangladesh | 10 Cent Agency',
     description:
-      'A complete suite of 7 digital services designed to grow your business — Facebook & Meta Marketing, Google Ads, Website Development, AI Automation, Social Media Management, SEO/AEO/GEO, and Graphic Design.',
+      'Facebook ads, website development, AI chatbot, SEO, Google Ads & graphic design for Bangladeshi businesses. Transparent pricing. Get a free quote today.',
     images: ['https://www.10centagency.com/og-image.png'],
   },
 };

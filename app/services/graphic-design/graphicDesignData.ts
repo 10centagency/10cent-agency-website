@@ -1028,7 +1028,7 @@ export function getGraphicDesignSchemaGraph() {
         url: 'https://www.10centagency.com/services/graphic-design',
         name: 'Graphic Design Services in Bangladesh | 10 Cent Agency',
         description:
-          'Graphic design services in Bangladesh — logo & brand identity, social media graphics, marketing materials, packaging & pitch decks. Full ownership, print & digital ready files.',
+          'Logo design, brand identity, social media graphics & marketing materials for Bangladeshi businesses. Professional, affordable, fast delivery. Get a free quote.',
         inLanguage: 'en-BD',
         isPartOf: {
           '@id': 'https://www.10centagency.com/#website',

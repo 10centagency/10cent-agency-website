@@ -734,9 +734,9 @@ export function getAIAutomationSchemaGraph() {
         '@type': 'WebPage',
         '@id': 'https://www.10centagency.com/services/ai-automation-chatbot#webpage',
         url: 'https://www.10centagency.com/services/ai-automation-chatbot',
-        name: 'AI Automation & Chatbot Services in Bangladesh | 10 Cent Agency',
+        name: 'AI Chatbot & Automation in Bangladesh | 10 Cent Agency',
         description:
-          'AI chatbot and n8n automation services in Bangladesh for Messenger, WhatsApp and Telegram—automate leads, orders and customer support 24/7.',
+          '24/7 AI chatbots for Messenger, WhatsApp & Telegram — automate lead capture, orders & customer support in Bangla & English. 3-day free trial, no commitment.',
         inLanguage: 'en-BD',
         isPartOf: {
           '@id': 'https://www.10centagency.com/#website',

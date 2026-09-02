@@ -119,9 +119,9 @@ const industryIconMap: Record<string, React.ComponentType<{ className?: string }
 };
 
 export const metadata: Metadata = {
-  title: 'AI Automation & Chatbot Services in Bangladesh | 10 Cent Agency',
+  title: 'AI Chatbot & Automation in Bangladesh | 10 Cent Agency',
   description:
-    'AI chatbot and n8n automation services in Bangladesh for Messenger, WhatsApp and Telegram—automate leads, orders and customer support 24/7.',
+    '24/7 AI chatbots for Messenger, WhatsApp & Telegram — automate lead capture, orders & customer support in Bangla & English. 3-day free trial, no commitment.',
   alternates: {
     canonical: 'https://www.10centagency.com/services/ai-automation-chatbot',
   },
@@ -129,9 +129,9 @@ export const metadata: Metadata = {
     type: 'website',
     url: 'https://www.10centagency.com/services/ai-automation-chatbot',
     siteName: '10 Cent Agency',
-    title: 'AI Automation & Chatbot Services in Bangladesh | 10 Cent Agency',
+    title: 'AI Chatbot & Automation in Bangladesh | 10 Cent Agency',
     description:
-      'AI chatbot and n8n automation services in Bangladesh for Messenger, WhatsApp and Telegram—automate leads, orders and customer support 24/7.',
+      '24/7 AI chatbots for Messenger, WhatsApp & Telegram — automate lead capture, orders & customer support in Bangla & English. 3-day free trial, no commitment.',
     images: [
       {
         url: 'https://www.10centagency.com/og-image.png',
@@ -144,9 +144,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Automation & Chatbot Services in Bangladesh | 10 Cent Agency',
+    title: 'AI Chatbot & Automation in Bangladesh | 10 Cent Agency',
     description:
-      'AI chatbot and n8n automation services in Bangladesh for Messenger, WhatsApp and Telegram—automate leads, orders and customer support 24/7.',
+      '24/7 AI chatbots for Messenger, WhatsApp & Telegram — automate lead capture, orders & customer support in Bangla & English. 3-day free trial, no commitment.',
     images: ['https://www.10centagency.com/og-image.png'],
   },
   robots: {

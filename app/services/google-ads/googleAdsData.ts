@@ -1091,9 +1091,9 @@ export function getGoogleAdsSchemaGraph() {
         '@type': 'WebPage',
         '@id': 'https://www.10centagency.com/services/google-ads#webpage',
         url: 'https://www.10centagency.com/services/google-ads',
-        name: 'Google Ads Management Services in Bangladesh | 10 Cent Agency',
+        name: 'Google Ads Management Services in BD | 10 Cent Agency',
         description:
-          'Google Ads management in Bangladesh — Search, Shopping, Display, YouTube & Performance Max campaigns. Transparent reporting, no markup on ad spend. Book a free audit.',
+          'Search, Shopping, Display, YouTube & Performance Max campaigns for Bangladeshi businesses. Fixed fee management, no ad spend markup. Book a free audit.',
         inLanguage: 'en-BD',
         isPartOf: {
           '@id': 'https://www.10centagency.com/#website',
