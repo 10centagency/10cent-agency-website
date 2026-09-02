@@ -37,6 +37,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const title = formatBlogTitle(post.title);
+  const socialTitle = post.title?.trim()
+    ? `${post.title.trim()} | 10 Cent Agency`
+    : '10 Cent Agency Blog';
   const description = getBlogPostDescription(post);
   const canonicalUrl = `https://www.10centagency.com/blog/${slug}`;
   const imageUrl = post.featured_image_url || 'https://www.10centagency.com/og-image.png';
@@ -51,7 +54,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: 'article',
       url: canonicalUrl,
       siteName: '10 Cent Agency',
-      title,
+      title: socialTitle,
       description,
       images: [
         {
@@ -65,7 +68,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: socialTitle,
       description,
       images: [imageUrl],
     },

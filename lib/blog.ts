@@ -189,19 +189,26 @@ export async function getRelatedBlogPosts(
 
 export function formatBlogTitle(title: string): string {
   const suffix = ' | 10 Cent Agency';
-  const maxTotal = 65;
+  const maxWithBrand = 65;
+  const maxHeadlineOnly = 70;
   if (!title) return '10 Cent Agency Blog';
   const cleanTitle = title.trim();
-  if (cleanTitle.length + suffix.length <= maxTotal) {
+  if (!cleanTitle) return '10 Cent Agency Blog';
+
+  if (cleanTitle.length + suffix.length <= maxWithBrand) {
     return `${cleanTitle}${suffix}`;
   }
-  const maxTitleLen = maxTotal - suffix.length - 1;
-  let trimmed = cleanTitle.slice(0, maxTitleLen);
-  const lastSpace = trimmed.lastIndexOf(' ');
-  if (lastSpace > 20) {
-    trimmed = trimmed.slice(0, lastSpace);
+
+  if (cleanTitle.length <= maxHeadlineOnly) {
+    return cleanTitle;
   }
-  return `${trimmed.trim()}…${suffix}`;
+
+  const slice = cleanTitle.slice(0, maxHeadlineOnly);
+  const lastSpace = slice.lastIndexOf(' ');
+  if (lastSpace > 0) {
+    return slice.slice(0, lastSpace).trim();
+  }
+  return slice.trim();
 }
 
 export function extractPlainTextFromBlocks(blocks?: ContentBlock[] | null): string {

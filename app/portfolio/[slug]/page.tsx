@@ -81,6 +81,135 @@ export default async function ProjectPage({ params }: Props) {
     notFound();
   }
 
+  const pageUrl = `https://www.10centagency.com/portfolio/${item.slug}`;
+  const pageDescription =
+    item.meta_description ||
+    item.excerpt ||
+    `${item.category} project — ${item.result_highlight}`;
+
+  const schemaGraph = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'LocalBusiness',
+        '@id': 'https://www.10centagency.com/#organization',
+        name: '10 Cent Agency',
+        url: 'https://www.10centagency.com',
+        logo: 'https://www.10centagency.com/Logo.webp',
+        image: 'https://www.10centagency.com/og-image.png',
+        description:
+          'Affordable digital marketing agency in Bangladesh helping small businesses grow online with Facebook ads, websites & AI automation.',
+        telephone: '+880 1615-144114',
+        email: 'hello@10centagency.com',
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: 'East Monipur, Mirpur',
+          addressLocality: 'Dhaka',
+          postalCode: '1216',
+          addressCountry: 'BD',
+        },
+        openingHoursSpecification: [
+          {
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek: [
+              'Saturday',
+              'Sunday',
+              'Monday',
+              'Tuesday',
+              'Wednesday',
+              'Thursday',
+            ],
+            opens: '10:00',
+            closes: '21:00',
+          },
+        ],
+        sameAs: [
+          'https://www.facebook.com/10centagency',
+          'https://www.instagram.com/10centagency',
+          'https://www.youtube.com/@10centagency',
+          'https://www.linkedin.com/company/10-cent-agency',
+        ],
+        priceRange: '৳৳',
+      },
+      {
+        '@type': 'WebSite',
+        '@id': 'https://www.10centagency.com/#website',
+        url: 'https://www.10centagency.com',
+        name: '10 Cent Agency',
+        description: 'Best Digital Marketing Agency in BD',
+        inLanguage: 'en-BD',
+        publisher: {
+          '@id': 'https://www.10centagency.com/#organization',
+        },
+      },
+      {
+        '@type': 'WebPage',
+        '@id': `${pageUrl}#webpage`,
+        url: pageUrl,
+        name: `${item.title} | 10 Cent Agency`,
+        description: pageDescription,
+        inLanguage: 'en-BD',
+        isPartOf: {
+          '@id': 'https://www.10centagency.com/#website',
+        },
+        breadcrumb: {
+          '@id': `${pageUrl}#breadcrumb`,
+        },
+        about: {
+          '@id': `${pageUrl}#work`,
+        },
+        mainEntity: {
+          '@id': `${pageUrl}#work`,
+        },
+      },
+      {
+        '@type': 'CreativeWork',
+        '@id': `${pageUrl}#work`,
+        name: item.title,
+        ...(item.excerpt || item.meta_description
+          ? { description: item.excerpt || item.meta_description }
+          : {}),
+        ...(item.featured_image_url ? { image: item.featured_image_url } : {}),
+        url: pageUrl,
+        creator: {
+          '@id': 'https://www.10centagency.com/#organization',
+        },
+        publisher: {
+          '@id': 'https://www.10centagency.com/#organization',
+        },
+        ...(item.category ? { about: item.category } : {}),
+        ...(Array.isArray(item.tags) && item.tags.length > 0
+          ? { keywords: item.tags.join(', ') }
+          : {}),
+        ...(item.created_at ? { datePublished: item.created_at } : {}),
+      },
+      {
+        '@type': 'BreadcrumbList',
+        '@id': `${pageUrl}#breadcrumb`,
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Home',
+            item: 'https://www.10centagency.com',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: 'Portfolio',
+            item: 'https://www.10centagency.com/portfolio',
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: item.title,
+            item: pageUrl,
+          },
+        ],
+      },
+    ],
+  };
+
   const categoryColors: Record<string, string> = {
     Meta: 'bg-blue-100 text-blue-700',
     Website: 'bg-sky-100 text-sky-700',
@@ -90,6 +219,12 @@ export default async function ProjectPage({ params }: Props) {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(schemaGraph),
+        }}
+      />
       {/* Hero */}
       <section className="bg-brand-bgAlt pt-32 pb-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
