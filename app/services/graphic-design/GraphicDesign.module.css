@@ -2670,31 +2670,54 @@
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 768px) {
+  .hwTimeline {
+    padding-left: 0;
+  }
+
   .hwTimeline::before {
     left: 24px;
+    transform: translateX(-50%);
+    width: 3px;
+    top: 10px;
+    bottom: 10px;
   }
+
   .hwStep,
   .hwStepReverse {
-    flex-direction: row;
+    flex-direction: row !important;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    gap: 14px;
   }
+
+  .hwSpacer {
+    display: none !important;
+  }
+
+  .hwStepNum {
+    order: -1;
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    font-size: 16px;
+    margin: 4px 0 0 0;
+    flex-shrink: 0;
+    z-index: 2;
+  }
+
   .hwStepCard,
   .hwStepReverse .hwStepCard {
-    width: calc(100% - 70px);
+    width: calc(100% - 62px) !important;
     text-align: left !important;
+    padding: 18px 16px;
+    box-sizing: border-box;
   }
+
   .hwStepCard h4,
   .hwStepReverse .hwStepCard h4 {
     justify-content: flex-start !important;
-  }
-  .hwSpacer {
-    display: none;
-  }
-  .hwStepNum {
-    width: 48px;
-    height: 48px;
-    font-size: 15px;
-    margin: 0 14px 0 0;
+    text-align: left;
   }
 }
 

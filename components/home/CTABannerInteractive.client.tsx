@@ -334,7 +334,7 @@ export default function CTABannerInteractive() {
             <span className={styles.tline}>
               {displayedLine1}
               {caretPos === 1 && <span className={styles.caret} aria-hidden="true" />}
-            </span>
+            </span>{' '}
             <span className={styles.tline}>
               {displayedLine2}
               {caretPos === 2 && <span className={styles.caret} aria-hidden="true" />}

@@ -2040,6 +2040,19 @@
   .reportBody {
     padding: 24px 20px;
   }
+
+  /* Issue 8: Impact of Posting Consistency on Reach stat right-alignment */
+  .ovCompareLabel {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .ovCompareLabel span:last-child {
+    text-align: right;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
 }
 
 @media (max-width: 600px) {

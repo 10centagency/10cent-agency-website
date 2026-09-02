@@ -5,12 +5,6 @@ import { useState, useEffect, useRef } from 'react';
 import { m } from 'framer-motion';
 import { CircleCheck as CheckCircle2, ChevronDown, Monitor, Bot } from 'lucide-react';
 
-const lines: string[][] = [
-  ['The', 'Last', 'Digital'],
-  ['Marketing', 'Agency'],
-  ['Your', 'Small', 'Business'],
-  ['Will', 'Ever', 'Need.'],
-];
 
 export default function HeroSection() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -67,27 +61,11 @@ export default function HeroSection() {
             </div>
 
             {/* Headline */}
-            <h1 className="text-[1.85rem] xs:text-[2.1rem] sm:text-5xl lg:text-[3.25rem] xl:text-6xl font-black text-brand-textDark leading-tight mb-6" aria-label="The Last Digital Marketing Agency Your Small Business Will Ever Need.">
-              {lines.map((line, lineIndex) => {
-                const baseDelay = 0.08 + lines
-                  .slice(0, lineIndex)
-                  .reduce((acc, l) => acc + l.length * 0.07, 0);
-                return (
-                  <span key={lineIndex} className={lineIndex === 2 ? "block whitespace-nowrap" : "block"}>
-                    {line.map((word, wordIndex) => (
-                      <span
-                        key={`${lineIndex}-${wordIndex}`}
-                        style={{
-                          animationDelay: `${baseDelay + wordIndex * 0.07}s`,
-                        }}
-                        className="hero-animate-word inline-block mr-[0.28em]"
-                      >
-                        {word}
-                      </span>
-                    ))}
-                  </span>
-                );
-              })}
+            <h1 className="hero-animate-title text-[1.85rem] xs:text-[2.1rem] sm:text-5xl lg:text-[3.25rem] xl:text-6xl font-black text-brand-textDark leading-tight mb-6">
+              <span className="block">The Last Digital</span>{' '}
+              <span className="block">Marketing Agency</span>{' '}
+              <span className="block whitespace-nowrap">Your Small Business</span>{' '}
+              <span className="block">Will Ever Need.</span>
             </h1>
 
             {/* Sub */}

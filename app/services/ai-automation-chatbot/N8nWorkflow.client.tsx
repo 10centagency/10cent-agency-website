@@ -33,7 +33,7 @@ import styles from './AIAutomation.module.css';
 export default function N8nWorkflow() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dScale, setDScale] = useState<number>(0.9);
-  const [mScale, setMScale] = useState<number>(0.85);
+  const [mScale, setMScale] = useState<number>(0.7);
   const [pathsAnimated, setPathsAnimated] = useState<boolean>(false);
 
   // Desktop zoom handlers
@@ -58,7 +58,7 @@ export default function N8nWorkflow() {
     setMScale((prev) => Math.max(0.5, Number((prev - 0.1).toFixed(2))));
   };
   const handleMZoomReset = () => {
-    setMScale(0.85);
+    setMScale(0.7);
   };
 
   useEffect(() => {

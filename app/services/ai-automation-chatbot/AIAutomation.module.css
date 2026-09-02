@@ -3062,19 +3062,58 @@
 }
 
 @media (max-width: 768px) {
+  /* Issue 5: Quick Answer chat widget auto height with no inner scroll */
   .chatBody {
-    --ai-chat-body-height: 420px;
+    height: auto;
+    min-height: auto;
+    max-height: none;
+    overflow-y: visible;
+    padding: 20px 16px 18px;
+  }
+
+  .chatBubbleRow {
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .chatBubble {
+    padding: 11px 14px;
+    font-size: 13px;
+    line-height: 1.55;
+    max-width: 88%;
+  }
+
+  .chatQuickReplies {
+    margin: 4px 0 0 34px;
+    gap: 6px;
+  }
+
+  .chatQuickReply {
+    font-size: 11.5px;
+    padding: 6px 10px;
+    border-radius: 16px;
+    white-space: nowrap;
   }
 
   .chatAnswerWrap {
     margin: -40px auto 0;
   }
+
+  /* Issue 6: Lead Response Impact right-alignment */
+  .ovCompareLabel {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .ovCompareLabel span:last-child {
+    text-align: right;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
 }
 
 @media (max-width: 600px) {
-  .chatBody {
-    --ai-chat-body-height: 455px;
-  }
 
   .cardsGrid,
   .whyGrid,
@@ -3249,19 +3288,23 @@
   }
 
   .chatBody {
-    --ai-chat-body-height: 480px;
-    padding: 22px 14px 16px;
+    height: auto;
+    min-height: auto;
+    max-height: none;
+    overflow-y: visible;
+    padding: 16px 12px 14px;
   }
 
   .chatBubbleRow {
-    gap: 8px;
-    margin-bottom: 16px;
+    gap: 7px;
+    margin-bottom: 12px;
   }
 
   .chatBubble {
     max-width: 88%;
-    padding: 11px 14px;
-    font-size: 13px;
+    padding: 10px 13px;
+    font-size: 12.5px;
+    line-height: 1.5;
   }
 
   .chatBubbleAvatar {
@@ -3271,17 +3314,17 @@
   }
 
   .chatTypingBubble {
-    padding: 11px 14px;
+    padding: 10px 13px;
   }
 
   .chatQuickReplies {
     margin-left: 0;
-    gap: 8px;
+    gap: 6px;
   }
 
   .chatQuickReply {
-    font-size: 12px;
-    padding: 8px 12px;
+    font-size: 11px;
+    padding: 6px 9px;
   }
 
   .chatFooter {
@@ -3347,18 +3390,15 @@
 }
 
 @media (max-width: 360px) {
-  .chatBody {
-    --ai-chat-body-height: 540px;
-  }
-
   .chatHeaderIconsMinus {
     display: none;
   }
 }
 
 @media (max-width: 320px) {
-  .chatBody {
-    --ai-chat-body-height: 600px;
+  .chatQuickReply {
+    font-size: 10.5px;
+    padding: 5px 8px;
   }
 }
 

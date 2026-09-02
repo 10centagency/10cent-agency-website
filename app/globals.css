@@ -146,8 +146,8 @@ html {
   .hero-animate-badge {
     animation: heroEntrance 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.05s backwards;
   }
-  .hero-animate-word {
-    animation: heroEntrance 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  .hero-animate-title {
+    animation: heroEntrance 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.15s backwards;
   }
   .hero-animate-sub {
     animation: heroEntrance 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.32s backwards;

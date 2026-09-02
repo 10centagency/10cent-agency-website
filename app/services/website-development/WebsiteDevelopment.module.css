@@ -1830,6 +1830,9 @@
 }
 
 .verdictIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 32px;
   color: var(--wd-blue);
   margin-bottom: 12px;
@@ -2518,6 +2521,46 @@
 
   .dgToggleBtn {
     width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Issue 3: Lead Generation Impact stat right alignment */
+  .ovCompareLabel {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .ovCompareLabel span:last-child {
+    text-align: right;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  /* Issue 4: Quick Self-Check checklist icon first-line alignment */
+  .quizItemInner {
+    align-items: flex-start;
+    padding: 16px 14px;
+    gap: 12px;
+  }
+  .quizItemIcon {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .quizItemText strong {
+    font-size: 14px;
+    line-height: 1.35;
+  }
+  .quizCheckMark {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+    flex-shrink: 0;
+    margin-top: 2px;
   }
 }
 
