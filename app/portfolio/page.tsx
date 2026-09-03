@@ -38,6 +38,14 @@ export const metadata: Metadata = {
     title: 'Our Portfolio & Case Studies | 10 Cent Agency Bangladesh',
     description:
       'Browse real results — website builds, Facebook ad campaigns, AI chatbot setups & graphic design projects for businesses across Bangladesh. See our work.',
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: '10 Cent Agency Portfolio',
+      },
+    ],
   },
 };
 
@@ -83,6 +91,7 @@ export default async function PortfolioPage() {
         sameAs: [
           'https://www.facebook.com/10centagency',
           'https://www.instagram.com/10centagency',
+          'https://x.com/10centagency',
           'https://www.youtube.com/@10centagency',
           'https://www.linkedin.com/company/10-cent-agency',
         ],

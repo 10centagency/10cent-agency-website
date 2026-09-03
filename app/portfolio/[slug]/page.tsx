@@ -68,7 +68,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: 'summary_large_image',
       title: item.title,
       description,
-      images: [imageUrl],
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: item.title,
+        },
+      ],
     },
   };
 }
@@ -126,6 +133,7 @@ export default async function ProjectPage({ params }: Props) {
         sameAs: [
           'https://www.facebook.com/10centagency',
           'https://www.instagram.com/10centagency',
+          'https://x.com/10centagency',
           'https://www.youtube.com/@10centagency',
           'https://www.linkedin.com/company/10-cent-agency',
         ],

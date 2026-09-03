@@ -116,7 +116,14 @@ export const metadata: Metadata = {
     title: 'Social Media Management in Bangladesh | 10 Cent Agency',
     description:
       'Social media management for Bangladeshi businesses — content calendar, post design, Reels & community management across Facebook, Instagram, LinkedIn & more.',
-    images: ['https://www.10centagency.com/og-image.png'],
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Social Media Management Services in Bangladesh | 10 Cent Agency',
+      },
+    ],
   },
   robots: {
     index: true,

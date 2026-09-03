@@ -67,10 +67,18 @@ export const metadata: Metadata = {
   // ✅ TWITTER CARD
   twitter: {
     card: "summary_large_image",
+    site: "@10centagency",
     title: "Best Digital Marketing Agency in Bangladesh | 10 Cent Agency",
     description:
       "Affordable digital marketing agency in BD helping small businesses grow online with Facebook ads, websites & AI automation. Get a free consultation today!",
-    images: ["https://www.10centagency.com/og-image.png"],
+    images: [
+      {
+        url: "https://www.10centagency.com/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "10 Cent Agency — Best Digital Marketing Agency in BD",
+      },
+    ],
   },
   icons: {
     icon: [

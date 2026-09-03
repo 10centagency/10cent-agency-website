@@ -87,7 +87,14 @@ export const metadata: Metadata = {
     title: 'Facebook & Meta Marketing Services | 10 Cent Agency BD',
     description:
       'Data-driven Facebook & Instagram campaigns for Bangladeshi businesses — Pixel, Conversions API, creative management & monthly reports. No ad spend markup.',
-    images: ['https://www.10centagency.com/og-image.png'],
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Facebook & Meta Marketing Services — 10 Cent Agency',
+      },
+    ],
   },
   robots: {
     index: true,

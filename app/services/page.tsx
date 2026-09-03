@@ -67,7 +67,14 @@ export const metadata: Metadata = {
     title: 'Digital Marketing Services in Bangladesh | 10 Cent Agency',
     description:
       'Facebook ads, website development, AI chatbot, SEO, Google Ads & graphic design for Bangladeshi businesses. Transparent pricing. Get a free quote today.',
-    images: ['https://www.10centagency.com/og-image.png'],
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: '10 Cent Agency — Complete Suite of Digital Marketing Services in Bangladesh',
+      },
+    ],
   },
 };
 

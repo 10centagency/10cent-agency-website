@@ -147,7 +147,14 @@ export const metadata: Metadata = {
     title: 'AI Chatbot & Automation in Bangladesh | 10 Cent Agency',
     description:
       '24/7 AI chatbots for Messenger, WhatsApp & Telegram — automate lead capture, orders & customer support in Bangla & English. 3-day free trial, no commitment.',
-    images: ['https://www.10centagency.com/og-image.png'],
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'AI Automation & Chatbot Services in Bangladesh | 10 Cent Agency',
+      },
+    ],
   },
   robots: {
     index: true,

@@ -27,6 +27,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'About 10 Cent Agency | Digital Marketing Agency Dhaka, BD',
     description: 'Learn about 10 Cent Agency — a Bangladesh-based digital marketing agency built to serve small and medium businesses with professional, affordable services.',
+    images: [{ url: 'https://www.10centagency.com/og-image.png', width: 1200, height: 630, alt: '10 Cent Agency' }],
   },
 };
 
@@ -98,6 +99,7 @@ export default function AboutPage() {
         sameAs: [
           'https://www.facebook.com/10centagency',
           'https://www.instagram.com/10centagency',
+          'https://x.com/10centagency',
           'https://www.youtube.com/@10centagency',
           'https://www.linkedin.com/company/10-cent-agency',
         ],

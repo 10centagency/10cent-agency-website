@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ChevronRight, Mail, Phone, MapPin, Clock, Facebook, Instagram, Youtube, Linkedin, Calendar } from 'lucide-react';
+import { FaXTwitter } from 'react-icons/fa6';
 import SectionLabel from '@/components/ui/SectionLabel';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import ContactForm from './ContactForm';
@@ -34,7 +35,14 @@ export const metadata: Metadata = {
     title: 'Contact 10 Cent Agency | Free Consultation — Dhaka, BD',
     description:
       'Book a free consultation with 10 Cent Agency. Reach us by WhatsApp, email or contact form. We deliver expert digital solutions across Bangladesh.',
-    images: ['https://www.10centagency.com/og-image.png'],
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: '10 Cent Agency — Best Digital Marketing Agency in BD',
+      },
+    ],
   },
 };
 
@@ -69,6 +77,7 @@ const contactInfo = [
 const socialLinks = [
   { icon: Facebook, href: 'https://www.facebook.com/10centagency', label: 'Facebook' },
   { icon: Instagram, href: 'https://www.instagram.com/10centagency', label: 'Instagram' },
+  { icon: FaXTwitter, href: 'https://x.com/10centagency', label: 'X (Twitter)' },
   { icon: Youtube, href: 'https://www.youtube.com/@10centagency', label: 'YouTube' },
   { icon: Linkedin, href: 'https://www.linkedin.com/company/10-cent-agency', label: 'LinkedIn' },
 ];

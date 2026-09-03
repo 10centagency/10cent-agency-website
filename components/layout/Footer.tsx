@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Facebook, Instagram, Youtube, Linkedin, Mail, Phone, MapPin, Clock } from 'lucide-react';
+import { FaXTwitter } from 'react-icons/fa6';
 
 const quickLinks = [
   { label: 'Home', href: '/' },
@@ -24,6 +25,7 @@ const services = [
 const socialLinks = [
   { icon: Facebook, href: 'https://www.facebook.com/10centagency', label: 'Facebook' },
   { icon: Instagram, href: 'https://www.instagram.com/10centagency', label: 'Instagram' },
+  { icon: FaXTwitter, href: 'https://x.com/10centagency', label: 'X (Twitter)' },
   { icon: Youtube, href: 'https://www.youtube.com/@10centagency', label: 'YouTube' },
   { icon: Linkedin, href: 'https://www.linkedin.com/company/10-cent-agency', label: 'LinkedIn' },
 ];

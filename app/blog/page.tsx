@@ -41,7 +41,14 @@ export const metadata: Metadata = {
     title: 'Digital Marketing Blog | 10 Cent Agency Bangladesh',
     description:
       'Practical tips on Facebook ads, website development, SEO & AI automation for Bangladeshi small businesses. Free guides & insights from 10 Cent Agency.',
-    images: ['https://www.10centagency.com/og-image.png'],
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: '10 Cent Agency — Best Digital Marketing Agency in BD',
+      },
+    ],
   },
 };
 
@@ -90,6 +97,7 @@ export default async function BlogPage() {
         sameAs: [
           'https://www.facebook.com/10centagency',
           'https://www.instagram.com/10centagency',
+          'https://x.com/10centagency',
           'https://www.youtube.com/@10centagency',
           'https://www.linkedin.com/company/10-cent-agency',
         ],

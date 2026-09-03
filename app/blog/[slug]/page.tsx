@@ -56,6 +56,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       siteName: '10 Cent Agency',
       title: socialTitle,
       description,
+      publishedTime: post.created_at || undefined,
+      modifiedTime: post.updated_at || post.created_at || undefined,
+      authors: ['10 Cent Agency'],
       images: [
         {
           url: imageUrl,
@@ -70,7 +73,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: 'summary_large_image',
       title: socialTitle,
       description,
-      images: [imageUrl],
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
     },
   };
 }

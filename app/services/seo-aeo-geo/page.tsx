@@ -152,7 +152,14 @@ export const metadata: Metadata = {
     title: 'SEO, AEO & GEO Services in Bangladesh | 10 Cent Agency',
     description:
       'Rank on Google, win Featured Snippets & get cited by ChatGPT, Gemini & AI Overviews. On-page, technical & local SEO + AEO & GEO for Bangladeshi businesses.',
-    images: ['https://www.10centagency.com/og-image.png'],
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'SEO, AEO & GEO Services in Bangladesh | 10 Cent Agency',
+      },
+    ],
   },
   robots: {
     index: true,

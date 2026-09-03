@@ -150,7 +150,14 @@ export const metadata: Metadata = {
     title: 'Google Ads Management Services in BD | 10 Cent Agency',
     description:
       'Search, Shopping, Display, YouTube & Performance Max campaigns for Bangladeshi businesses. Fixed fee management, no ad spend markup. Book a free audit.',
-    images: ['https://www.10centagency.com/og-image.png'],
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Google Ads Management Services in Bangladesh | 10 Cent Agency',
+      },
+    ],
   },
   robots: {
     index: true,

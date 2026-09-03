@@ -844,6 +844,7 @@ export function getServicesSchemaGraph() {
         sameAs: [
           'https://www.facebook.com/10centagency',
           'https://www.instagram.com/10centagency',
+          'https://x.com/10centagency',
           'https://www.youtube.com/@10centagency',
           'https://www.linkedin.com/company/10-cent-agency',
         ],

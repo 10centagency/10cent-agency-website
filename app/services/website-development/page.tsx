@@ -116,7 +116,14 @@ export const metadata: Metadata = {
     title: 'Website Development Services in BD | 10 Cent Agency',
     description:
       'Fast, mobile-first websites & e-commerce stores — WordPress, Next.js, bKash/Nagad payment, SEO setup & 1 month free support. Get a free quote today.',
-    images: ['https://www.10centagency.com/og-image.png'],
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Website Development Services — 10 Cent Agency',
+      },
+    ],
   },
   robots: {
     index: true,

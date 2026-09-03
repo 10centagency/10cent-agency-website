@@ -28,7 +28,14 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Privacy Policy | 10 Cent Agency',
     description: 'Read the Privacy Policy of 10 Cent Agency to understand how we collect, use, and protect your information.',
-    images: ['https://www.10centagency.com/og-image.png'],
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: '10 Cent Agency',
+      },
+    ],
   },
 };
 

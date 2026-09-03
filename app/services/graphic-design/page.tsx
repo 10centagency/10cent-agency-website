@@ -150,7 +150,14 @@ export const metadata: Metadata = {
     title: 'Graphic Design Services in Bangladesh | 10 Cent Agency',
     description:
       'Logo design, brand identity, social media graphics & marketing materials for Bangladeshi businesses. Professional, affordable, fast delivery. Get a free quote.',
-    images: ['https://www.10centagency.com/og-image.png'],
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Graphic Design Services in Bangladesh | 10 Cent Agency',
+      },
+    ],
   },
   robots: {
     index: true,
