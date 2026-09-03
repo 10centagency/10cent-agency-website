@@ -130,7 +130,7 @@ export default function GaFunnel() {
       {funnelStagesData.map((stage, idx) => {
         const IconComponent = stageIconMap[stage.iconKey] || FaEye;
         const currentCount = counterValues[stage.id] ?? stage.target;
-        const formattedValue = currentCount.toLocaleString();
+        const formattedValue = currentCount.toLocaleString('en-US');
 
         return (
           <React.Fragment key={stage.id}>

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { FaArrowRight, FaCalendarDays } from 'react-icons/fa6';
 import styles from './HomeSections.module.css';
 import HomeSectionReveal from './visuals/HomeSectionReveal.client';
+import { formatDateUTC } from '@/lib/format-date';
 import type { HomeBlogPost } from '@/lib/blog';
 
 interface BlogPreviewProps {
@@ -22,19 +23,6 @@ const categoryColors: Record<string, string> = {
   'Web Development': 'bg-sky-100 text-sky-700',
   'Digital Marketing': 'bg-blue-100 text-blue-700',
 };
-
-function formatDate(dateStr: string): string {
-  try {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
-  } catch {
-    return dateStr;
-  }
-}
 
 /**
  * Derives clean plain text for compact cards:
@@ -167,7 +155,7 @@ export default function BlogPreview({ posts = [] }: BlogPreviewProps) {
                     <span className={styles.blogDate}>
                       <FaCalendarDays className="w-3.5 h-3.5 text-brand-textMid" aria-hidden="true" />
                       <time dateTime={featuredPost.date}>
-                        {formatDate(featuredPost.date)}
+                        {formatDateUTC(featuredPost.date)}
                       </time>
                     </span>
                   </div>
@@ -278,7 +266,7 @@ export default function BlogPreview({ posts = [] }: BlogPreviewProps) {
                             <span className={styles.blogDate}>
                               <FaCalendarDays className="w-3 h-3 text-brand-textMid" aria-hidden="true" />
                               <time dateTime={post.date}>
-                                {formatDate(post.date)}
+                                {formatDateUTC(post.date)}
                               </time>
                             </span>
                           </div>
@@ -305,7 +293,7 @@ export default function BlogPreview({ posts = [] }: BlogPreviewProps) {
                             <span className={styles.blogDate}>
                               <FaCalendarDays className="w-3 h-3 text-brand-textMid" aria-hidden="true" />
                               <time dateTime={post.date}>
-                                {formatDate(post.date)}
+                                {formatDateUTC(post.date)}
                               </time>
                             </span>
                           </div>

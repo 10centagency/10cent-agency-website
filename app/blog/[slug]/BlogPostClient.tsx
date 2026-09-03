@@ -15,6 +15,7 @@ import {
 import type { BlogPost, CategoryRow } from '@/lib/database.types';
 import CTABanner from '@/components/home/CTABanner';
 import ContentBlockRenderer from '@/components/portfolio/ContentBlockRenderer';
+import { formatDateUTC } from '@/lib/format-date';
 
 interface BlogPostClientProps {
   post: BlogPost;
@@ -38,13 +39,7 @@ export default function BlogPostClient({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const formattedDate = post.created_at
-    ? new Date(post.created_at).toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
-    : '';
+  const formattedDate = formatDateUTC(post.created_at);
 
   return (
     <div className="min-h-screen bg-white pt-28 pb-20">

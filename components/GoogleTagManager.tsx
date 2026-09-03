@@ -13,7 +13,7 @@ declare global {
 
 export default function GoogleTagManager() {
   const pathname = usePathname();
-  const [isLoaded, setIsLoaded] = useState(() => typeof window !== 'undefined' && Boolean(window._gtmLoaded));
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // GTM script injection after idle or user interaction (excluded on /admin)
   useEffect(() => {

@@ -92,7 +92,7 @@ export default function SMMReportStats() {
       <div className={styles.reportStat}>
         <span className={styles.rsLabel}>Followers Growth</span>
         <span className={`${styles.rsValue} ${styles.rsValueUp}`}>
-          +{stats.followers.toLocaleString()} <FaArrowTrendUp aria-hidden="true" />
+          +{stats.followers.toLocaleString('en-US')} <FaArrowTrendUp aria-hidden="true" />
         </span>
       </div>
       <div className={styles.reportStat}>
