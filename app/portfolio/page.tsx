@@ -44,8 +44,120 @@ export const metadata: Metadata = {
 export default async function PortfolioPage() {
   const initialItems = await getPublishedPortfolioItems();
 
+  const schemaGraph = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'LocalBusiness',
+        '@id': 'https://www.10centagency.com/#organization',
+        name: '10 Cent Agency',
+        url: 'https://www.10centagency.com/',
+        logo: 'https://www.10centagency.com/Logo.webp',
+        image: 'https://www.10centagency.com/og-image.png',
+        description:
+          'Affordable digital marketing agency in Bangladesh helping small businesses grow online with Facebook ads, websites & AI automation.',
+        telephone: '+880 1615-144114',
+        email: 'hello@10centagency.com',
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: 'East Monipur, Mirpur',
+          addressLocality: 'Dhaka',
+          postalCode: '1216',
+          addressCountry: 'BD',
+        },
+        openingHoursSpecification: [
+          {
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek: [
+              'Saturday',
+              'Sunday',
+              'Monday',
+              'Tuesday',
+              'Wednesday',
+              'Thursday',
+            ],
+            opens: '10:00',
+            closes: '21:00',
+          },
+        ],
+        sameAs: [
+          'https://www.facebook.com/10centagency',
+          'https://www.instagram.com/10centagency',
+          'https://www.youtube.com/@10centagency',
+          'https://www.linkedin.com/company/10-cent-agency',
+        ],
+        priceRange: '৳৳',
+      },
+      {
+        '@type': 'WebSite',
+        '@id': 'https://www.10centagency.com/#website',
+        url: 'https://www.10centagency.com/',
+        name: '10 Cent Agency',
+        description: 'Best Digital Marketing Agency in BD',
+        inLanguage: 'en-BD',
+        publisher: {
+          '@id': 'https://www.10centagency.com/#organization',
+        },
+      },
+      {
+        '@type': 'CollectionPage',
+        '@id': 'https://www.10centagency.com/portfolio#webpage',
+        url: 'https://www.10centagency.com/portfolio',
+        name: 'Our Portfolio & Case Studies | 10 Cent Agency Bangladesh',
+        description:
+          'Browse real results — website builds, Facebook ad campaigns, AI chatbot setups & graphic design projects for businesses across Bangladesh. See our work.',
+        inLanguage: 'en-BD',
+        isPartOf: {
+          '@id': 'https://www.10centagency.com/#website',
+        },
+        about: {
+          '@id': 'https://www.10centagency.com/#organization',
+        },
+        mainEntity: {
+          '@id': 'https://www.10centagency.com/portfolio#list',
+        },
+      },
+      {
+        '@type': 'ItemList',
+        '@id': 'https://www.10centagency.com/portfolio#list',
+        name: '10 Cent Agency Portfolio & Case Studies',
+        numberOfItems: initialItems.length,
+        itemListElement: initialItems.map((item, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: item.title,
+          url: `https://www.10centagency.com/portfolio/${item.slug}`,
+        })),
+      },
+      {
+        '@type': 'BreadcrumbList',
+        '@id': 'https://www.10centagency.com/portfolio#breadcrumb',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Home',
+            item: 'https://www.10centagency.com/',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: 'Portfolio',
+            item: 'https://www.10centagency.com/portfolio',
+          },
+        ],
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(schemaGraph).replace(/</g, '\\u003c'),
+        }}
+      />
       {/* Hero */}
       <section className="bg-brand-bgAlt pt-32 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

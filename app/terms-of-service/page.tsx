@@ -11,8 +11,24 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     url: 'https://www.10centagency.com/terms-of-service',
+    siteName: '10 Cent Agency',
     title: 'Terms of Service | 10 Cent Agency',
     description: 'Read the Terms of Service of 10 Cent Agency to understand the rules and conditions for using our services.',
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: '10 Cent Agency',
+      },
+    ],
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Terms of Service | 10 Cent Agency',
+    description: 'Read the Terms of Service of 10 Cent Agency to understand the rules and conditions for using our services.',
+    images: ['https://www.10centagency.com/og-image.png'],
   },
 };
 

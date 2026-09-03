@@ -339,7 +339,9 @@
 }
 
 .chatBubbleRowHidden {
-  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .chatBubbleAvatar {
@@ -376,7 +378,39 @@
   color: var(--ai-text);
   border-bottom-left-radius: 4px;
   box-shadow: 0 4px 14px rgba(15, 37, 71, 0.06);
+  position: relative;
 }
+
+.botTextTyping {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  user-select: none;
+}
+
+.chatTimestampHidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+.chatTypingOverlay {
+  position: absolute;
+  top: 14px;
+  left: 18px;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.chatTypingOverlay span {
+  width: 7px;
+  height: 7px;
+  background: #a9bcd9;
+  border-radius: 50%;
+  animation: typingDot 1.2s infinite ease-in-out;
+}
+
+.chatTypingOverlay span:nth-child(2) { animation-delay: 0.2s; }
+.chatTypingOverlay span:nth-child(3) { animation-delay: 0.4s; }
 
 .chatBubbleUser {
   width: fit-content;
@@ -3062,10 +3096,10 @@
 }
 
 @media (max-width: 768px) {
-  /* Issue 5: Quick Answer chat widget auto height with no inner scroll */
+  /* Issue 5: Quick Answer chat widget auto height with reserved min-height */
   .chatBody {
     height: auto;
-    min-height: auto;
+    min-height: 334px;
     max-height: none;
     overflow-y: visible;
     padding: 20px 16px 18px;
@@ -3114,6 +3148,9 @@
 }
 
 @media (max-width: 600px) {
+  .chatBody {
+    min-height: 381px;
+  }
 
   .cardsGrid,
   .whyGrid,
@@ -3289,10 +3326,15 @@
 
   .chatBody {
     height: auto;
-    min-height: auto;
+    min-height: 364px;
     max-height: none;
     overflow-y: visible;
     padding: 16px 12px 14px;
+  }
+
+  .chatTypingOverlay {
+    top: 10px;
+    left: 13px;
   }
 
   .chatBubbleRow {
@@ -3356,6 +3398,12 @@
   }
 }
 
+@media (max-width: 430px) {
+  .chatBody {
+    min-height: 382px;
+  }
+}
+
 @media (max-width: 400px) {
   .hero h1 {
     font-size: 26px;
@@ -3382,6 +3430,12 @@
   }
 }
 
+@media (max-width: 390px) {
+  .chatBody {
+    min-height: 401px;
+  }
+}
+
 @media (max-width: 380px) {
   .aiConsoleOuter {
     transform: scale(0.85);
@@ -3390,12 +3444,20 @@
 }
 
 @media (max-width: 360px) {
+  .chatBody {
+    min-height: 459px;
+  }
+
   .chatHeaderIconsMinus {
     display: none;
   }
 }
 
 @media (max-width: 320px) {
+  .chatBody {
+    min-height: 509px;
+  }
+
   .chatQuickReply {
     font-size: 10.5px;
     padding: 5px 8px;
@@ -3406,8 +3468,20 @@
 @media (prefers-reduced-motion: reduce) {
   .chatBubbleRow {
     opacity: 1 !important;
+    visibility: visible !important;
     transform: none !important;
     animation: none !important;
+  }
+
+  .chatQuickReplies {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .botTextTyping,
+  .chatTimestampHidden {
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 
   .chatQuickReply {

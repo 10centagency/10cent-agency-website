@@ -136,38 +136,42 @@ export default function AIChatWidget() {
             </div>
           </div>
 
-          {/* Typing Indicator */}
-          {mounted && isTyping && (
-            <div className={`${styles.chatBubbleRow} ${styles.bubblePopIn}`}>
-              <div className={`${styles.chatBubbleAvatar} ${styles.chatBubbleAvatarBot}`}>
-                <FaRobot aria-hidden="true" />
-              </div>
-              <div className={styles.chatTypingBubble} aria-label="AI Assistant is typing">
-                <span />
-                <span />
-                <span />
-              </div>
-            </div>
-          )}
-
-          {/* Bot Answer */}
+          {/* Bot Answer & Typing Overlay */}
           <div
             className={`${styles.chatBubbleRow} ${
-              mounted && !showBot ? styles.chatBubbleRowHidden : ''
-            } ${mounted && showBot ? styles.bubblePopIn : ''}`}
+              mounted && !showBot && !isTyping ? styles.chatBubbleRowHidden : ''
+            } ${mounted && (showBot || isTyping) ? styles.bubblePopIn : ''}`}
           >
             <div className={`${styles.chatBubbleAvatar} ${styles.chatBubbleAvatarBot}`}>
               <FaRobot aria-hidden="true" />
             </div>
             <div>
               <div className={`${styles.chatBubble} ${styles.chatBubbleBot}`}>
-                AI Automation &amp; Chatbot is a smart customer service system that uses artificial
-                intelligence to instantly respond to messages, capture leads, and automate repetitive
-                business tasks — 24/7, without human intervention. 10 Cent Agency builds custom AI
-                chatbots for Facebook Messenger, WhatsApp, and Telegram, plus n8n automation
-                workflows that connect your business tools together.
+                {/* Text is always in DOM to reserve final height */}
+                <span className={mounted && isTyping ? styles.botTextTyping : undefined}>
+                  AI Automation &amp; Chatbot is a smart customer service system that uses artificial
+                  intelligence to instantly respond to messages, capture leads, and automate repetitive
+                  business tasks — 24/7, without human intervention. 10 Cent Agency builds custom AI
+                  chatbots for Facebook Messenger, WhatsApp, and Telegram, plus n8n automation
+                  workflows that connect your business tools together.
+                </span>
+
+                {/* Typing dots overlay while typing */}
+                {mounted && isTyping && (
+                  <div className={styles.chatTypingOverlay} aria-label="AI Assistant is typing">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                )}
               </div>
-              <span className={styles.chatTimestamp}>10:41 AM</span>
+              <span
+                className={`${styles.chatTimestamp} ${
+                  mounted && isTyping ? styles.chatTimestampHidden : ''
+                }`}
+              >
+                10:41 AM
+              </span>
             </div>
           </div>
 

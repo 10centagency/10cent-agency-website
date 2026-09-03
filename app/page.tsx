@@ -19,6 +19,26 @@ export const metadata: Metadata = {
     "social media marketing agency Bangladesh",
     "social media marketing agency for small business",
   ],
+  alternates: {
+    canonical: 'https://www.10centagency.com/',
+  },
+  openGraph: {
+    type: 'website',
+    url: 'https://www.10centagency.com/',
+    siteName: '10 Cent Agency',
+    title: 'Best Digital Marketing Agency in Bangladesh | 10 Cent Agency',
+    description:
+      'Affordable digital marketing agency in BD helping small businesses grow online with Facebook ads, websites & AI automation. Get a free consultation today!',
+    images: [
+      {
+        url: 'https://www.10centagency.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: '10 Cent Agency — Best Digital Marketing Agency in BD',
+      },
+    ],
+    locale: 'en_US',
+  },
 };
 
 export default async function Home() {
@@ -43,7 +63,7 @@ export default async function Home() {
         '@type': 'LocalBusiness',
         '@id': 'https://www.10centagency.com/#organization',
         name: '10 Cent Agency',
-        url: 'https://www.10centagency.com',
+        url: 'https://www.10centagency.com/',
         logo: 'https://www.10centagency.com/Logo.webp',
         image: 'https://www.10centagency.com/og-image.png',
         description:
@@ -83,7 +103,7 @@ export default async function Home() {
       {
         '@type': 'WebSite',
         '@id': 'https://www.10centagency.com/#website',
-        url: 'https://www.10centagency.com',
+        url: 'https://www.10centagency.com/',
         name: '10 Cent Agency',
         description: 'Best Digital Marketing Agency in BD',
         inLanguage: 'en-BD',
