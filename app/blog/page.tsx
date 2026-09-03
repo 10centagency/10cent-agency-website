@@ -10,6 +10,14 @@ export const metadata: Metadata = {
     'Practical tips on Facebook ads, website development, SEO & AI automation for Bangladeshi small businesses. Free guides & insights from 10 Cent Agency.',
   alternates: {
     canonical: 'https://www.10centagency.com/blog',
+    types: {
+      'application/rss+xml': [
+        {
+          url: 'https://www.10centagency.com/feed.xml',
+          title: '10 Cent Agency Blog',
+        },
+      ],
+    },
   },
   openGraph: {
     type: 'website',
