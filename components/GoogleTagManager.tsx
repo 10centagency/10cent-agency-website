@@ -11,6 +11,30 @@ declare global {
   }
 }
 
+/**
+ * Generates a single event_id per page view.
+ *
+ * This ID is pushed into the dataLayer as `metaEventId` and is read by BOTH:
+ *   1. the "Meta Pixel-PageView" tag  (browser pixel)
+ *   2. the "CAPI-PageView" tag        (server-side Conversions API)
+ *
+ * Using ONE shared id is what lets Meta de-duplicate the browser event and the
+ * server event. Do NOT generate the id separately inside each GTM tag —
+ * GTM Custom JavaScript variables are re-evaluated on every reference, so each
+ * tag would end up with a different id and de-duplication would silently fail.
+ */
+function generateEventId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  // Fallback for non-secure contexts where crypto.randomUUID is unavailable
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export default function GoogleTagManager() {
   const pathname = usePathname();
   const [isLoaded, setIsLoaded] = useState(false);
@@ -91,6 +115,9 @@ export default function GoogleTagManager() {
       pagePath: pathname,
       pageLocation: window.location.href,
       pageTitle: document.title,
+      // ONE shared event id for this page view — consumed by both the
+      // Meta Pixel tag and the CAPI tag so Meta can de-duplicate them.
+      metaEventId: generateEventId(),
     });
   }, [pathname, isLoaded]);
 
