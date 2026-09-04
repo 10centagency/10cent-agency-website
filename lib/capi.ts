@@ -6,6 +6,7 @@ export async function sendToCAPI({
   ipAddress,
   fbc,
   fbp,
+  contentName,
 }: {
   eventName: string;
   eventId: string;
@@ -14,6 +15,7 @@ export async function sendToCAPI({
   ipAddress?: string;
   fbc?: string;
   fbp?: string;
+  contentName?: string;
 }) {
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
   const accessToken = process.env.META_ACCESS_TOKEN;
@@ -31,6 +33,7 @@ export async function sendToCAPI({
         event_id: eventId,
         event_source_url: eventSourceUrl,
         action_source: 'website',
+        ...(contentName ? { custom_data: { content_name: contentName } } : {}),
         user_data: {
           client_ip_address: ipAddress || null,
           client_user_agent: userAgent || null,

@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Bad request' }, { status: 400 });
     }
 
-    const { eventName, eventId, eventSourceUrl, fbc, fbp } = body;
+    const { eventName, eventId, eventSourceUrl, fbc, fbp, contentName } = body;
 
     // 2. Event allowlist check
     if (typeof eventName !== 'string' || eventName.length > 50 || !ALLOWED_EVENTS.has(eventName)) {
@@ -159,6 +159,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    if (contentName !== undefined && contentName !== null && contentName !== '') {
+      if (typeof contentName !== 'string' || contentName.length > 200) {
+        console.warn('[Track API] Rejected: invalid contentName format');
+        return NextResponse.json({ error: 'Bad request' }, { status: 400 });
+      }
+    }
+
     const userAgent = req.headers.get('user-agent') || undefined;
 
     await sendToCAPI({
@@ -169,6 +176,7 @@ export async function POST(req: NextRequest) {
       ipAddress: ipAddress !== '127.0.0.1' ? ipAddress : undefined,
       fbc: typeof fbc === 'string' ? fbc : undefined,
       fbp: typeof fbp === 'string' ? fbp : undefined,
+      contentName: typeof contentName === 'string' && contentName ? contentName : undefined,
     });
 
     return NextResponse.json({ success: true });
