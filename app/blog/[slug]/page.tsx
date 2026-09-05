@@ -9,6 +9,7 @@ import {
   getBlogPostDescription,
 } from '@/lib/blog';
 import BlogPostClient from './BlogPostClient';
+import { renderDocToHtml } from '@/components/editor';
 
 export const dynamic = 'force-dynamic';
 
@@ -93,6 +94,8 @@ export default async function BlogPostPage({ params }: Props) {
     notFound();
   }
 
+  const contentHtml = renderDocToHtml(post.content);
+
   const [category, relatedPosts] = await Promise.all([
     post.category_id ? getCategoryById(post.category_id) : Promise.resolve(null),
     getRelatedBlogPosts(post.id, post.category_id, 3),
@@ -136,6 +139,7 @@ export default async function BlogPostPage({ params }: Props) {
         post={post}
         category={category}
         relatedPosts={relatedPosts}
+        contentHtml={contentHtml}
       />
     </>
   );

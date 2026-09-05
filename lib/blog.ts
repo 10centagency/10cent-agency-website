@@ -82,6 +82,29 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
       .maybeSingle();
 
     if (error || !data) {
+      if (slug === 'test-post') {
+        const { demoDoc } = await import('@/components/editor/demoContent');
+        return {
+          id: '00000000-0000-0000-0000-000000000001',
+          slug: 'test-post',
+          title: 'Test Post: Modern Tiptap Architecture & Blocks',
+          category_id: 'a8090aac-1a88-4a38-ad04-c8c00c51d6f5',
+          excerpt: 'Live demonstration of heading, image, CTA banner, columns, and gallery blocks.',
+          meta_description: 'Live demonstration of heading, image, CTA banner, columns, and gallery blocks.',
+          featured_image_url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&auto=format&fit=crop&q=80',
+          featured_image_link: null,
+          thumbnail_gradient_from: '#00346D',
+          thumbnail_gradient_to: '#2F85F3',
+          content: demoDoc as any,
+          content_blocks: [],
+          tags: ['Tiptap', 'WebEngineering', 'Architecture'],
+          is_featured: false,
+          sort_order: 1,
+          status: 'published',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as BlogPost;
+      }
       if (error) console.error(`Error fetching blog post "${slug}":`, error);
       return null;
     }

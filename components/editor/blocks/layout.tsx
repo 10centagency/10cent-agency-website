@@ -46,8 +46,17 @@ const ColumnsNode = Node.create({
   parseHTML() {
     return [{ tag: 'div[data-block="columns"]' }]
   },
-  renderHTML({ HTMLAttributes }) {
-    return ['div', mergeAttributes(HTMLAttributes, { 'data-block': 'columns', class: 'my-6' })]
+  renderHTML({ node, HTMLAttributes }) {
+    const { template, gap } = node.attrs
+    return [
+      'div',
+      mergeAttributes(HTMLAttributes, {
+        'data-block': 'columns',
+        class: 'my-6 grid',
+        style: `grid-template-columns: ${template || '1fr 1fr'}; gap: ${gap ?? 24}px;`,
+      }),
+      0,
+    ]
   },
   addNodeView() {
     return ReactNodeViewRenderer(ColumnsView)
@@ -75,7 +84,7 @@ const ColumnNode = Node.create({
     return [{ tag: 'div[data-block="column"]' }]
   },
   renderHTML({ HTMLAttributes }) {
-    return ['div', mergeAttributes(HTMLAttributes, { 'data-block': 'column', class: 'min-w-0' })]
+    return ['div', mergeAttributes(HTMLAttributes, { 'data-block': 'column', class: 'min-w-0' }), 0]
   },
   addNodeView() {
     return ReactNodeViewRenderer(ColumnView)

@@ -167,3 +167,20 @@
 /* ── 5. Misc ──────────────────────────────────────────────────────────── */
 .raw-html { width: 100%; }
 .raw-html iframe { max-width: 100%; }
+
+/* ── 6. Mobile responsiveness ────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .doc-content [data-block="columns"] {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  .doc-content [data-block="gallery"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+}
+@media (max-width: 420px) {
+  .doc-content [data-block="gallery"] {
+    grid-template-columns: 1fr !important;
+  }
+}

@@ -2,7 +2,9 @@ import StarterKit from '@tiptap/starter-kit'
 import TextAlign from '@tiptap/extension-text-align'
 import { generateHTML, generateJSON } from '@tiptap/html'
 import type { JSONContent } from '@tiptap/core'
-import { extensionsFromRegistry } from './registry'
+import { allBlocks, extensionsFromRegistry } from './registry'
+import { registerAllBlocks } from './blocks'
+import { isDocEmpty } from './plainText'
 
 /**
  * SERVER-SAFE extension list — শুধু node + mark।
@@ -14,6 +16,9 @@ import { extensionsFromRegistry } from './registry'
  *    দুটোতেই যেন block node গুলো একই থাকে, নাহলে unknown node drop হয়ে যাবে।
  */
 export function renderExtensions() {
+  if (allBlocks().length === 0) {
+    registerAllBlocks()
+  }
   return [
     StarterKit.configure({
       heading: { levels: [1, 2, 3, 4] },
@@ -27,7 +32,7 @@ export function renderExtensions() {
 
 /** Tiptap JSON → HTML (public page / RSS / meta description) */
 export function renderDocToHtml(doc: JSONContent | null | undefined): string {
-  if (!doc || typeof doc !== 'object') return ''
+  if (!doc || typeof doc !== 'object' || isDocEmpty(doc)) return ''
   let html = ''
   try {
     html = generateHTML(doc as JSONContent, renderExtensions())
