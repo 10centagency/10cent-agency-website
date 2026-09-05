@@ -1,3 +1,5 @@
+import type { JSONContent } from '@tiptap/core'
+
 export type Json =
   | string
   | number
@@ -108,6 +110,7 @@ export interface Database {
           featured_image_link: string | null
           thumbnail_gradient_from: string
           thumbnail_gradient_to: string
+          content?: JSONContent | null
           content_blocks: ContentBlock[]
           is_featured: boolean
           sort_order: number
@@ -151,6 +154,7 @@ export interface Database {
           featured_image_link?: string | null
           thumbnail_gradient_from: string
           thumbnail_gradient_to: string
+          content?: JSONContent | null
           content_blocks: ContentBlock[]
           tags: string[]
           is_featured: boolean
