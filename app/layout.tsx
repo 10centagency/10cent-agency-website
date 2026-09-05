@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Outfit, Anek_Bangla } from 'next/font/google'
 import { LazyMotion, domAnimation } from "framer-motion";
 import "./globals.css";
+import '@/components/editor/editor.css';
 import PublicLayoutWrapper from "@/components/layout/PublicLayoutWrapper";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
 import ScrollToTop from "@/components/ui/ScrollToTop";

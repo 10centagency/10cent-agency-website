@@ -1,0 +1,169 @@
+/* ══════════════════════════════════════════════════════════════════════════
+ *  editor.css — portable stylesheet for the block editor
+ *
+ *  এটা Tailwind-এর ওপর নির্ভর করে না (plain CSS) — যেকোনো প্রজেক্টে চলবে।
+ *  brand রঙগুলো 10centagency-এর Tailwind theme থেকে নেওয়া:
+ *    navy #00346D · blue #2F85F3 · accent #B6D7FF
+ *    textDark #16324F · textMid #5C718A · border #D9E8FA
+ *
+ *  প্রয়োগ:
+ *    .tiptap-canvas   → admin editor-এর লেখার এলাকা
+ *    .doc-content     → public page-এ render করা HTML-এর wrapper
+ * ══════════════════════════════════════════════════════════════════════════*/
+
+/* ── 1. Editor canvas ─────────────────────────────────────────────────── */
+.tiptap-canvas .ProseMirror {
+  min-height: 420px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #5c718a;
+  outline: none;
+}
+.tiptap-canvas .ProseMirror > * + * { margin-top: 1rem; }
+
+.tiptap-canvas .ProseMirror p { margin: 0.75rem 0; }
+.tiptap-canvas .ProseMirror h1 { margin: 2rem 0 1rem; font-size: 2.25rem; line-height: 1.2; font-weight: 800; color: #16324f; }
+.tiptap-canvas .ProseMirror h2 { margin: 2rem 0 0.75rem; font-size: 1.875rem; line-height: 1.25; font-weight: 700; color: #16324f; }
+.tiptap-canvas .ProseMirror h3 { margin: 1.5rem 0 0.5rem; font-size: 1.25rem; line-height: 1.35; font-weight: 700; color: #16324f; }
+.tiptap-canvas .ProseMirror h4 { margin: 1.25rem 0 0.5rem; font-size: 1.125rem; font-weight: 600; color: #16324f; }
+
+.tiptap-canvas .ProseMirror ul { margin: 0.75rem 0; padding-left: 1.5rem; list-style: disc; }
+.tiptap-canvas .ProseMirror ol { margin: 0.75rem 0; padding-left: 1.5rem; list-style: decimal; }
+.tiptap-canvas .ProseMirror li { margin: 0.15rem 0; }
+.tiptap-canvas .ProseMirror li p { margin: 0; }
+.tiptap-canvas .ProseMirror ul ul,
+.tiptap-canvas .ProseMirror ol ol { margin: 0.25rem 0; }
+
+.tiptap-canvas .ProseMirror blockquote {
+  margin: 1.25rem 0;
+  padding-left: 1rem;
+  border-left: 4px solid rgba(47, 133, 243, 0.4);
+  font-style: italic;
+  color: #5c718a;
+}
+
+.tiptap-canvas .ProseMirror code {
+  padding: 0.15rem 0.35rem;
+  border-radius: 0.25rem;
+  background: #eef2f7;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+  color: #e11d48;
+}
+.tiptap-canvas .ProseMirror pre {
+  margin: 1rem 0;
+  padding: 1rem;
+  overflow-x: auto;
+  border-radius: 0.75rem;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.875rem;
+}
+.tiptap-canvas .ProseMirror pre code { padding: 0; background: transparent; color: inherit; }
+
+.tiptap-canvas .ProseMirror a { color: #2f85f3; text-decoration: underline; text-underline-offset: 2px; }
+.tiptap-canvas .ProseMirror hr { margin: 2rem 0; border: 0; border-top: 1px solid #d9e8fa; }
+.tiptap-canvas .ProseMirror img { max-width: 100%; height: auto; }
+
+/* placeholder */
+.tiptap-canvas .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: #94a3b8;
+}
+
+/* selected node (image/gallery click করলে) */
+.tiptap-canvas .ProseMirror .ProseMirror-selectednode {
+  outline: 2px solid #2f85f3;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.tiptap-canvas .ProseMirror .ProseMirror-selectednode img { border-radius: 4px; }
+
+/* columns placeholder text */
+.tiptap-canvas .ProseMirror [data-block="column"]:empty::before {
+  content: "Type in this column…";
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+/* ── 2. Tables (editor + public) ──────────────────────────────────────── */
+.tiptap-canvas .ProseMirror table,
+.doc-content table {
+  width: 100%;
+  margin: 1.5rem 0;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.tiptap-canvas .ProseMirror th,
+.tiptap-canvas .ProseMirror td,
+.doc-content th,
+.doc-content td {
+  border: 1px solid #d9e8fa;
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+.tiptap-canvas .ProseMirror th,
+.doc-content th {
+  background: #eef6ff;
+  font-weight: 600;
+  color: #16324f;
+}
+.tiptap-canvas .ProseMirror td p,
+.doc-content td p,
+.tiptap-canvas .ProseMirror th p,
+.doc-content th p { margin: 0; }
+.tiptap-canvas .ProseMirror .selectedCell::after { background: rgba(47, 133, 243, 0.15); }
+.tiptap-canvas .ProseMirror .column-resize-handle {
+  background-color: #2f85f3;
+  width: 3px;
+}
+
+/* ── 3. Public page rendering (.doc-content wrapper) ──────────────────── */
+.doc-content { color: #5c718a; font-size: 16px; line-height: 1.75; }
+.doc-content > * { max-width: 100%; }
+.doc-content p { margin: 0.85rem 0; }
+.doc-content h1 { margin: 2rem 0 0.75rem; font-size: 2.1rem; line-height: 1.2; font-weight: 800; color: #16324f; }
+.doc-content h2 { margin: 2rem 0 0.75rem; font-size: 1.7rem; line-height: 1.25; font-weight: 700; color: #16324f; }
+.doc-content h3 { margin: 1.5rem 0 0.5rem; font-size: 1.25rem; font-weight: 700; color: #16324f; }
+.doc-content h4 { margin: 1.25rem 0 0.5rem; font-size: 1.1rem; font-weight: 600; color: #16324f; }
+.doc-content ul { margin: 0.85rem 0; padding-left: 1.4rem; list-style: disc; }
+.doc-content ol { margin: 0.85rem 0; padding-left: 1.4rem; list-style: decimal; }
+.doc-content li { margin: 0.2rem 0; }
+.doc-content li p { margin: 0; }
+.doc-content blockquote {
+  margin: 1.25rem 0;
+  padding-left: 1rem;
+  border-left: 4px solid rgba(47, 133, 243, 0.4);
+  font-style: italic;
+}
+.doc-content a { color: #2f85f3; text-decoration: underline; text-underline-offset: 2px; }
+.doc-content a:hover { color: #00346d; }
+.doc-content strong { color: #16324f; font-weight: 600; }
+.doc-content em { font-style: italic; }
+.doc-content u { text-decoration: underline; }
+.doc-content s { text-decoration: line-through; }
+.doc-content code {
+  padding: 0.15rem 0.35rem;
+  border-radius: 0.25rem;
+  background: #eef2f7;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+}
+.doc-content pre { margin: 1.25rem 0; padding: 1rem; overflow-x: auto; border-radius: 0.75rem; background: #0f172a; color: #e2e8f0; }
+.doc-content pre code { background: transparent; color: inherit; padding: 0; }
+.doc-content hr { margin: 2rem 0; border: 0; border-top: 1px solid #d9e8fa; }
+.doc-content img { max-width: 100%; height: auto; }
+.doc-content figure { margin: 0; }
+.doc-content figcaption { margin-top: 0.5rem; font-size: 0.8rem; font-style: italic; color: #8296ab; }
+
+/* ── 4. Drag handle layer ─────────────────────────────────────────────── */
+.drag-handle { z-index: 30; }
+.drag-handle:hover { opacity: 1 !important; }
+
+/* ── 5. Misc ──────────────────────────────────────────────────────────── */
+.raw-html { width: 100%; }
+.raw-html iframe { max-width: 100%; }
