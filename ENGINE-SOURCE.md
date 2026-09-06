@@ -1,21 +1,5 @@
-# ENGINE SOURCE — 10centagency Block Editor
-
-এই ফাইলে `components/editor/` ফোল্ডারের **সব ফাইল** আছে — Antigravity-তে
-`02-prompt-phase1.md`-এর prompt দিলে ও নিজেই এখান থেকে সব ফাইল তৈরি করে দেবে।
-
-**আপনাকে কিছু করতে হবে না** — শুধু এই ফাইলটা project root-এ রাখুন।
-
-প্রতিটা ফাইল শুরু হয় `<!-- FILE: ... -->` দিয়ে, তারপর code block-এ ফাইলের content।
-
-- মোট ফাইল: **25** (24 টি .ts/.tsx + 1 টি editor.css)
-- Block: **32 টি registered → inserter-এ 38 টি item**
-- বাহ্যিক dependency: শুধু `@tiptap/*`, `lucide-react`, `react` (`@/` alias নেই)
-- ✅ strict TypeScript (target es5, jsx preserve) — 0 errors
-
----
-
 <!-- FILE: components/editor/BlockEditor.tsx -->
-```tsx
+```
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useEditor, useEditorState, EditorContent } from '@tiptap/react'
 import type { JSONContent } from '@tiptap/core'
@@ -26,14 +10,17 @@ import UniqueID from '@tiptap/extension-unique-id'
 import FileHandler from '@tiptap/extension-file-handler'
 import {
   Plus, Undo2, Redo2, Eye, Pencil, Braces, Copy, Check, RotateCcw, Sparkles,
+  PanelRightClose, PanelRightOpen,
 } from 'lucide-react'
 
 import { customNodeNames, extensionsFromRegistry, insertBlock } from './registry'
 import { SlashCommand } from './extensions/slashCommand'
+import { TextStyles } from './extensions/textStyles'
 import BlockPicker from './surfaces/BlockPicker'
 import BlockHandle from './surfaces/BlockHandle'
 import FormatToolbar from './surfaces/FormatToolbar'
 import Inspector from './surfaces/Inspector'
+import TableToolbar from './surfaces/TableToolbar'
 import { activeBlock } from './commands'
 import { renderDocToHtml } from './render'
 import { demoDoc } from './demoContent'
@@ -48,17 +35,17 @@ const IMAGE_MIME = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/
 
 /**
  * Client editor extension list.
- * ⚠️ renderExtensions() (render.ts) এর সাথে node/mark list মিল থাকতে হবে।
+ * ⚠️ The node/mark list here must match renderExtensions() (render.ts).
  */
 export function editorExtensions(upload?: UploadFn) {
   const list = [
-    // StarterKit v3.31-এ বিল্ট-ইন: underline, link, trailingNode, listKeymap, undoRedo
+    // Built into StarterKit v3.31: underline, link, trailingNode, listKeymap, undoRedo
     StarterKit.configure({
       heading: { levels: [1, 2, 3, 4] },
       link: { openOnClick: false, autolink: true },
-      trailingNode: {}, // ডকুমেন্টের শেষে সবসময় একটা paragraph
+      trailingNode: {}, // always keep a trailing paragraph
     }),
-    TextAlign.configure({ types: ['heading', 'paragraph'] }),
+    TextAlign.configure({ types: ['heading', 'paragraph', 'tableCell', 'tableHeader'] }),
     Placeholder.configure({
       placeholder: ({ node }) =>
         node.type.name === 'heading' ? 'Heading…' : "Type '/' to choose a block",
@@ -68,6 +55,7 @@ export function editorExtensions(upload?: UploadFn) {
       types: [...customNodeNames(), 'heading'],
     }),
     ...extensionsFromRegistry(),
+    TextStyles,
     SlashCommand,
   ]
 
@@ -98,17 +86,18 @@ export function editorExtensions(upload?: UploadFn) {
 type Mode = 'edit' | 'preview' | 'json'
 
 export interface BlockEditorProps {
-  /** 저장된 Tiptap JSON — null হলে empty doc */
+  /** Saved Tiptap JSON — null means an empty document */
   value?: JSONContent | null
   onChange?: (json: JSONContent) => void
-  /** Supabase-এ আপলোড করে public URL দেয় (FileHandler + inspector upload) */
+  /** Uploads to Supabase and returns a public URL (FileHandler + inspector upload) */
   upload?: UploadFn
-  /** demo mode: Preview/JSON tab + Reset বাটন + demo content */
+  /** demo mode: Preview/JSON tab + Reset button + demo content */
   demo?: boolean
 }
 
 export default function BlockEditor({ value, onChange, upload, demo = false }: BlockEditorProps) {
   const [mode, setMode] = useState<Mode>('edit')
+  const [inspectorOpen, setInspectorOpen] = useState(true)
   const [pickerOpen, setPickerOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -133,7 +122,7 @@ export default function BlockEditor({ value, onChange, upload, demo = false }: B
     },
   })
 
-  /* value বাইরে থেকে change হলে (যেমন async load) editor সিঙ্ক করো */
+  /* Sync the editor when value changes from outside (e.g. async load) */
   useEffect(() => {
     if (!editor || value === undefined) return
     if (value === lastEmitted.current) return
@@ -154,7 +143,7 @@ export default function BlockEditor({ value, onChange, upload, demo = false }: B
     }),
   })
 
-  // ★ public page-এ যা render হবে, ঠিক সেটাই (renderExtensions + raw-HTML decode)
+  // ★ Exactly what the public page will render (renderExtensions + raw-HTML decode)
   const html = useMemo(() => {
     if (mode !== 'preview' || !editor) return ''
     try {
@@ -232,6 +221,22 @@ export default function BlockEditor({ value, onChange, upload, demo = false }: B
             {state?.blocks ?? 0} blocks · {state?.words ?? 0} words
           </span>
 
+          {/* Inspector show/hide */}
+          <button
+            type="button"
+            onClick={() => setInspectorOpen((v) => !v)}
+            title={inspectorOpen ? 'Hide inspector' : 'Show inspector'}
+            className={cx(
+              'flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors',
+              inspectorOpen
+                ? 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                : 'border-brand-blue bg-brand-blue/10 text-brand-blue',
+            )}
+          >
+            {inspectorOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
+            <span className="hidden sm:inline">{inspectorOpen ? 'Hide panel' : 'Show panel'}</span>
+          </button>
+
           {demo && (
             <>
               <div className="flex overflow-hidden rounded-lg border border-slate-200">
@@ -295,6 +300,7 @@ export default function BlockEditor({ value, onChange, upload, demo = false }: B
               <div className="rounded-2xl border border-slate-200 bg-white px-8 py-8 shadow-sm">
                 <FormatToolbar editor={editor} />
                 <BlockHandle editor={editor} />
+                <TableToolbar editor={editor} />
                 <EditorContent editor={editor} className="tiptap-canvas" />
               </div>
             )}
@@ -302,7 +308,7 @@ export default function BlockEditor({ value, onChange, upload, demo = false }: B
             {mode === 'preview' && (
               <div className="rounded-2xl border border-slate-200 bg-white px-8 py-8 shadow-sm">
                 <div className="mb-6 rounded-lg bg-amber-50 px-4 py-2.5 text-xs text-amber-800">
-                  <strong>Static render</strong> — public page-এ যা দেখাবে (<code>generateHTML()</code>)
+                  <strong>Static render</strong> — what the public page will show (<code>generateHTML()</code>)
                 </div>
                 <div className="preview-content" dangerouslySetInnerHTML={{ __html: html }} />
               </div>
@@ -318,24 +324,28 @@ export default function BlockEditor({ value, onChange, upload, demo = false }: B
           </div>
         </main>
 
-        <Inspector editor={editor} active={state?.active ?? null} upload={upload} />
+        {inspectorOpen && (
+          <Inspector editor={editor} active={state?.active ?? null} upload={upload} />
+        )}
       </div>
     </div>
   )
 }
+
 ```
 
 <!-- FILE: components/editor/blocks/advanced.tsx -->
-```tsx
+```
 import { Node } from '@tiptap/core'
 import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react'
 import { TableKit } from '@tiptap/extension-table'
+import { TableStyles } from '../extensions/tableStyles'
 import { Table2, Code, ListTree } from 'lucide-react'
 import type { BlockDefinition } from '../types'
 import { cx, jsonAttr, mergeAttributes, suppress } from './helpers'
 
 /* ══════════════════════════════════════════════════════════════════════════
- * TABLE  (Tiptap-এর official TableKit — সম্পূর্ণ editable)
+ * TABLE  (Tiptap official TableKit — fully editable)
  * ═════════════════════════════════════════════════════════════════════════*/
 export const tableBlock: BlockDefinition = {
   name: 'table',
@@ -344,11 +354,40 @@ export const tableBlock: BlockDefinition = {
   category: 'advanced',
   icon: Table2,
   keywords: ['table', 'grid', 'rows', 'columns', 'data'],
-  node: TableKit.configure({
-    table: { resizable: true, lastColumnResizable: true, allowTableNodeSelection: true },
-  }),
+  // TableKit + TableStyles (our own style attributes) — as an array
+  node: [
+    TableKit.configure({
+      table: { resizable: true, lastColumnResizable: true, allowTableNodeSelection: true },
+    }),
+    TableStyles,
+  ],
   insert: ({ editor }) =>
     editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+  defaults: {
+    tableBorders: 'all',
+    tableStriped: false,
+    tableCompact: false,
+    tableHover: false,
+    tableHeaderBg: '',
+    tableSticky: false,
+  },
+  options: [
+    {
+      key: 'tableBorders',
+      label: 'Borders',
+      type: 'segmented',
+      choices: [
+        { label: 'All', value: 'all' },
+        { label: 'Rows', value: 'horizontal' },
+        { label: 'None', value: 'none' },
+      ],
+    },
+    { key: 'tableStriped', label: 'Zebra rows', type: 'toggle' },
+    { key: 'tableCompact', label: 'Compact padding', type: 'toggle' },
+    { key: 'tableHover', label: 'Highlight row on hover', type: 'toggle' },
+    { key: 'tableHeaderBg', label: 'Header background', type: 'color' },
+    { key: 'tableSticky', label: 'Sticky header (stays visible when scrolling)', type: 'toggle' },
+  ],
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -413,16 +452,19 @@ export const htmlBlock: BlockDefinition = {
  * TABLE OF CONTENTS  (manual links)
  * ═════════════════════════════════════════════════════════════════════════*/
 const TocView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { title, links } = node.attrs
+  const { title, links, columns, numbered, bgColor, border } = node.attrs
   return (
     <NodeViewWrapper
       data-block="toc"
       className={cx('my-2', selected && 'ring-2 ring-brand-blue ring-offset-2 rounded-lg')}
       data-drag-handle
     >
-      <nav className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+      <nav
+        className={cx('rounded-xl bg-slate-50 p-5', border && 'border border-slate-200')}
+        style={bgColor ? { backgroundColor: bgColor } : undefined}
+      >
         {title && <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">{title}</p>}
-        <ol className="space-y-1">
+        <ol className={cx(numbered ? 'list-decimal space-y-1 pl-5' : 'space-y-1', Number(columns) === 2 && 'grid gap-1 sm:grid-cols-2')}>
           {(links as { label: string; url: string }[]).map((l, i) => (
             <li key={i}>
               <a href={l.url || '#'} className="text-sm text-blue-600 hover:underline">
@@ -444,13 +486,17 @@ const TocNode = Node.create({
     return {
       title: { default: 'On this page', renderHTML: suppress },
       links: jsonAttr([{ label: 'Section one', url: '#section-one' }]),
+      columns: { default: 1, renderHTML: suppress },
+      numbered: { default: false, renderHTML: suppress },
+      bgColor: { default: '', renderHTML: suppress },
+      border: { default: true, renderHTML: suppress },
     }
   },
   parseHTML() {
     return [{ tag: 'nav[data-block="toc"]' }]
   },
   renderHTML({ node, HTMLAttributes }) {
-    const { title, links } = node.attrs
+    const { title, links, columns, numbered, bgColor, border } = node.attrs
     const items = (links as { label: string; url: string }[]).map((l) => [
       'li',
       {},
@@ -458,9 +504,13 @@ const TocNode = Node.create({
     ])
     return [
       'nav',
-      mergeAttributes(HTMLAttributes, { 'data-block': 'toc', class: 'my-6 rounded-xl border border-slate-200 bg-slate-50 p-5' }),
+      mergeAttributes(HTMLAttributes, {
+        'data-block': 'toc',
+        class: cx('my-6 rounded-xl bg-slate-50 p-5', border && 'border border-slate-200'),
+        ...(bgColor ? { style: `background-color:${bgColor}` } : {}),
+      }),
       title ? ['p', { class: 'mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500' }, title] : ['span', { class: 'hidden' }],
-      ['ol', { class: 'space-y-1' }, ...items],
+      ['ol', { class: cx(numbered ? 'list-decimal space-y-1 pl-5' : 'space-y-1', Number(columns) === 2 && 'grid gap-1 sm:grid-cols-2') }, ...items],
     ]
   },
   addNodeView() {
@@ -476,9 +526,28 @@ export const tocBlock: BlockDefinition = {
   icon: ListTree,
   keywords: ['toc', 'contents', 'index', 'jump', 'outline'],
   node: TocNode,
-  defaults: { title: 'On this page', links: [{ label: 'Section one', url: '#section-one' }] },
+  defaults: {
+    title: 'On this page',
+    links: [{ label: 'Section one', url: '#section-one' }],
+    columns: 1,
+    numbered: false,
+    bgColor: '',
+    border: true,
+  },
   options: [
     { key: 'title', label: 'Title', type: 'text' },
+    {
+      key: 'columns',
+      label: 'Layout',
+      type: 'segmented',
+      choices: [
+        { label: 'Single', value: '1' },
+        { label: 'Two column', value: '2' },
+      ],
+    },
+    { key: 'numbered', label: 'Numbered list', type: 'toggle' },
+    { key: 'bgColor', label: 'Background colour', type: 'color' },
+    { key: 'border', label: 'Border', type: 'toggle' },
     {
       key: 'links',
       label: 'Links',
@@ -495,16 +564,17 @@ export const tocBlock: BlockDefinition = {
 }
 
 export const advancedBlocks: BlockDefinition[] = [tableBlock, htmlBlock, tocBlock]
+
 ```
 
 <!-- FILE: components/editor/blocks/core.tsx -->
-```tsx
+```
 import { Text as TextIcon, Heading as HeadingIcon, List, ListOrdered, Quote, Code2 } from 'lucide-react'
 import type { BlockDefinition } from '../types'
 
 /**
- * Core text blocks — এগুলোর কোনো custom node নেই,
- * StarterKit-এর node-কে registry দিয়ে "block" হিসেবে expose করা হয়েছে মাত্র।
+ * Core text blocks — these have no custom node,
+ * the StarterKit nodes are simply exposed as "blocks" through the registry.
  */
 
 export const paragraphBlock: BlockDefinition = {
@@ -514,6 +584,7 @@ export const paragraphBlock: BlockDefinition = {
   category: 'text',
   icon: TextIcon,
   keywords: ['text', 'body', 'p'],
+  defaults: { textAlign: null, fontSize: '', lineHeight: '', textColor: '', bgColor: '', paddingY: 0 },
   options: [
     {
       key: 'textAlign',
@@ -523,8 +594,38 @@ export const paragraphBlock: BlockDefinition = {
         { label: 'Left', value: 'left' },
         { label: 'Center', value: 'center' },
         { label: 'Right', value: 'right' },
+        { label: 'Justify', value: 'justify' },
       ],
     },
+    {
+      key: 'fontSize',
+      label: 'Font size',
+      type: 'select',
+      choices: [
+        { label: 'Default', value: '' },
+        { label: 'Small', value: 'sm' },
+        { label: 'Normal', value: 'base' },
+        { label: 'Large', value: 'lg' },
+        { label: 'XL', value: 'xl' },
+        { label: '2XL', value: '2xl' },
+        { label: '3XL', value: '3xl' },
+      ],
+    },
+    {
+      key: 'lineHeight',
+      label: 'Line height',
+      type: 'select',
+      choices: [
+        { label: 'Default', value: '' },
+        { label: 'Tight', value: 'tight' },
+        { label: 'Snug', value: 'snug' },
+        { label: 'Normal', value: 'normal' },
+        { label: 'Relaxed', value: 'relaxed' },
+      ],
+    },
+    { key: 'textColor', label: 'Text colour', type: 'color' },
+    { key: 'bgColor', label: 'Background colour', type: 'color' },
+    { key: 'paddingY', label: 'Padding top/bottom (px)', type: 'range', min: 0, max: 48, step: 2 },
   ],
   insert: ({ editor }) => editor.chain().focus().setParagraph().run(),
 }
@@ -565,6 +666,37 @@ export const headingBlock: BlockDefinition = {
         { label: 'Right', value: 'right' },
       ],
     },
+    {
+      key: 'fontSize',
+      label: 'Font size',
+      type: 'select',
+      choices: [
+        { label: 'Default', value: '' },
+        { label: 'Small', value: 'sm' },
+        { label: 'Normal', value: 'base' },
+        { label: 'Large', value: 'lg' },
+        { label: 'XL', value: 'xl' },
+        { label: '2XL', value: '2xl' },
+        { label: '3XL', value: '3xl' },
+      ],
+    },
+    {
+      key: 'lineHeight',
+      label: 'Line height',
+      type: 'select',
+      choices: [
+        { label: 'Default', value: '' },
+        { label: 'Tight', value: 'tight' },
+        { label: 'Snug', value: 'snug' },
+        { label: 'Normal', value: 'normal' },
+        { label: 'Relaxed', value: 'relaxed' },
+      ],
+    },
+    { key: 'textColor', label: 'Text colour', type: 'color' },
+    { key: 'bgColor', label: 'Background colour', type: 'color' },
+    { key: 'paddingY', label: 'Padding top/bottom (px)', type: 'range', min: 0, max: 48, step: 2 },
+    { key: 'uppercase', label: 'UPPERCASE', type: 'toggle' },
+    { key: 'anchorId', label: 'Anchor id (for TOC links)', type: 'text', placeholder: 'section-one' },
   ],
   insert: ({ editor, attrs }) =>
     editor.chain().focus().toggleHeading({ level: (attrs?.level as 1 | 2 | 3 | 4) ?? 2 }).run(),
@@ -577,6 +709,22 @@ export const bulletListBlock: BlockDefinition = {
   category: 'text',
   icon: List,
   keywords: ['ul', 'unordered', 'points'],
+  defaults: { listStyle: '', textColor: '' },
+  options: [
+    {
+      key: 'listStyle',
+      label: 'Bullet style',
+      type: 'select',
+      choices: [
+        { label: 'Default (disc)', value: '' },
+        { label: 'Disc ●', value: 'disc' },
+        { label: 'Circle ○', value: 'circle' },
+        { label: 'Square ■', value: 'square' },
+        { label: 'None', value: 'none' },
+      ],
+    },
+    { key: 'textColor', label: 'List colour', type: 'color' },
+  ],
   insert: ({ editor }) => editor.chain().focus().toggleBulletList().run(),
 }
 
@@ -587,6 +735,23 @@ export const orderedListBlock: BlockDefinition = {
   category: 'text',
   icon: ListOrdered,
   keywords: ['ol', 'ordered', 'number', 'steps'],
+  defaults: { listStyle: '', start: 1, textColor: '' },
+  options: [
+    {
+      key: 'listStyle',
+      label: 'Numbering style',
+      type: 'select',
+      choices: [
+        { label: '1, 2, 3', value: '' },
+        { label: 'a, b, c', value: 'lower-alpha' },
+        { label: 'A, B, C', value: 'upper-alpha' },
+        { label: 'i, ii, iii', value: 'lower-roman' },
+        { label: 'I, II, III', value: 'upper-roman' },
+      ],
+    },
+    { key: 'start', label: 'Start from', type: 'number', min: 1, max: 99, step: 1 },
+    { key: 'textColor', label: 'List colour', type: 'color' },
+  ],
   insert: ({ editor }) => editor.chain().focus().toggleOrderedList().run(),
 }
 
@@ -597,6 +762,51 @@ export const quoteBlock: BlockDefinition = {
   category: 'text',
   icon: Quote,
   keywords: ['blockquote', 'cite', 'testimonial'],
+  defaults: { quoteVariant: '', citation: '', fontSize: '', textColor: '', bgColor: '', borderColor: '', paddingY: 0 },
+  options: [
+    {
+      key: 'quoteVariant',
+      label: 'Style',
+      type: 'select',
+      choices: [
+        { label: 'Default (left border)', value: '' },
+        { label: 'Card (with background)', value: 'card' },
+        { label: 'Centred quote', value: 'centered' },
+        { label: 'Plain (no border)', value: 'plain' },
+      ],
+    },
+    { key: 'citation', label: 'Author / source', type: 'text', placeholder: '— Jane Doe' },
+    { key: 'borderColor', label: 'Border colour', type: 'color' },
+    {
+      key: 'fontSize',
+      label: 'Font size',
+      type: 'select',
+      choices: [
+        { label: 'Default', value: '' },
+        { label: 'Small', value: 'sm' },
+        { label: 'Normal', value: 'base' },
+        { label: 'Large', value: 'lg' },
+        { label: 'XL', value: 'xl' },
+        { label: '2XL', value: '2xl' },
+        { label: '3XL', value: '3xl' },
+      ],
+    },
+    {
+      key: 'lineHeight',
+      label: 'Line height',
+      type: 'select',
+      choices: [
+        { label: 'Default', value: '' },
+        { label: 'Tight', value: 'tight' },
+        { label: 'Snug', value: 'snug' },
+        { label: 'Normal', value: 'normal' },
+        { label: 'Relaxed', value: 'relaxed' },
+      ],
+    },
+    { key: 'textColor', label: 'Text colour', type: 'color' },
+    { key: 'bgColor', label: 'Background colour', type: 'color' },
+    { key: 'paddingY', label: 'Padding top/bottom (px)', type: 'range', min: 0, max: 48, step: 2 },
+  ],
   insert: ({ editor }) => editor.chain().focus().toggleBlockquote().run(),
 }
 
@@ -607,6 +817,35 @@ export const codeBlockDef: BlockDefinition = {
   category: 'text',
   icon: Code2,
   keywords: ['code', 'snippet', 'pre'],
+  defaults: { language: '', lineNumbers: false, codeTheme: 'dark' },
+  options: [
+    {
+      key: 'language',
+      label: 'Language',
+      type: 'select',
+      choices: [
+        { label: 'Plain', value: '' },
+        { label: 'JavaScript', value: 'javascript' },
+        { label: 'TypeScript', value: 'typescript' },
+        { label: 'HTML', value: 'html' },
+        { label: 'CSS', value: 'css' },
+        { label: 'JSON', value: 'json' },
+        { label: 'Python', value: 'python' },
+        { label: 'Bash', value: 'bash' },
+        { label: 'SQL', value: 'sql' },
+      ],
+    },
+    {
+      key: 'codeTheme',
+      label: 'Theme',
+      type: 'segmented',
+      choices: [
+        { label: 'Dark', value: 'dark' },
+        { label: 'Light', value: 'light' },
+      ],
+    },
+    { key: 'lineNumbers', label: 'Show line numbers', type: 'toggle' },
+  ],
   insert: ({ editor }) => editor.chain().focus().toggleCodeBlock().run(),
 }
 
@@ -618,10 +857,11 @@ export const coreBlocks: BlockDefinition[] = [
   quoteBlock,
   codeBlockDef,
 ]
+
 ```
 
 <!-- FILE: components/editor/blocks/design.tsx -->
-```tsx
+```
 import { Node } from '@tiptap/core'
 import { NodeViewContent, NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react'
 import { Info, Palette, CaseSensitive, MousePointerClick } from 'lucide-react'
@@ -641,12 +881,16 @@ const VARIANTS: Record<string, { wrap: string; title: string; icon: string }> = 
 
 const CalloutView = ({ node, selected }: { node: any; selected: boolean }) => {
   const v = VARIANTS[node.attrs.variant] ?? VARIANTS.info
+  const { showIcon, padding, border, rounded } = node.attrs
   return (
     <NodeViewWrapper data-block="callout" className={cx('my-2', selected && 'rounded-lg ring-2 ring-brand-blue ring-offset-2')} data-drag-handle>
-      <div className={cx('rounded-r-xl px-5 py-4', v.wrap)}>
+      <div
+        className={cx('px-5', v.wrap, rounded && 'rounded-r-xl', border && 'border border-slate-200')}
+        style={{ paddingTop: `${padding}px`, paddingBottom: `${padding}px` }}
+      >
         {node.attrs.title && (
           <p className={cx('mb-1 flex items-center gap-2 text-sm font-bold', v.title)}>
-            <span>{v.icon}</span>
+            {showIcon && <span>{v.icon}</span>}
             {node.attrs.title}
           </p>
         )}
@@ -666,6 +910,10 @@ const CalloutNode = Node.create({
     return {
       variant: { default: 'info', renderHTML: suppress },
       title: { default: '', renderHTML: suppress },
+      showIcon: { default: true, renderHTML: suppress },
+      padding: { default: 16, renderHTML: suppress },
+      border: { default: false, renderHTML: suppress },
+      rounded: { default: true, renderHTML: suppress },
     }
   },
   parseHTML() {
@@ -673,12 +921,21 @@ const CalloutNode = Node.create({
   },
   renderHTML({ node, HTMLAttributes }) {
     const v = VARIANTS[node.attrs.variant] ?? VARIANTS.info
+    const { showIcon, padding, border, rounded } = node.attrs
     const children: any[] = []
     if (node.attrs.title) {
-      children.push(['p', { class: `mb-1 text-sm font-bold ${v.title}` }, `${v.icon} ${node.attrs.title}`])
+      children.push(['p', { class: `mb-1 text-sm font-bold ${v.title}` }, showIcon ? `${v.icon} ${node.attrs.title}` : node.attrs.title])
     }
     children.push(['div', { class: 'text-sm leading-relaxed text-slate-700' }, 0])
-    return ['div', mergeAttributes(HTMLAttributes, { 'data-block': 'callout', class: `my-6 rounded-r-xl px-5 py-4 ${v.wrap}` }), ...children]
+    return [
+      'div',
+      mergeAttributes(HTMLAttributes, {
+        'data-block': 'callout',
+        class: cx('my-6 px-5', v.wrap, rounded && 'rounded-r-xl', border && 'border border-slate-200'),
+        style: `padding-top:${padding}px;padding-bottom:${padding}px`,
+      }),
+      ...children,
+    ]
   },
   addNodeView() {
     return ReactNodeViewRenderer(CalloutView)
@@ -693,7 +950,7 @@ export const calloutBlock: BlockDefinition = {
   icon: Info,
   keywords: ['callout', 'note', 'tip', 'alert', 'info', 'warning'],
   node: CalloutNode,
-  defaults: { variant: 'info', title: '' },
+  defaults: { variant: 'info', title: '', showIcon: true, padding: 16, border: false, rounded: true },
   options: [
     { key: 'title', label: 'Title (optional)', type: 'text' },
     {
@@ -708,6 +965,10 @@ export const calloutBlock: BlockDefinition = {
         { label: 'Note', value: 'note' },
       ],
     },
+    { key: 'showIcon', label: 'Show icon', type: 'toggle' },
+    { key: 'padding', label: 'Padding (px)', type: 'range', min: 8, max: 48, step: 4 },
+    { key: 'rounded', label: 'Rounded corners', type: 'toggle' },
+    { key: 'border', label: 'Border', type: 'toggle' },
   ],
   insert: ({ editor, attrs }) =>
     editor
@@ -722,23 +983,23 @@ export const calloutBlock: BlockDefinition = {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
- * COLOR PALETTE (আপনার পুরনো block — modernized + repeater)
+ * COLOR PALETTE (your old block — modernized + repeater)
  * ═════════════════════════════════════════════════════════════════════════*/
 const PaletteView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { title, colors, size } = node.attrs
+  const { title, colors, size, layout, showHex, shape, gap } = node.attrs
   return (
     <NodeViewWrapper data-block="palette" className={cx('my-2', selected && 'rounded-lg ring-2 ring-brand-blue ring-offset-2')} data-drag-handle>
       <div className="rounded-xl border border-slate-200 bg-white p-5">
         {title && <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{title}</p>}
-        <div className="flex flex-wrap gap-4">
+        <div className={cx(layout === 'grid' ? 'grid grid-cols-2 sm:grid-cols-4' : 'flex flex-wrap')} style={{ gap: `${gap}px` }}>
           {(colors as { hex: string; name: string }[]).map((c, i) => (
             <div key={i} className="flex flex-col items-center gap-1.5">
               <div
-                className="rounded-xl border border-black/5 shadow-sm"
+                className={cx('border border-black/5 shadow-sm', shape === 'circle' ? 'rounded-full' : 'rounded-xl')}
                 style={{ backgroundColor: c.hex, width: `${size}px`, height: `${size}px` }}
               />
               <div className="text-center">
-                <p className="font-mono text-[10px] font-medium text-slate-800">{String(c.hex).toUpperCase()}</p>
+                {showHex && <p className="font-mono text-[10px] font-medium text-slate-800">{String(c.hex).toUpperCase()}</p>}
                 <p className="text-[10px] text-slate-500">{c.name}</p>
               </div>
             </div>
@@ -763,25 +1024,29 @@ const PaletteNode = Node.create({
         { hex: '#F1F5F9', name: 'Mist' },
       ]),
       size: { default: 64, renderHTML: suppress },
+      layout: { default: 'row', renderHTML: suppress },
+      showHex: { default: true, renderHTML: suppress },
+      shape: { default: 'square', renderHTML: suppress },
+      gap: { default: 16, renderHTML: suppress },
     }
   },
   parseHTML() {
     return [{ tag: 'div[data-block="palette"]' }]
   },
   renderHTML({ node, HTMLAttributes }) {
-    const { title, colors, size } = node.attrs
+    const { title, colors, size, layout, showHex, shape, gap } = node.attrs
     const swatches = (colors as { hex: string; name: string }[]).map((c) => [
       'div',
       { class: 'flex flex-col items-center gap-1' },
-      ['div', { style: `width:${size}px;height:${size}px;background:${c.hex}`, class: 'rounded-xl border border-black/5 shadow-sm' }],
-      ['p', { class: 'font-mono text-[10px] font-medium text-slate-800' }, String(c.hex).toUpperCase()],
+      ['div', { style: `width:${size}px;height:${size}px;background:${c.hex}`, class: cx('border border-black/5 shadow-sm', shape === 'circle' ? 'rounded-full' : 'rounded-xl') }],
+      showHex ? ['p', { class: 'font-mono text-[10px] font-medium text-slate-800' }, String(c.hex).toUpperCase()] : ['span', { class: 'hidden' }],
       ['p', { class: 'text-[10px] text-slate-500' }, c.name],
     ])
     return [
       'div',
       mergeAttributes(HTMLAttributes, { 'data-block': 'palette', class: 'my-6 rounded-xl border border-slate-200 bg-white p-5' }),
       title ? ['p', { class: 'mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500' }, title] : ['span', { class: 'hidden' }],
-      ['div', { class: 'flex flex-wrap gap-4' }, ...swatches],
+      ['div', { class: cx(layout === 'grid' ? 'grid grid-cols-2 sm:grid-cols-4' : 'flex flex-wrap'), style: `gap:${gap}px` }, ...swatches],
     ]
   },
   addNodeView() {
@@ -806,10 +1071,34 @@ export const colorPaletteBlock: BlockDefinition = {
       { hex: '#F1F5F9', name: 'Mist' },
     ],
     size: 64,
+    layout: 'row',
+    showHex: true,
+    shape: 'square',
+    gap: 16,
   },
   options: [
     { key: 'title', label: 'Title', type: 'text' },
     { key: 'size', label: 'Swatch size', type: 'range', min: 40, max: 120, step: 8 },
+    { key: 'gap', label: 'Gap (px)', type: 'range', min: 4, max: 48, step: 4 },
+    {
+      key: 'layout',
+      label: 'Layout',
+      type: 'segmented',
+      choices: [
+        { label: 'Row', value: 'row' },
+        { label: 'Grid', value: 'grid' },
+      ],
+    },
+    {
+      key: 'shape',
+      label: 'Swatch shape',
+      type: 'segmented',
+      choices: [
+        { label: 'Square', value: 'square' },
+        { label: 'Circle', value: 'circle' },
+      ],
+    },
+    { key: 'showHex', label: 'Show hex code', type: 'toggle' },
     {
       key: 'colors',
       label: 'Colors',
@@ -827,15 +1116,15 @@ export const colorPaletteBlock: BlockDefinition = {
 
 
 /* ══════════════════════════════════════════════════════════════════════════
- * TYPOGRAPHY  (আপনার পুরনো typography block — modernized)
+ * TYPOGRAPHY  (your old typography block — modernized)
  * ═════════════════════════════════════════════════════════════════════════*/
 const TypographyView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { title, fonts, showMeta } = node.attrs
+  const { title, fonts, showMeta, layout, sampleSize, border } = node.attrs
   return (
     <NodeViewWrapper data-block="typography" className={cx('my-2', selected && 'ring-2 ring-brand-blue ring-offset-2 rounded-lg')} data-drag-handle>
-      <div className="rounded-xl border border-slate-200 bg-white p-5">
+      <div className={cx('rounded-xl bg-white p-5', border && 'border border-slate-200')}>
         {title && <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{title}</p>}
-        <div className="space-y-3">
+        <div className={cx(layout === 'grid' ? 'grid gap-4 sm:grid-cols-2' : 'space-y-3')}>
           {(fonts as any[]).map((f: any, i: number) => (
             <div key={i} className="border-b border-slate-100 pb-3 last:border-0 last:pb-0">
               {showMeta && (
@@ -848,7 +1137,7 @@ const TypographyView = ({ node, selected }: { node: any; selected: boolean }) =>
               )}
               <p
                 className="text-slate-900"
-                style={{ fontWeight: f.weight || '400', fontStyle: f.style?.toLowerCase().includes('italic') ? 'italic' : 'normal', fontSize: f.size || undefined }}
+                style={{ fontWeight: f.weight || '400', fontStyle: f.style?.toLowerCase().includes('italic') ? 'italic' : 'normal', fontSize: f.size || sampleSize || undefined }}
               >
                 {f.sample || 'The quick brown fox jumps over the lazy dog'}
               </p>
@@ -872,11 +1161,14 @@ const TypographyNode = Node.create({
         { name: 'Body Font', sample: 'The quick brown fox jumps over the lazy dog', weight: '400', style: 'Regular', size: '' },
       ]),
       showMeta: { default: true, renderHTML: suppress },
+      layout: { default: 'stack', renderHTML: suppress },
+      sampleSize: { default: '', renderHTML: suppress },
+      border: { default: true, renderHTML: suppress },
     }
   },
   parseHTML() { return [{ tag: 'div[data-block="typography"]' }] },
   renderHTML({ node, HTMLAttributes }) {
-    const { title, fonts, showMeta } = node.attrs
+    const { title, fonts, showMeta, layout, sampleSize, border } = node.attrs
     const rows = (fonts as any[]).map((f) => [
       'div',
       { class: 'border-b border-slate-100 pb-3 last:border-0 last:pb-0' },
@@ -887,16 +1179,16 @@ const TypographyNode = Node.create({
         'p',
         {
           class: 'text-slate-900',
-          style: `font-weight:${f.weight || 400};font-style:${String(f.style || '').toLowerCase().includes('italic') ? 'italic' : 'normal'}${f.size ? `;font-size:${f.size}` : ''}`,
+          style: `font-weight:${f.weight || 400};font-style:${String(f.style || '').toLowerCase().includes('italic') ? 'italic' : 'normal'}${f.size || sampleSize ? `;font-size:${f.size || sampleSize}` : ''}`,
         },
         f.sample || 'The quick brown fox jumps over the lazy dog',
       ],
     ])
     return [
       'div',
-      mergeAttributes(HTMLAttributes, { 'data-block': 'typography', class: 'my-6 rounded-xl border border-slate-200 bg-white p-5' }),
+      mergeAttributes(HTMLAttributes, { 'data-block': 'typography', class: cx('my-6 rounded-xl bg-white p-5', border && 'border border-slate-200') }),
       title ? ['p', { class: 'mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500' }, title] : ['span', { class: 'hidden' }],
-      ['div', { class: 'space-y-3' }, ...rows],
+      ['div', { class: cx(layout === 'grid' ? 'grid gap-4 sm:grid-cols-2' : 'space-y-3') }, ...rows],
     ]
   },
   addNodeView() { return ReactNodeViewRenderer(TypographyView) },
@@ -917,10 +1209,24 @@ export const typographyBlock: BlockDefinition = {
       { name: 'Body Font', sample: 'The quick brown fox jumps over the lazy dog', weight: '400', style: 'Regular', size: '' },
     ],
     showMeta: true,
+    layout: 'stack',
+    sampleSize: '',
+    border: true,
   },
   options: [
     { key: 'title', label: 'Title', type: 'text' },
     { key: 'showMeta', label: 'Show font meta', type: 'toggle' },
+    {
+      key: 'layout',
+      label: 'Layout',
+      type: 'segmented',
+      choices: [
+        { label: 'Stacked', value: 'stack' },
+        { label: 'Grid', value: 'grid' },
+      ],
+    },
+    { key: 'sampleSize', label: 'Sample size (e.g. 24px)', type: 'text' },
+    { key: 'border', label: 'Border', type: 'toggle' },
     {
       key: 'fonts',
       label: 'Fonts',
@@ -953,24 +1259,42 @@ const BUTTON_SIZES: Record<string, string> = {
   md: 'px-5 py-2.5 text-sm',
   lg: 'px-7 py-3.5 text-base',
 }
+const BUTTON_RADIUS: Record<string, string> = {
+  none: 'rounded-none',
+  md: 'rounded-lg',
+  full: 'rounded-full',
+}
 
 const ButtonView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { label, url, style, size, align, fullWidth, newTab } = node.attrs
+  const { label, url, style, size, align, fullWidth, newTab, icon, iconPosition, bgColor, textColor, radius, shadow } = node.attrs
   const justify = align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : 'justify-start'
+  const custom: React.CSSProperties = {}
+  if (bgColor) custom.backgroundColor = bgColor
+  if (textColor) custom.color = textColor
+  const content = (
+    <>
+      {icon && iconPosition === 'left' && <span className="mr-2 inline-flex">{icon}</span>}
+      {label || 'Button text'}
+      {icon && iconPosition === 'right' && <span className="ml-2 inline-flex">{icon}</span>}
+    </>
+  )
   return (
     <NodeViewWrapper data-block="button" className={cx('my-2 flex', justify, selected && 'ring-2 ring-brand-blue rounded-lg')} data-drag-handle>
       <a
         href={url || '#'}
         target={newTab ? '_blank' : undefined}
         rel={newTab ? 'noopener noreferrer' : undefined}
+        style={custom}
         className={cx(
-          'inline-flex items-center justify-center rounded-lg font-semibold transition-colors',
-          BUTTON_STYLES[style] ?? BUTTON_STYLES.primary,
+          'inline-flex items-center justify-center font-semibold transition-colors',
+          BUTTON_RADIUS[radius] ?? BUTTON_RADIUS.md,
+          !bgColor && (BUTTON_STYLES[style] ?? BUTTON_STYLES.primary),
           BUTTON_SIZES[size] ?? BUTTON_SIZES.md,
           fullWidth && 'w-full',
+          shadow && 'shadow-lg',
         )}
       >
-        {label || 'Button text'}
+        {content}
       </a>
     </NodeViewWrapper>
   )
@@ -989,12 +1313,23 @@ const ButtonNode = Node.create({
       align: { default: 'left', renderHTML: suppress },
       fullWidth: { default: false, renderHTML: suppress },
       newTab: { default: false, renderHTML: suppress },
+      icon: { default: '', renderHTML: suppress },
+      iconPosition: { default: 'right', renderHTML: suppress },
+      bgColor: { default: '', renderHTML: suppress },
+      textColor: { default: '', renderHTML: suppress },
+      radius: { default: 'md', renderHTML: suppress },
+      shadow: { default: false, renderHTML: suppress },
     }
   },
   parseHTML() { return [{ tag: 'div[data-block="button"]' }] },
   renderHTML({ node, HTMLAttributes }) {
-    const { label, url, style, size, align, fullWidth, newTab } = node.attrs
+    const { label, url, style, size, align, fullWidth, newTab, icon, iconPosition, bgColor, textColor, radius, shadow } = node.attrs
     const justify = align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : 'justify-start'
+    const styleAttr = [bgColor ? `background-color:${bgColor}` : '', textColor ? `color:${textColor}` : ''].filter(Boolean).join(';')
+    const spans: any[] = []
+    if (icon && iconPosition === 'left') spans.push(['span', { style: 'margin-right:8px' }, icon])
+    spans.push(label || 'Button text')
+    if (icon && iconPosition === 'right') spans.push(['span', { style: 'margin-left:8px' }, icon])
     return [
       'div',
       mergeAttributes(HTMLAttributes, { 'data-block': 'button', class: `my-6 flex ${justify}` }),
@@ -1003,14 +1338,17 @@ const ButtonNode = Node.create({
         {
           href: url || '#',
           ...(newTab ? { target: '_blank', rel: 'noopener noreferrer' } : {}),
+          ...(styleAttr ? { style: styleAttr } : {}),
           class: cx(
-            'inline-flex items-center justify-center rounded-lg font-semibold transition-colors',
-            BUTTON_STYLES[style] ?? BUTTON_STYLES.primary,
+            'inline-flex items-center justify-center font-semibold transition-colors',
+            BUTTON_RADIUS[radius] ?? BUTTON_RADIUS.md,
+            !bgColor && (BUTTON_STYLES[style] ?? BUTTON_STYLES.primary),
             BUTTON_SIZES[size] ?? BUTTON_SIZES.md,
             fullWidth && 'w-full',
+            shadow && 'shadow-lg',
           ),
         },
-        label || 'Button text',
+        ...spans,
       ],
     ]
   },
@@ -1025,7 +1363,10 @@ export const buttonBlock: BlockDefinition = {
   icon: MousePointerClick,
   keywords: ['button', 'link', 'cta', 'action'],
   node: ButtonNode,
-  defaults: { label: 'Button text', url: '', style: 'primary', size: 'md', align: 'left', fullWidth: false, newTab: false },
+  defaults: {
+    label: 'Button text', url: '', style: 'primary', size: 'md', align: 'left', fullWidth: false, newTab: false,
+    icon: '', iconPosition: 'right', bgColor: '', textColor: '', radius: 'md', shadow: false,
+  },
   options: [
     { key: 'label', label: 'Button text', type: 'text' },
     { key: 'url', label: 'Link URL', type: 'url' },
@@ -1062,17 +1403,41 @@ export const buttonBlock: BlockDefinition = {
     },
     { key: 'fullWidth', label: 'Full width', type: 'toggle' },
     { key: 'newTab', label: 'Open in new tab', type: 'toggle' },
+    { key: 'icon', label: 'Icon (emoji or symbol)', type: 'text', placeholder: '→' },
+    {
+      key: 'iconPosition',
+      label: 'Icon position',
+      type: 'segmented',
+      choices: [
+        { label: 'Left', value: 'left' },
+        { label: 'Right', value: 'right' },
+      ],
+    },
+    {
+      key: 'radius',
+      label: 'Corner radius',
+      type: 'segmented',
+      choices: [
+        { label: 'Square', value: 'none' },
+        { label: 'Rounded', value: 'md' },
+        { label: 'Pill', value: 'full' },
+      ],
+    },
+    { key: 'bgColor', label: 'Custom background', type: 'color' },
+    { key: 'textColor', label: 'Custom text colour', type: 'color' },
+    { key: 'shadow', label: 'Drop shadow', type: 'toggle' },
   ],
 }
 
 export const designBlocks: BlockDefinition[] = [calloutBlock, colorPaletteBlock, typographyBlock, buttonBlock]
+
 ```
 
 <!-- FILE: components/editor/blocks/helpers.tsx -->
-```tsx
+```
 import { mergeAttributes } from '@tiptap/core'
 
-/** attribute-কে root element-এ auto-render করতে দেবে না (আমরা নিজেরা markup বানাই) */
+/** Prevents an attribute from being auto-rendered on the root element (we build the markup) */
 export const suppress = () => ({})
 
 /** array / object attribute (images, colors, items …) — JSON round-trip */
@@ -1092,13 +1457,13 @@ export function jsonAttr<T>(defaultValue: T) {
   }
 }
 
-/** দুইটা class list একসাথে করে */
+/** Merges two class lists */
 export const cx = (...parts: (string | false | null | undefined)[]) =>
   parts.filter(Boolean).join(' ')
 
 export { mergeAttributes }
 
-/* ── Demo assets: data-URI SVG (কোনো external network লাগে না) ─────────────*/
+/* ── Demo assets: data-URI SVG (no external network needed) ─────────────*/
 export function demoImage(label: string, from = '#93C5FD', to = '#2563EB', w = 1200, h = 675) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
     <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
@@ -1135,10 +1500,11 @@ export function EmptyImageBox({
     </div>
   )
 }
+
 ```
 
 <!-- FILE: components/editor/blocks/index.ts -->
-```ts
+```
 import { registerBlocks } from '../registry'
 import { coreBlocks } from './core'
 import { mediaBlocks } from './media'
@@ -1148,10 +1514,10 @@ import { marketingBlocks } from './marketing'
 import { advancedBlocks } from './advanced'
 
 /**
- * ★★★  নতুন block যোগ করার একমাত্র জায়গা  ★★★
- * 1. blocks/ ফোল্ডারে নতুন ফাইল বানান (যেমন blocks/embeds.tsx)
- * 2. নিচের array তে সেটা যোগ করুন
- * → Inserter, slash menu, inspector, extension list, static render — সব auto-update
+ * ★★★  The single place to add a new block  ★★★
+ * 1. Create a new file in blocks/ (e.g. blocks/embeds.tsx)
+ * 2. Add it to the array below
+ * → Inserter, slash menu, inspector, extension list, static render — all update automatically
  */
 export function registerAllBlocks() {
   registerBlocks([
@@ -1165,10 +1531,11 @@ export function registerAllBlocks() {
 }
 
 export { coreBlocks, mediaBlocks, layoutBlocks, designBlocks, marketingBlocks, advancedBlocks }
+
 ```
 
 <!-- FILE: components/editor/blocks/layout.tsx -->
-```tsx
+```
 import { Node } from '@tiptap/core'
 import { NodeViewContent, NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react'
 import { Columns3, Minus, MoveVertical } from 'lucide-react'
@@ -1176,21 +1543,25 @@ import type { BlockDefinition } from '../types'
 import { cx, mergeAttributes, suppress } from './helpers'
 
 /* ══════════════════════════════════════════════════════════════════════════
- * COLUMNS  — nested content block (Gutenberg-এর মতো block-এর ভেতরে block)
+ * COLUMNS  — nested content block (blocks inside blocks, like Gutenberg)
  * columnsBlock → columnBlock+ → block+
  * ═════════════════════════════════════════════════════════════════════════*/
+const ALIGN: Record<string, string> = { start: 'start', center: 'center', end: 'end', stretch: 'stretch' }
+
 const ColumnsView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { template, gap, divider } = node.attrs
+  const { template, gap, divider, verticalAlign, reverseOnMobile } = node.attrs
   return (
     <NodeViewWrapper data-block="columns"
       className={cx('my-2 rounded-lg', selected && 'ring-2 ring-brand-blue ring-offset-2')}
       data-drag-handle
     >
       <div
+        data-reverse-mobile={reverseOnMobile ? 'true' : undefined}
         className="grid"
         style={{
           gridTemplateColumns: template,
           gap: `${gap}px`,
+          alignItems: ALIGN[verticalAlign] ?? 'start',
         }}
       >
         <NodeViewContent className="contents" />
@@ -1211,14 +1582,38 @@ const ColumnsNode = Node.create({
       template: { default: '1fr 1fr', renderHTML: suppress },
       gap: { default: 24, renderHTML: suppress },
       divider: { default: false, renderHTML: suppress },
+      reverseOnMobile: { default: false, renderHTML: suppress },
       verticalAlign: { default: 'start', renderHTML: suppress },
+      columnBg: { default: '', renderHTML: suppress },
+      columnPadding: { default: 0, renderHTML: suppress },
+      columnBorder: { default: false, renderHTML: suppress },
     }
   },
   parseHTML() {
     return [{ tag: 'div[data-block="columns"]' }]
   },
-  renderHTML({ HTMLAttributes }) {
-    return ['div', mergeAttributes(HTMLAttributes, { 'data-block': 'columns', class: 'my-6' })]
+  renderHTML({ node, HTMLAttributes }) {
+    const { template, gap, divider, verticalAlign, columnBg, columnPadding, columnBorder, reverseOnMobile } = node.attrs
+    const children: any[] = [0]
+    if (divider) children.push(['div', { class: 'mt-4 h-px w-full bg-slate-200' }])
+    // ⚠️ Without the content hole (0), nested column content is dropped on the server
+    return [
+      'div',
+      mergeAttributes(HTMLAttributes, {
+        'data-block': 'columns',
+        ...(reverseOnMobile ? { 'data-reverse-mobile': 'true' } : {}),
+        class: 'my-6 grid',
+        style: [
+          `grid-template-columns:${template}`,
+          `gap:${gap}px`,
+          `align-items:${ALIGN[verticalAlign] ?? 'start'}`,
+          columnBg ? `--column-bg:${columnBg}` : '',
+          columnPadding ? `--column-pad:${columnPadding}px` : '',
+          columnBorder ? '--column-border:1px solid #D9E8FA' : '',
+        ].filter(Boolean).join(';'),
+      }),
+      ...children,
+    ]
   },
   addNodeView() {
     return ReactNodeViewRenderer(ColumnsView)
@@ -1245,8 +1640,18 @@ const ColumnNode = Node.create({
   parseHTML() {
     return [{ tag: 'div[data-block="column"]' }]
   },
-  renderHTML({ HTMLAttributes }) {
-    return ['div', mergeAttributes(HTMLAttributes, { 'data-block': 'column', class: 'min-w-0' })]
+  renderHTML({ node, HTMLAttributes }) {
+    const { width } = node.attrs
+    // ⚠️ content hole (0) — nested blocks render here
+    return [
+      'div',
+      mergeAttributes(HTMLAttributes, {
+        'data-block': 'column',
+        class: 'min-w-0',
+        style: `grid-column:span 1;min-width:0${width && width !== '1fr' ? `;flex-basis:${width}` : ''}`,
+      }),
+      0,
+    ]
   },
   addNodeView() {
     return ReactNodeViewRenderer(ColumnView)
@@ -1261,7 +1666,16 @@ export const columnsBlock: BlockDefinition = {
   icon: Columns3,
   keywords: ['columns', 'grid', 'row', 'split', 'side by side'],
   node: ColumnsNode,
-  defaults: { template: '1fr 1fr', gap: 24, divider: false, verticalAlign: 'start' },
+  defaults: {
+    template: '1fr 1fr',
+    gap: 24,
+    divider: false,
+    verticalAlign: 'start',
+    columnBg: '',
+    columnPadding: 0,
+    columnBorder: false,
+    reverseOnMobile: false,
+  },
   variations: [
     { title: '2 Columns', attrs: { template: '1fr 1fr' }, keywords: ['two', 'half'] },
     { title: '3 Columns', attrs: { template: '1fr 1fr 1fr' }, keywords: ['three', 'thirds'] },
@@ -1275,11 +1689,12 @@ export const columnsBlock: BlockDefinition = {
       label: 'Layout',
       type: 'select',
       choices: [
-        { label: '1 / 1', value: '1fr 1fr' },
-        { label: '1 / 1 / 1', value: '1fr 1fr 1fr' },
-        { label: '1 / 1 / 1 / 1', value: 'repeat(4, 1fr)' },
-        { label: '1 / 2', value: '1fr 2fr' },
-        { label: '2 / 1', value: '2fr 1fr' },
+        { label: '2 equal (1/2 · 1/2)', value: '1fr 1fr' },
+        { label: '3 equal (1/3 · 1/3 · 1/3)', value: '1fr 1fr 1fr' },
+        { label: '4 equal', value: 'repeat(4, 1fr)' },
+        { label: 'Sidebar right (2/3 · 1/3)', value: '2fr 1fr' },
+        { label: 'Sidebar left (1/3 · 2/3)', value: '1fr 2fr' },
+        { label: 'Wide centre (1/4 · 1/2 · 1/4)', value: '1fr 2fr 1fr' },
       ],
     },
     {
@@ -1288,12 +1703,17 @@ export const columnsBlock: BlockDefinition = {
       type: 'segmented',
       choices: [
         { label: 'Top', value: 'start' },
-        { label: 'Center', value: 'center' },
+        { label: 'Middle', value: 'center' },
         { label: 'Bottom', value: 'end' },
+        { label: 'Stretch', value: 'stretch' },
       ],
     },
-    { key: 'gap', label: 'Gap (px)', type: 'range', min: 0, max: 64, step: 4 },
-    { key: 'divider', label: 'Show divider under', type: 'toggle' },
+    { key: 'gap', label: 'Gap between columns (px)', type: 'range', min: 0, max: 64, step: 4 },
+    { key: 'columnBg', label: 'Column background', type: 'color' },
+    { key: 'columnPadding', label: 'Column padding (px)', type: 'range', min: 0, max: 40, step: 2 },
+    { key: 'columnBorder', label: 'Column border', type: 'toggle' },
+    { key: 'divider', label: 'Divider below columns', type: 'toggle' },
+    { key: 'reverseOnMobile', label: 'Reverse order on mobile', type: 'toggle' },
   ],
   insert: ({ editor, attrs }) => {
     const count = String(attrs?.template ?? '1fr 1fr').includes('repeat(4')
@@ -1304,7 +1724,16 @@ export const columnsBlock: BlockDefinition = {
       .focus()
       .insertContent({
         type: 'columnsBlock',
-        attrs: { template: '1fr 1fr', gap: 24, divider: false, verticalAlign: 'start', ...attrs },
+        attrs: {
+          template: '1fr 1fr',
+          gap: 24,
+          divider: false,
+          verticalAlign: 'start',
+          columnBg: '',
+          columnPadding: 0,
+          columnBorder: false,
+          ...attrs,
+        },
         content: Array.from({ length: count }).map(() => ({
           type: 'columnBlock',
           content: [{ type: 'paragraph' }],
@@ -1328,7 +1757,8 @@ export const columnBlock: BlockDefinition = {
  * DIVIDER
  * ═════════════════════════════════════════════════════════════════════════*/
 const DividerView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { variant, thickness, width, color } = node.attrs
+  const { variant, thickness, width, color, marginY, align } = node.attrs
+  const just = align === 'left' ? 'justify-start' : align === 'right' ? 'justify-end' : 'justify-center'
   const style =
     variant === 'solid'
       ? { borderTopWidth: `${thickness}px`, borderTopStyle: 'solid' as const, borderTopColor: color }
@@ -1338,8 +1768,8 @@ const DividerView = ({ node, selected }: { node: any; selected: boolean }) => {
           ? { borderTopWidth: `${thickness}px`, borderTopStyle: 'dotted' as const, borderTopColor: color }
           : { height: `${thickness}px`, background: `linear-gradient(90deg, transparent, ${color}, transparent)` }
   return (
-    <NodeViewWrapper data-block="divider" className={cx('my-1 flex', selected && 'ring-2 ring-brand-blue')} data-drag-handle>
-      <div className="mx-auto" style={{ width: `${width}%` }}>
+    <NodeViewWrapper data-block="divider" className={cx('flex', just, selected && 'ring-2 ring-brand-blue')} data-drag-handle>
+      <div style={{ width: `${width}%`, marginTop: `${marginY}px`, marginBottom: `${marginY}px` }}>
         <div style={style} />
       </div>
     </NodeViewWrapper>
@@ -1356,18 +1786,25 @@ const DividerNode = Node.create({
       thickness: { default: 1, renderHTML: suppress },
       width: { default: 60, renderHTML: suppress },
       color: { default: '#E2E8F0', renderHTML: suppress },
+      marginY: { default: 24, renderHTML: suppress },
+      align: { default: 'center', renderHTML: suppress },
     }
   },
   parseHTML() {
     return [{ tag: 'div[data-block="divider"]' }]
   },
   renderHTML({ node, HTMLAttributes }) {
-    const { variant, thickness, width, color } = node.attrs
+    const { variant, thickness, width, color, marginY, align } = node.attrs
+    const just = align === 'left' ? 'flex-start' : align === 'right' ? 'flex-end' : 'center'
     const style =
       variant === 'gradient'
-        ? `height:${thickness}px;background:linear-gradient(90deg,transparent,${color},transparent);width:${width}%;margin:2rem auto`
-        : `border-top:${thickness}px ${variant} ${color};width:${width}%;margin:2rem auto`
-    return ['div', mergeAttributes(HTMLAttributes, { 'data-block': 'divider', style })]
+        ? `height:${thickness}px;background:linear-gradient(90deg,transparent,${color},transparent)`
+        : `border-top:${thickness}px ${variant} ${color}`
+    return [
+      'div',
+      mergeAttributes(HTMLAttributes, { 'data-block': 'divider', style: `display:flex;justify-content:${just}` }),
+      ['div', { style: `width:${width}%;margin-top:${marginY}px;margin-bottom:${marginY}px;${style}` }],
+    ]
   },
   addNodeView() {
     return ReactNodeViewRenderer(DividerView)
@@ -1382,7 +1819,7 @@ export const dividerBlock: BlockDefinition = {
   icon: Minus,
   keywords: ['divider', 'hr', 'separator', 'line', 'rule'],
   node: DividerNode,
-  defaults: { variant: 'solid', thickness: 1, width: 60, color: '#E2E8F0' },
+  defaults: { variant: 'solid', thickness: 1, width: 60, color: '#E2E8F0', marginY: 24, align: 'center' },
   options: [
     {
       key: 'variant',
@@ -1398,6 +1835,17 @@ export const dividerBlock: BlockDefinition = {
     { key: 'thickness', label: 'Thickness', type: 'range', min: 1, max: 12, step: 1 },
     { key: 'width', label: 'Width (%)', type: 'range', min: 10, max: 100, step: 5 },
     { key: 'color', label: 'Color', type: 'color' },
+    { key: 'marginY', label: 'Space above & below (px)', type: 'range', min: 0, max: 80, step: 4 },
+    {
+      key: 'align',
+      label: 'Alignment',
+      type: 'segmented',
+      choices: [
+        { label: 'Left', value: 'left' },
+        { label: 'Center', value: 'center' },
+        { label: 'Right', value: 'right' },
+      ],
+    },
   ],
 }
 
@@ -1407,7 +1855,7 @@ export const dividerBlock: BlockDefinition = {
 const SpacerView = ({ node, selected }: { node: any; selected: boolean }) => (
   <NodeViewWrapper data-block="spacer" data-drag-handle>
     <div
-      className={cx('w-full', selected && 'bg-brand-blue/10')}
+      className={cx('w-full', node.attrs.hideOnMobile && 'hidden sm:block', selected && 'bg-brand-blue/10')}
       style={{
         height: `${node.attrs.height}px`,
         backgroundImage: selected ? undefined : 'repeating-linear-gradient(45deg,#F1F5F9,#F1F5F9 6px,transparent 6px,transparent 12px)',
@@ -1421,13 +1869,23 @@ const SpacerNode = Node.create({
   group: 'block',
   draggable: true,
   addAttributes() {
-    return { height: { default: 48, renderHTML: suppress } }
+    return {
+      height: { default: 48, renderHTML: suppress },
+      hideOnMobile: { default: false, renderHTML: suppress },
+    }
   },
   parseHTML() {
     return [{ tag: 'div[data-block="spacer"]' }]
   },
   renderHTML({ node, HTMLAttributes }) {
-    return ['div', mergeAttributes(HTMLAttributes, { 'data-block': 'spacer', style: `height:${node.attrs.height}px` })]
+    return [
+      'div',
+      mergeAttributes(HTMLAttributes, {
+        'data-block': 'spacer',
+        class: node.attrs.hideOnMobile ? 'hidden sm:block' : '',
+        style: `height:${node.attrs.height}px`,
+      }),
+    ]
   },
   addNodeView() {
     return ReactNodeViewRenderer(SpacerView)
@@ -1442,15 +1900,19 @@ export const spacerBlock: BlockDefinition = {
   icon: MoveVertical,
   keywords: ['spacer', 'space', 'gap', 'whitespace'],
   node: SpacerNode,
-  defaults: { height: 48 },
-  options: [{ key: 'height', label: 'Height (px)', type: 'range', min: 8, max: 200, step: 8 }],
+  defaults: { height: 48, hideOnMobile: false },
+  options: [
+    { key: 'height', label: 'Height (px)', type: 'range', min: 8, max: 200, step: 8 },
+    { key: 'hideOnMobile', label: 'Hide on mobile', type: 'toggle' },
+  ],
 }
 
 export const layoutBlocks: BlockDefinition[] = [columnsBlock, columnBlock, dividerBlock, spacerBlock]
+
 ```
 
 <!-- FILE: components/editor/blocks/marketing.tsx -->
-```tsx
+```
 import { Node } from '@tiptap/core'
 import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react'
 import { Megaphone, BarChart3, MessageSquareQuote, HelpCircle, Tags, ListOrdered, Grid3x3, Users } from 'lucide-react'
@@ -1468,24 +1930,50 @@ const CTA_STYLES: Record<string, string> = {
 }
 
 const CtaView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { title, body, buttonLabel, buttonUrl, variant, align } = node.attrs
+  const { title, body, buttonLabel, buttonUrl, variant, align, layout, bgImage, bgColor, button2Label, button2Url } = node.attrs
   const alignCls = align === 'center' ? 'items-center text-center' : align === 'right' ? 'items-end text-right' : 'items-start text-left'
+  const hasCustom = Boolean(bgColor || bgImage)
+  const btnCls = (primary: boolean) =>
+    cx(
+      'inline-flex rounded-lg px-5 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90',
+      primary
+        ? hasCustom || (variant !== 'light' && variant !== 'outline')
+          ? 'bg-white text-slate-900'
+          : 'bg-brand-blue text-white'
+        : 'border border-white/60 text-white',
+    )
   return (
     <NodeViewWrapper data-block="cta" className={cx('my-2', selected && 'rounded-lg ring-2 ring-brand-blue ring-offset-2')} data-drag-handle>
-      <div className={cx('flex flex-col gap-3 rounded-2xl px-6 py-8', CTA_STYLES[variant] ?? CTA_STYLES.gradient, alignCls)}>
-        {title && <h3 className="text-2xl font-bold leading-tight">{title}</h3>}
-        {body && <p className={cx('max-w-xl text-sm leading-relaxed', variant === 'light' || variant === 'outline' ? 'text-brand-textMid' : 'text-white/80')}>{body}</p>}
-        {buttonLabel && (
-          <a
-            href={buttonUrl || '#'}
-            className={cx(
-              'mt-1 inline-flex rounded-lg px-5 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90',
-              variant === 'light' || variant === 'outline' ? 'bg-brand-blue text-white' : 'bg-white text-brand-navy',
+      <div
+        className={cx('relative overflow-hidden rounded-2xl px-6 py-8', !hasCustom && (CTA_STYLES[variant] ?? CTA_STYLES.gradient), hasCustom && 'text-white')}
+        style={{
+          backgroundColor: bgColor || undefined,
+          backgroundImage: bgImage ? `url(${bgImage})` : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {bgImage && <div className="pointer-events-none absolute inset-0 bg-black/40" />}
+        <div className={cx('relative z-10 flex gap-4', layout === 'row' ? 'flex-row items-center justify-between' : 'flex-col', alignCls)}>
+          <div className="flex flex-col gap-3">
+            {title && <h3 className="text-2xl font-bold leading-tight">{title}</h3>}
+            {body && (
+              <p className={cx('max-w-xl text-sm leading-relaxed', hasCustom ? 'text-white/85' : variant === 'light' || variant === 'outline' ? 'text-brand-textMid' : 'text-white/80')}>
+                {body}
+              </p>
             )}
-          >
-            {buttonLabel}
-          </a>
-        )}
+          </div>
+          {(buttonLabel || button2Label) && (
+            <div className="flex flex-wrap gap-3">
+              {buttonLabel && (
+                <a href={buttonUrl || '#'} className={btnCls(true)}>{buttonLabel}</a>
+              )}
+              {button2Label && (
+                <a href={button2Url || '#'} className={btnCls(false)}>{button2Label}</a>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </NodeViewWrapper>
   )
@@ -1501,6 +1989,11 @@ const CtaNode = Node.create({
       body: { default: '', renderHTML: suppress },
       buttonLabel: { default: 'Get a free quote', renderHTML: suppress },
       buttonUrl: { default: '', renderHTML: suppress },
+      button2Label: { default: '', renderHTML: suppress },
+      button2Url: { default: '', renderHTML: suppress },
+      layout: { default: 'stack', renderHTML: suppress },
+      bgImage: { default: '', renderHTML: suppress },
+      bgColor: { default: '', renderHTML: suppress },
       variant: { default: 'gradient', renderHTML: suppress },
       align: { default: 'center', renderHTML: suppress },
     }
@@ -1509,27 +2002,32 @@ const CtaNode = Node.create({
     return [{ tag: 'div[data-block="cta"]' }]
   },
   renderHTML({ node, HTMLAttributes }) {
-    const { title, body, buttonLabel, buttonUrl, variant, align } = node.attrs
-    const children: any[] = []
-    if (title) children.push(['h3', { class: 'text-2xl font-bold leading-tight' }, title])
-    if (body) children.push(['p', { class: 'max-w-xl text-sm leading-relaxed opacity-80' }, body])
-    if (buttonLabel) {
-      children.push([
-        'a',
-        {
-          href: buttonUrl || '#',
-          class: `mt-3 inline-block rounded-lg px-5 py-2.5 text-sm font-semibold ${variant === 'light' || variant === 'outline' ? 'bg-blue-600 text-white' : 'bg-white text-slate-900'}`,
-        },
-        buttonLabel,
-      ])
-    }
+    const { title, body, buttonLabel, buttonUrl, variant, align, layout, bgImage, bgColor, button2Label, button2Url } = node.attrs
+    const hasCustom = Boolean(bgColor || bgImage)
+    const alignCls = align === 'center' ? 'items-center text-center' : align === 'right' ? 'items-end text-right' : 'items-start text-left'
+    const btnClass = (primary: boolean) =>
+      `inline-block rounded-lg px-5 py-2.5 text-sm font-semibold ${primary ? (hasCustom || (variant !== 'light' && variant !== 'outline') ? 'bg-white text-slate-900' : 'bg-blue-600 text-white') : 'border border-white/60 text-white'}`
+    const texts: any[] = []
+    if (title) texts.push(['h3', { class: 'text-2xl font-bold leading-tight' }, title])
+    if (body) texts.push(['p', { class: 'max-w-xl text-sm leading-relaxed opacity-80' }, body])
+    const btns: any[] = []
+    if (buttonLabel) btns.push(['a', { href: buttonUrl || '#', class: btnClass(true) }, buttonLabel])
+    if (button2Label) btns.push(['a', { href: button2Url || '#', class: btnClass(false) }, button2Label])
+    const bgStyle = [bgColor ? `background-color:${bgColor}` : '', bgImage ? `background-image:url(${bgImage});background-size:cover;background-position:center` : ''].filter(Boolean).join(';')
     return [
       'div',
       mergeAttributes(HTMLAttributes, {
         'data-block': 'cta',
-        class: `my-6 flex flex-col gap-3 rounded-2xl px-6 py-8 ${CTA_STYLES[variant] ?? CTA_STYLES.gradient} ${align === 'center' ? 'items-center text-center' : align === 'right' ? 'items-end text-right' : 'items-start text-left'}`,
+        class: cx('my-6 relative overflow-hidden rounded-2xl px-6 py-8', !hasCustom && (CTA_STYLES[variant] ?? CTA_STYLES.gradient), hasCustom && 'text-white'),
+        ...(bgStyle ? { style: bgStyle } : {}),
       }),
-      ...children,
+      bgImage ? ['div', { class: 'pointer-events-none absolute inset-0 bg-black/40' }] : ['span', { class: 'hidden' }],
+      [
+        'div',
+        { class: cx('relative z-10 flex gap-4', layout === 'row' ? 'flex-row items-center justify-between' : 'flex-col', alignCls) },
+        ['div', { class: 'flex flex-col gap-3' }, ...(texts.length ? texts : [['span', { class: 'hidden' }]])],
+        btns.length ? ['div', { class: 'flex flex-wrap gap-3' }, ...btns] : ['span', { class: 'hidden' }],
+      ],
     ]
   },
   addNodeView() {
@@ -1552,12 +2050,30 @@ export const ctaBlock: BlockDefinition = {
     buttonUrl: '',
     variant: 'gradient',
     align: 'center',
+    layout: 'stack',
+    bgImage: '',
+    bgColor: '',
+    button2Label: '',
+    button2Url: '',
   },
   options: [
     { key: 'title', label: 'Headline', type: 'text' },
     { key: 'body', label: 'Supporting text', type: 'textarea', rows: 3 },
     { key: 'buttonLabel', label: 'Button label', type: 'text' },
     { key: 'buttonUrl', label: 'Button URL', type: 'url' },
+    { key: 'button2Label', label: 'Second button label', type: 'text' },
+    { key: 'button2Url', label: 'Second button URL', type: 'url' },
+    {
+      key: 'layout',
+      label: 'Layout',
+      type: 'segmented',
+      choices: [
+        { label: 'Stacked', value: 'stack' },
+        { label: 'Text left / buttons right', value: 'row' },
+      ],
+    },
+    { key: 'bgColor', label: 'Custom background colour', type: 'color' },
+    { key: 'bgImage', label: 'Background image URL', type: 'url' },
     {
       key: 'variant',
       label: 'Style',
@@ -1586,13 +2102,19 @@ export const ctaBlock: BlockDefinition = {
  * STATS / COUNTERS
  * ═════════════════════════════════════════════════════════════════════════*/
 const StatsView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { items, columns, variant } = node.attrs
+  const { items, columns, variant, bgColor, textColor, dividers, padding } = node.attrs
   const dark = variant === 'dark'
   return (
     <NodeViewWrapper data-block="stats" className={cx('my-2', selected && 'rounded-lg ring-2 ring-brand-blue ring-offset-2')} data-drag-handle>
       <div
-        className={cx('grid gap-6 rounded-2xl px-6 py-8', dark ? 'bg-brand-navy text-white' : 'bg-brand-bgAlt text-brand-textDark border border-brand-border')}
-        style={{ gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))` }}
+        className={cx('grid gap-6 rounded-2xl px-6 py-8', !bgColor && (dark ? 'bg-brand-navy text-white' : 'bg-brand-bgAlt text-brand-textDark border border-brand-border'), dividers && 'divide-x divide-slate-200')}
+        style={{
+          gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))`,
+          backgroundColor: bgColor || undefined,
+          color: textColor || undefined,
+          paddingTop: `${padding}px`,
+          paddingBottom: `${padding}px`,
+        }}
       >
         {(items as { value: string; label: string; suffix: string }[]).map((s, i) => (
           <div key={i} className="text-center">
@@ -1600,7 +2122,7 @@ const StatsView = ({ node, selected }: { node: any; selected: boolean }) => {
               {s.value}
               {s.suffix && <span className="text-brand-blue">{s.suffix}</span>}
             </p>
-            <p className={cx('mt-1 text-xs font-medium', dark ? 'text-white/60' : 'text-brand-textMid')}>{s.label}</p>
+            <p className="mt-1 text-xs font-medium opacity-70">{s.label}</p>
           </div>
         ))}
       </div>
@@ -1621,13 +2143,17 @@ const StatsNode = Node.create({
       ]),
       columns: { default: 3, renderHTML: suppress },
       variant: { default: 'light', renderHTML: suppress },
+      bgColor: { default: '', renderHTML: suppress },
+      textColor: { default: '', renderHTML: suppress },
+      dividers: { default: false, renderHTML: suppress },
+      padding: { default: 32, renderHTML: suppress },
     }
   },
   parseHTML() {
     return [{ tag: 'div[data-block="stats"]' }]
   },
   renderHTML({ node, HTMLAttributes }) {
-    const { items, columns, variant } = node.attrs
+    const { items, columns, variant, bgColor, textColor, dividers, padding } = node.attrs
     const dark = variant === 'dark'
     const cells = (items as any[]).map((s) => [
       'div',
@@ -1639,8 +2165,13 @@ const StatsNode = Node.create({
       'div',
       mergeAttributes(HTMLAttributes, {
         'data-block': 'stats',
-        class: `my-6 grid gap-6 rounded-2xl px-6 py-8 ${dark ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900 border border-slate-200'}`,
-        style: `grid-template-columns:repeat(${columns},minmax(0,1fr))`,
+        class: cx('my-6 grid gap-6 rounded-2xl px-6 py-8', !bgColor && (dark ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900 border border-slate-200'), dividers && 'divide-x divide-slate-200'),
+        style: [
+          `grid-template-columns:repeat(${columns},minmax(0,1fr))`,
+          bgColor ? `background-color:${bgColor}` : '',
+          textColor ? `color:${textColor}` : '',
+          `padding-top:${padding}px;padding-bottom:${padding}px`,
+        ].filter(Boolean).join(';'),
       }),
       ...cells,
     ]
@@ -1666,6 +2197,10 @@ export const statsBlock: BlockDefinition = {
     ],
     columns: 3,
     variant: 'light',
+    bgColor: '',
+    textColor: '',
+    dividers: false,
+    padding: 32,
   },
   options: [
     {
@@ -1687,6 +2222,10 @@ export const statsBlock: BlockDefinition = {
         { label: 'Dark', value: 'dark' },
       ],
     },
+    { key: 'bgColor', label: 'Custom background', type: 'color' },
+    { key: 'textColor', label: 'Custom text colour', type: 'color' },
+    { key: 'dividers', label: 'Dividers between columns', type: 'toggle' },
+    { key: 'padding', label: 'Padding (px)', type: 'range', min: 8, max: 80, step: 4 },
     {
       key: 'items',
       label: 'Stats',
@@ -1744,19 +2283,26 @@ const TestimonialNode = Node.create({
       avatar: { default: '', renderHTML: suppress },
       rating: { default: 5, renderHTML: suppress },
       variant: { default: 'light', renderHTML: suppress },
+      company: { default: '', renderHTML: suppress },
+      logo: { default: '', renderHTML: suppress },
+      avatarShape: { default: 'circle', renderHTML: suppress },
+      bgColor: { default: '', renderHTML: suppress },
+      align: { default: 'left', renderHTML: suppress },
     }
   },
   parseHTML() {
     return [{ tag: 'figure[data-block="testimonial"]' }]
   },
   renderHTML({ node, HTMLAttributes }) {
-    const { quote, author, role, avatar, rating, variant } = node.attrs
+    const { quote, author, role, avatar, rating, variant, company, logo, avatarShape, bgColor, align } = node.attrs
     const dark = variant === 'dark'
+    const shapeCls = avatarShape === 'square' ? 'rounded-lg' : 'rounded-full'
     return [
       'figure',
       mergeAttributes(HTMLAttributes, {
         'data-block': 'testimonial',
-        class: `my-6 rounded-2xl px-6 py-7 ${dark ? 'bg-slate-900 text-white' : 'bg-white text-slate-900 border border-slate-200'}`,
+        class: cx('my-6 rounded-2xl px-6 py-7', !bgColor && (dark ? 'bg-slate-900 text-white' : 'bg-white text-slate-900 border border-slate-200'), align === 'center' && 'text-center'),
+        ...(bgColor ? { style: `background-color:${bgColor}` } : {}),
       }),
       rating ? ['p', { class: 'mb-3 text-amber-400' }, `${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}`] : ['span', { class: 'hidden' }],
       ['blockquote', { class: 'text-lg leading-relaxed' }, `"${quote}"`],
@@ -1764,9 +2310,14 @@ const TestimonialNode = Node.create({
         'figcaption',
         { class: 'mt-5 flex items-center gap-3' },
         avatar
-          ? ['img', { src: avatar, alt: author, class: 'h-11 w-11 rounded-full object-cover' }]
-          : ['div', { class: `flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold ${dark ? 'bg-white/15' : 'bg-blue-50 text-blue-600'}` }, (author || 'A').slice(0, 1).toUpperCase()],
-        ['div', {}, ['p', { class: 'text-sm font-semibold' }, author], role ? ['p', { class: `text-xs ${dark ? 'text-white/60' : 'text-slate-500'}` }, role] : ['span', {}]],
+          ? ['img', { src: avatar, alt: author, class: `h-11 w-11 object-cover ${shapeCls}` }]
+          : ['div', { class: `flex h-11 w-11 items-center justify-center text-sm font-bold ${shapeCls} ${dark ? 'bg-white/15' : 'bg-blue-50 text-blue-600'}` }, (author || 'A').slice(0, 1).toUpperCase()],
+        ['div', {},
+          ['p', { class: 'text-sm font-semibold' }, author],
+          role ? ['p', { class: 'text-xs opacity-70' }, role] : ['span', { class: 'hidden' }],
+          company ? ['p', { class: 'text-xs font-medium opacity-80' }, company] : ['span', { class: 'hidden' }],
+        ],
+        logo ? ['img', { src: logo, alt: company || 'logo', class: 'ml-auto h-6 w-auto object-contain opacity-70' }] : ['span', { class: 'hidden' }],
       ],
     ]
   },
@@ -1790,6 +2341,11 @@ export const testimonialBlock: BlockDefinition = {
     avatar: '',
     rating: 5,
     variant: 'light',
+    company: '',
+    logo: '',
+    avatarShape: 'circle',
+    bgColor: '',
+    align: 'left',
   },
   options: [
     { key: 'quote', label: 'Quote', type: 'textarea', rows: 3 },
@@ -1806,6 +2362,27 @@ export const testimonialBlock: BlockDefinition = {
         { label: 'Dark', value: 'dark' },
       ],
     },
+    { key: 'company', label: 'Company name', type: 'text' },
+    { key: 'logo', label: 'Company logo URL', type: 'url' },
+    {
+      key: 'avatarShape',
+      label: 'Avatar shape',
+      type: 'segmented',
+      choices: [
+        { label: 'Circle', value: 'circle' },
+        { label: 'Square', value: 'square' },
+      ],
+    },
+    {
+      key: 'align',
+      label: 'Alignment',
+      type: 'segmented',
+      choices: [
+        { label: 'Left', value: 'left' },
+        { label: 'Centre', value: 'center' },
+      ],
+    },
+    { key: 'bgColor', label: 'Custom background', type: 'color' },
   ],
 }
 
@@ -1813,17 +2390,21 @@ export const testimonialBlock: BlockDefinition = {
  * FAQ (accordion)
  * ═════════════════════════════════════════════════════════════════════════*/
 const FaqView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { title, items, openFirst } = node.attrs
+  const { title, items, openFirst, iconStyle, accordion, bgColor, columns } = node.attrs
+  const icon = iconStyle === 'chevron' ? '⌄' : iconStyle === 'arrow' ? '↓' : '+'
   return (
     <NodeViewWrapper data-block="faq" className={cx('my-2', selected && 'rounded-lg ring-2 ring-brand-blue ring-offset-2')} data-drag-handle>
-      <div className="rounded-2xl border border-brand-border bg-white p-6">
+      <div
+        className={cx('rounded-2xl border border-brand-border bg-white p-6')}
+        style={bgColor ? { backgroundColor: bgColor } : undefined}
+      >
         {title && <h3 className="mb-4 text-lg font-bold text-brand-textDark">{title}</h3>}
-        <div className="divide-y divide-brand-border">
+        <div className={cx(Number(columns) === 2 ? 'grid gap-x-8 sm:grid-cols-2' : 'divide-y divide-brand-border')}>
           {(items as { q: string; a: string }[]).map((it, i) => (
-            <details key={i} className="group py-3" open={openFirst && i === 0}>
+            <details key={i} className="group py-3" open={openFirst && i === 0} name={accordion ? 'faq-accordion' : undefined}>
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-brand-textDark">
                 {it.q || `Question ${i + 1}`}
-                <span className="text-brand-blue transition-transform group-open:rotate-45">+</span>
+                <span className={cx('text-brand-blue transition-transform', iconStyle === 'plus' && 'group-open:rotate-45', iconStyle === 'chevron' && 'group-open:rotate-180')}>{icon}</span>
               </summary>
               <p className="mt-2 pr-8 text-sm leading-relaxed text-brand-textMid">{it.a}</p>
             </details>
@@ -1846,24 +2427,37 @@ const FaqNode = Node.create({
         { q: 'Do you work with international clients?', a: 'Yes — we work across EU, UK, US and APAC time zones.' },
       ]),
       openFirst: { default: true, renderHTML: suppress },
+      iconStyle: { default: 'plus', renderHTML: suppress },
+      accordion: { default: false, renderHTML: suppress },
+      bgColor: { default: '', renderHTML: suppress },
+      columns: { default: 1, renderHTML: suppress },
     }
   },
   parseHTML() {
     return [{ tag: 'div[data-block="faq"]' }]
   },
   renderHTML({ node, HTMLAttributes }) {
-    const { title, items, openFirst } = node.attrs
+    const { title, items, openFirst, iconStyle, accordion, bgColor, columns } = node.attrs
+    const icon = iconStyle === 'chevron' ? '⌄' : iconStyle === 'arrow' ? '↓' : '+'
     const rows = (items as { q: string; a: string }[]).map((it, i) => [
       'details',
-      { class: 'border-t border-slate-200 py-3', ...(openFirst && i === 0 ? { open: 'open' } : {}) },
-      ['summary', { class: 'flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-900' }, it.q],
+      {
+        class: 'border-t border-slate-200 py-3',
+        ...(openFirst && i === 0 ? { open: 'open' } : {}),
+        ...(accordion ? { name: 'faq-accordion' } : {}),
+      },
+      ['summary', { class: 'flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-900' }, it.q, ['span', { class: 'text-blue-600' }, icon]],
       ['p', { class: 'mt-2 pr-8 text-sm leading-relaxed text-slate-500' }, it.a],
     ])
     return [
       'div',
-      mergeAttributes(HTMLAttributes, { 'data-block': 'faq', class: 'my-6 rounded-2xl border border-slate-200 bg-white p-6' }),
+      mergeAttributes(HTMLAttributes, {
+        'data-block': 'faq',
+        class: 'my-6 rounded-2xl border border-slate-200 bg-white p-6',
+        ...(bgColor ? { style: `background-color:${bgColor}` } : {}),
+      }),
       title ? ['h3', { class: 'mb-4 text-lg font-bold text-slate-900' }, title] : ['span', { class: 'hidden' }],
-      ['div', {}, ...rows],
+      ['div', { class: Number(columns) === 2 ? 'grid gap-x-8 sm:grid-cols-2' : '' }, ...rows],
     ]
   },
   addNodeView() {
@@ -1886,10 +2480,35 @@ export const faqBlock: BlockDefinition = {
       { q: 'Do you work with international clients?', a: 'Yes — we work across EU, UK, US and APAC time zones.' },
     ],
     openFirst: true,
+    iconStyle: 'plus',
+    accordion: false,
+    bgColor: '',
+    columns: 1,
   },
   options: [
     { key: 'title', label: 'Section title', type: 'text' },
     { key: 'openFirst', label: 'Open first item', type: 'toggle' },
+    { key: 'accordion', label: 'Open only one at a time', type: 'toggle' },
+    {
+      key: 'iconStyle',
+      label: 'Icon style',
+      type: 'segmented',
+      choices: [
+        { label: '+', value: 'plus' },
+        { label: 'Chevron', value: 'chevron' },
+        { label: 'Arrow', value: 'arrow' },
+      ],
+    },
+    {
+      key: 'columns',
+      label: 'Layout',
+      type: 'segmented',
+      choices: [
+        { label: 'Single', value: '1' },
+        { label: 'Two column', value: '2' },
+      ],
+    },
+    { key: 'bgColor', label: 'Background colour', type: 'color' },
     {
       key: 'items',
       label: 'Questions',
@@ -1909,11 +2528,19 @@ export const faqBlock: BlockDefinition = {
 /* ══════════════════════════════════════════════════════════════════════════
  * PRICING TABLE
  * ═════════════════════════════════════════════════════════════════════════*/
+const PRICE_ROUND: Record<string, string> = { none: 'rounded-none', md: 'rounded-xl', lg: 'rounded-2xl' }
+/** Strips the leading currency symbol and applies the inspector currency */
+const withCurrency = (price: string, currency: string, position = 'before') => {
+  const bare = String(price ?? '').replace(/^[^\d.,-]+/, '')
+  if (!currency) return String(price ?? '')
+  return position === 'after' ? `${bare}${currency}` : `${currency}${bare}`
+}
+
 const PricingView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { title, subtitle, plans, columns } = node.attrs
+  const { title, subtitle, plans, columns, currency, currencyPosition, bgColor, highlightColor, rounded } = node.attrs
   return (
     <NodeViewWrapper data-block="pricing" className={cx('my-2', selected && 'ring-2 ring-brand-blue ring-offset-2 rounded-lg')} data-drag-handle>
-      <div className="rounded-2xl border border-slate-200 bg-white p-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6" style={bgColor ? { backgroundColor: bgColor } : undefined}>
         {title && <h3 className="text-center text-2xl font-bold text-slate-900">{title}</h3>}
         {subtitle && <p className="mb-6 mt-1 text-center text-sm text-slate-500">{subtitle}</p>}
         <div className="grid gap-5" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))` }}>
@@ -1921,13 +2548,16 @@ const PricingView = ({ node, selected }: { node: any; selected: boolean }) => {
             <div
               key={i}
               className={cx(
-                'flex flex-col rounded-2xl border p-5',
-                p.highlight ? 'border-blue-600 bg-blue-50/60 shadow-md' : 'border-slate-200 bg-white',
+                'flex flex-col border p-5',
+                PRICE_ROUND[rounded] ?? PRICE_ROUND.lg,
+                p.highlight ? 'shadow-md' : '',
+                !highlightColor && (p.highlight ? 'border-blue-600 bg-blue-50/60' : 'border-slate-200 bg-white'),
               )}
+              style={p.highlight && highlightColor ? { borderColor: highlightColor, backgroundColor: `${highlightColor}14` } : undefined}
             >
               <p className="text-sm font-semibold text-slate-900">{p.name}</p>
               <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                {p.price}
+                {withCurrency(p.price, currency, currencyPosition)}
                 {p.period && <span className="text-sm font-medium text-slate-400">{p.period}</span>}
               </p>
               <ul className="mt-4 flex-1 space-y-1.5 text-sm text-slate-600">
@@ -1973,16 +2603,28 @@ const PricingNode = Node.create({
         { name: 'Growth', price: '$1,490', period: '/mo', features: 'Everything in Starter\nPaid ads management\nLanding pages\nBi-weekly calls', highlight: true, ctaLabel: 'Get started', ctaUrl: '' },
       ]),
       columns: { default: 2, renderHTML: suppress },
+      currency: { default: '', renderHTML: suppress },
+      currencyPosition: { default: 'before', renderHTML: suppress },
+      bgColor: { default: '', renderHTML: suppress },
+      highlightColor: { default: '', renderHTML: suppress },
+      rounded: { default: 'lg', renderHTML: suppress },
     }
   },
   parseHTML() { return [{ tag: 'div[data-block="pricing"]' }] },
   renderHTML({ node, HTMLAttributes }) {
-    const { title, subtitle, plans, columns } = node.attrs
+    const { title, subtitle, plans, columns, currency, currencyPosition, bgColor, highlightColor, rounded } = node.attrs
     const cards = (plans as any[]).map((p) => [
       'div',
-      { class: `flex flex-col rounded-2xl border p-5 ${p.highlight ? 'border-blue-600 bg-blue-50/60' : 'border-slate-200 bg-white'}` },
+      {
+        class: cx(
+          'flex flex-col border p-5',
+          PRICE_ROUND[rounded] ?? PRICE_ROUND.lg,
+          !highlightColor && (p.highlight ? 'border-blue-600 bg-blue-50/60' : 'border-slate-200 bg-white'),
+        ),
+        ...(p.highlight && highlightColor ? { style: `border-color:${highlightColor};background-color:${highlightColor}14` } : {}),
+      },
       ['p', { class: 'text-sm font-semibold text-slate-900' }, p.name],
-      ['p', { class: 'mt-2 text-3xl font-extrabold text-slate-900' }, `${p.price}${p.period ? p.period : ''}`],
+      ['p', { class: 'mt-2 text-3xl font-extrabold text-slate-900' }, `${withCurrency(p.price, currency, currencyPosition)}${p.period ? p.period : ''}`],
       [
         'ul',
         { class: 'mt-4 flex-1 space-y-1 text-sm text-slate-600' },
@@ -1994,7 +2636,11 @@ const PricingNode = Node.create({
     ])
     return [
       'div',
-      mergeAttributes(HTMLAttributes, { 'data-block': 'pricing', class: 'my-6 rounded-2xl border border-slate-200 bg-white p-6' }),
+      mergeAttributes(HTMLAttributes, {
+        'data-block': 'pricing',
+        class: 'my-6 rounded-2xl border border-slate-200 bg-white p-6',
+        ...(bgColor ? { style: `background-color:${bgColor}` } : {}),
+      }),
       title ? ['h3', { class: 'text-center text-2xl font-bold text-slate-900' }, title] : ['span', { class: 'hidden' }],
       subtitle ? ['p', { class: 'mb-6 mt-1 text-center text-sm text-slate-500' }, subtitle] : ['span', { class: 'hidden' }],
       ['div', { class: 'grid gap-5', style: `grid-template-columns:repeat(${columns},minmax(0,1fr))` }, ...cards],
@@ -2019,6 +2665,11 @@ export const pricingBlock: BlockDefinition = {
       { name: 'Growth', price: '$1,490', period: '/mo', features: 'Everything in Starter\nPaid ads management\nLanding pages\nBi-weekly calls', highlight: true, ctaLabel: 'Get started', ctaUrl: '' },
     ],
     columns: 2,
+    currency: '',
+    currencyPosition: 'before',
+    bgColor: '',
+    highlightColor: '',
+    rounded: 'lg',
   },
   options: [
     { key: 'title', label: 'Title', type: 'text' },
@@ -2033,6 +2684,28 @@ export const pricingBlock: BlockDefinition = {
         { label: '4', value: '4' },
       ],
     },
+    { key: 'currency', label: 'Currency symbol', type: 'text', placeholder: '$ / € / £' },
+    {
+      key: 'currencyPosition',
+      label: 'Currency position',
+      type: 'segmented',
+      choices: [
+        { label: 'Before', value: 'before' },
+        { label: 'After', value: 'after' },
+      ],
+    },
+    {
+      key: 'rounded',
+      label: 'Card corner',
+      type: 'segmented',
+      choices: [
+        { label: 'Square', value: 'none' },
+        { label: 'Rounded', value: 'md' },
+        { label: 'Large', value: 'lg' },
+      ],
+    },
+    { key: 'bgColor', label: 'Section background', type: 'color' },
+    { key: 'highlightColor', label: 'Highlight colour', type: 'color' },
     {
       key: 'plans',
       label: 'Plans',
@@ -2044,7 +2717,7 @@ export const pricingBlock: BlockDefinition = {
         { key: 'name', label: 'Plan name', type: 'text' },
         { key: 'price', label: 'Price', type: 'text' },
         { key: 'period', label: 'Period', type: 'text' },
-        { key: 'features', label: 'Features (প্রতি লাইনে একটা)', type: 'textarea', rows: 4 },
+        { key: 'features', label: 'Features (one per line)', type: 'textarea', rows: 4 },
         { key: 'ctaLabel', label: 'Button text', type: 'text' },
         { key: 'ctaUrl', label: 'Button URL', type: 'url' },
         { key: 'highlight', label: 'Highlight this plan', type: 'toggle' },
@@ -2057,16 +2730,23 @@ export const pricingBlock: BlockDefinition = {
  * TIMELINE / PROCESS
  * ═════════════════════════════════════════════════════════════════════════*/
 const TimelineView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { title, steps } = node.attrs
+  const { title, steps, markerStyle, lineColor, spacing, layout, bgColor } = node.attrs
+  const grid = layout === 'grid'
   return (
     <NodeViewWrapper data-block="timeline" className={cx('my-2', selected && 'ring-2 ring-brand-blue ring-offset-2 rounded-lg')} data-drag-handle>
-      <div className="rounded-2xl border border-slate-200 bg-white p-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6" style={bgColor ? { backgroundColor: bgColor } : undefined}>
         {title && <h3 className="mb-5 text-lg font-bold text-slate-900">{title}</h3>}
-        <ol className="relative space-y-6 border-l border-slate-200 pl-6">
+        <ol
+          className={cx('relative pl-6', grid && 'grid sm:grid-cols-2', !grid && 'border-l')}
+          style={{ borderLeftColor: !grid && lineColor ? lineColor : undefined, gap: `${spacing}px` }}
+        >
           {(steps as any[]).map((s: any, i: number) => (
             <li key={i} className="relative">
-              <span className="absolute -left-[31px] flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">
-                {i + 1}
+              <span className={cx(
+                'absolute -left-[31px] flex items-center justify-center bg-blue-600 font-bold text-white',
+                markerStyle === 'dot' ? 'h-3 w-3 -left-[26px] rounded-full text-[0px]' : 'h-5 w-5 rounded-full text-[10px]',
+              )}>
+                {markerStyle === 'number' ? i + 1 : ''}
               </span>
               {s.badge && <span className="mb-1 inline-block rounded bg-blue-50 px-2 py-0.5 text-[10px] font-semibold uppercase text-blue-700">{s.badge}</span>}
               <p className="text-sm font-semibold text-slate-900">{s.title}</p>
@@ -2091,24 +2771,49 @@ const TimelineNode = Node.create({
         { badge: 'Week 2-4', title: 'Build', text: 'Design, develop and iterate.' },
         { badge: 'Week 5+', title: 'Scale', text: 'Optimise and report.' },
       ]),
+      markerStyle: { default: 'number', renderHTML: suppress },
+      lineColor: { default: '', renderHTML: suppress },
+      spacing: { default: 24, renderHTML: suppress },
+      layout: { default: 'vertical', renderHTML: suppress },
+      bgColor: { default: '', renderHTML: suppress },
     }
   },
   parseHTML() { return [{ tag: 'div[data-block="timeline"]' }] },
   renderHTML({ node, HTMLAttributes }) {
-    const { title, steps } = node.attrs
+    const { title, steps, markerStyle, lineColor, spacing, layout, bgColor } = node.attrs
+    const grid = layout === 'grid'
     const items = (steps as any[]).map((s, i) => [
       'li',
       { class: 'relative' },
-      ['span', { class: 'absolute -left-[31px] flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white' }, String(i + 1)],
+      [
+        'span',
+        {
+          class: markerStyle === 'dot'
+            ? 'absolute -left-[26px] flex h-3 w-3 items-center justify-center rounded-full bg-blue-600'
+            : 'absolute -left-[31px] flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white',
+        },
+        markerStyle === 'number' ? String(i + 1) : '',
+      ],
       s.badge ? ['span', { class: 'mb-1 inline-block rounded bg-blue-50 px-2 py-0.5 text-[10px] font-semibold uppercase text-blue-700' }, s.badge] : ['span', { class: 'hidden' }],
       ['p', { class: 'text-sm font-semibold text-slate-900' }, s.title],
       s.text ? ['p', { class: 'mt-1 text-sm text-slate-500' }, s.text] : ['span', { class: 'hidden' }],
     ])
     return [
       'div',
-      mergeAttributes(HTMLAttributes, { 'data-block': 'timeline', class: 'my-6 rounded-2xl border border-slate-200 bg-white p-6' }),
+      mergeAttributes(HTMLAttributes, {
+        'data-block': 'timeline',
+        class: 'my-6 rounded-2xl border border-slate-200 bg-white p-6',
+        ...(bgColor ? { style: `background-color:${bgColor}` } : {}),
+      }),
       title ? ['h3', { class: 'mb-5 text-lg font-bold text-slate-900' }, title] : ['span', { class: 'hidden' }],
-      ['ol', { class: 'relative space-y-6 border-l border-slate-200 pl-6' }, ...items],
+      [
+        'ol',
+        {
+          class: cx('relative pl-6', grid && 'grid sm:grid-cols-2', !grid && 'border-l'),
+          style: [`border-left-color:${!grid && lineColor ? lineColor : '#E2E8F0'}`, `gap:${spacing}px`].join(';'),
+        },
+        ...items,
+      ],
     ]
   },
   addNodeView() { return ReactNodeViewRenderer(TimelineView) },
@@ -2129,9 +2834,35 @@ export const timelineBlock: BlockDefinition = {
       { badge: 'Week 2-4', title: 'Build', text: 'Design, develop and iterate.' },
       { badge: 'Week 5+', title: 'Scale', text: 'Optimise and report.' },
     ],
+    markerStyle: 'number',
+    lineColor: '',
+    spacing: 24,
+    layout: 'vertical',
+    bgColor: '',
   },
   options: [
     { key: 'title', label: 'Title', type: 'text' },
+    {
+      key: 'layout',
+      label: 'Layout',
+      type: 'segmented',
+      choices: [
+        { label: 'Vertical', value: 'vertical' },
+        { label: 'Grid', value: 'grid' },
+      ],
+    },
+    {
+      key: 'markerStyle',
+      label: 'Marker',
+      type: 'segmented',
+      choices: [
+        { label: 'Number', value: 'number' },
+        { label: 'Dot', value: 'dot' },
+      ],
+    },
+    { key: 'lineColor', label: 'Line colour', type: 'color' },
+    { key: 'spacing', label: 'Step gap (px)', type: 'range', min: 8, max: 64, step: 4 },
+    { key: 'bgColor', label: 'Background colour', type: 'color' },
     {
       key: 'steps',
       label: 'Steps',
@@ -2152,17 +2883,17 @@ export const timelineBlock: BlockDefinition = {
  * LOGO GRID
  * ═════════════════════════════════════════════════════════════════════════*/
 const LogoGridView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { title, logos, columns, grayscale } = node.attrs
+  const { title, logos, columns, grayscale, bgColor, logoHeight, border, gap } = node.attrs
   return (
     <NodeViewWrapper data-block="logo-grid" className={cx('my-2', selected && 'ring-2 ring-brand-blue ring-offset-2 rounded-lg')} data-drag-handle>
-      <div className="rounded-2xl border border-slate-200 bg-white p-6">
+      <div className={cx('rounded-2xl bg-white p-6', border && 'border border-slate-200')} style={bgColor ? { backgroundColor: bgColor } : undefined}>
         {title && <p className="mb-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">{title}</p>}
-        <div className="grid items-center gap-6" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))` }}>
+        <div className="grid items-center" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))`, gap: `${gap}px` }}>
           {(logos as any[]).map((l: any, i: number) =>
             l.image ? (
-              <img key={i} src={l.image} alt={l.name || ''} className={cx('mx-auto h-10 w-auto object-contain', grayscale && 'opacity-60 grayscale')} />
+              <img key={i} src={l.image} alt={l.name || ''} style={{ height: `${logoHeight}px` }} className={cx('mx-auto w-auto object-contain transition', grayscale && 'opacity-60 grayscale hover:opacity-100 hover:grayscale-0')} />
             ) : (
-              <div key={i} className="mx-auto h-10 w-24 rounded bg-slate-100" />
+              <div key={i} className="mx-auto w-24 rounded bg-slate-100" style={{ height: `${logoHeight}px` }} />
             ),
           )}
         </div>
@@ -2181,23 +2912,31 @@ const LogoGridNode = Node.create({
       logos: jsonAttr([{ image: '', name: 'Client', url: '' }]),
       columns: { default: 4, renderHTML: suppress },
       grayscale: { default: true, renderHTML: suppress },
+      bgColor: { default: '', renderHTML: suppress },
+      logoHeight: { default: 40, renderHTML: suppress },
+      border: { default: true, renderHTML: suppress },
+      gap: { default: 24, renderHTML: suppress },
     }
   },
   parseHTML() { return [{ tag: 'div[data-block="logo-grid"]' }] },
   renderHTML({ node, HTMLAttributes }) {
-    const { title, logos, columns, grayscale } = node.attrs
+    const { title, logos, columns, grayscale, bgColor, logoHeight, border, gap } = node.attrs
     const cells = (logos as any[]).map((l) => [
       'div',
       { class: 'flex justify-center' },
       l.image
-        ? ['img', { src: l.image, alt: l.name || '', class: `h-10 w-auto object-contain ${grayscale ? 'opacity-60 grayscale' : ''}` }]
-        : ['div', { class: 'h-10 w-24 rounded bg-slate-100' }],
+        ? ['img', { src: l.image, alt: l.name || '', style: `height:${logoHeight}px`, class: cx('mx-auto w-auto object-contain', grayscale && 'opacity-60 grayscale') }]
+        : ['div', { class: 'w-24 rounded bg-slate-100', style: `height:${logoHeight}px` }],
     ])
     return [
       'div',
-      mergeAttributes(HTMLAttributes, { 'data-block': 'logo-grid', class: 'my-6 rounded-2xl border border-slate-200 bg-white p-6' }),
+      mergeAttributes(HTMLAttributes, {
+        'data-block': 'logo-grid',
+        class: cx('my-6 rounded-2xl bg-white p-6', border && 'border border-slate-200'),
+        ...(bgColor ? { style: `background-color:${bgColor}` } : {}),
+      }),
       title ? ['p', { class: 'mb-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500' }, title] : ['span', { class: 'hidden' }],
-      ['div', { class: 'grid items-center gap-6', style: `grid-template-columns:repeat(${columns},minmax(0,1fr))` }, ...cells],
+      ['div', { class: 'grid items-center', style: `grid-template-columns:repeat(${columns},minmax(0,1fr));gap:${gap}px` }, ...cells],
     ]
   },
   addNodeView() { return ReactNodeViewRenderer(LogoGridView) },
@@ -2211,7 +2950,10 @@ export const logoGridBlock: BlockDefinition = {
   icon: Grid3x3,
   keywords: ['logo', 'clients', 'partners', 'trusted', 'brands'],
   node: LogoGridNode,
-  defaults: { title: 'Trusted by', logos: [{ image: '', name: 'Client', url: '' }], columns: 4, grayscale: true },
+  defaults: {
+    title: 'Trusted by', logos: [{ image: '', name: 'Client', url: '' }], columns: 4, grayscale: true,
+    bgColor: '', logoHeight: 40, border: true, gap: 24,
+  },
   options: [
     { key: 'title', label: 'Title', type: 'text' },
     {
@@ -2226,6 +2968,10 @@ export const logoGridBlock: BlockDefinition = {
       ],
     },
     { key: 'grayscale', label: 'Grayscale', type: 'toggle' },
+    { key: 'logoHeight', label: 'Logo height (px)', type: 'range', min: 20, max: 96, step: 4 },
+    { key: 'gap', label: 'Gap (px)', type: 'range', min: 8, max: 64, step: 4 },
+    { key: 'bgColor', label: 'Background colour', type: 'color' },
+    { key: 'border', label: 'Border', type: 'toggle' },
     {
       key: 'logos',
       label: 'Logos',
@@ -2246,24 +2992,34 @@ export const logoGridBlock: BlockDefinition = {
  * TEAM
  * ═════════════════════════════════════════════════════════════════════════*/
 const TeamView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { title, members, columns } = node.attrs
+  const { title, members, columns, layout, cardStyle, avatarShape, bgColor } = node.attrs
+  const shape = avatarShape === 'square' ? 'rounded-xl' : 'rounded-full'
+  const list = layout === 'list'
   return (
     <NodeViewWrapper data-block="team" className={cx('my-2', selected && 'ring-2 ring-brand-blue ring-offset-2 rounded-lg')} data-drag-handle>
-      <div className="rounded-2xl border border-slate-200 bg-white p-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6" style={bgColor ? { backgroundColor: bgColor } : undefined}>
         {title && <h3 className="mb-5 text-lg font-bold text-slate-900">{title}</h3>}
-        <div className="grid gap-6" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))` }}>
+        <div className={cx(list ? 'flex flex-col gap-5' : 'grid gap-6')} style={list ? undefined : { gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))` }}>
           {(members as any[]).map((m: any, i: number) => (
-            <div key={i} className="text-center">
+            <div key={i} className={cx(list ? 'flex items-start gap-4 text-left' : 'text-center', cardStyle === 'card' && 'rounded-xl border border-slate-200 bg-slate-50 p-4')}>
               {m.photo ? (
-                <img src={m.photo} alt={m.name} className="mx-auto h-24 w-24 rounded-full object-cover" />
+                <img src={m.photo} alt={m.name} className={cx('h-24 w-24 object-cover', shape, !list && 'mx-auto')} />
               ) : (
-                <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-blue-50 text-xl font-bold text-blue-600">
+                <div className={cx('flex h-24 w-24 items-center justify-center bg-blue-50 text-xl font-bold text-blue-600', shape, !list && 'mx-auto')}>
                   {(m.name || 'A').slice(0, 1).toUpperCase()}
                 </div>
               )}
-              <p className="mt-3 text-sm font-semibold text-slate-900">{m.name}</p>
-              {m.role && <p className="text-xs text-slate-500">{m.role}</p>}
-              {m.bio && <p className="mt-2 text-xs leading-relaxed text-slate-500">{m.bio}</p>}
+              <div className={list ? 'flex-1' : ''}>
+                <p className="mt-3 text-sm font-semibold text-slate-900">{m.name}</p>
+                {m.role && <p className="text-xs text-slate-500">{m.role}</p>}
+                {m.bio && <p className="mt-2 text-xs leading-relaxed text-slate-500">{m.bio}</p>}
+                {(m.linkedin || m.website) && (
+                  <p className="mt-2 flex gap-3 text-xs">
+                    {m.linkedin && <a href={m.linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">LinkedIn</a>}
+                    {m.website && <a href={m.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Website</a>}
+                  </p>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -2279,28 +3035,57 @@ const TeamNode = Node.create({
   addAttributes() {
     return {
       title: { default: 'Our team', renderHTML: suppress },
-      members: jsonAttr([{ name: 'Jane Doe', role: 'Founder', photo: '', bio: '' }]),
+      members: jsonAttr([{ name: 'Jane Doe', role: 'Founder', photo: '', bio: '', linkedin: '', website: '' }]),
       columns: { default: 3, renderHTML: suppress },
+      layout: { default: 'grid', renderHTML: suppress },
+      cardStyle: { default: 'plain', renderHTML: suppress },
+      avatarShape: { default: 'circle', renderHTML: suppress },
+      bgColor: { default: '', renderHTML: suppress },
     }
   },
   parseHTML() { return [{ tag: 'div[data-block="team"]' }] },
   renderHTML({ node, HTMLAttributes }) {
-    const { title, members, columns } = node.attrs
+    const { title, members, columns, layout, cardStyle, avatarShape, bgColor } = node.attrs
+    const shape = avatarShape === 'square' ? 'rounded-xl' : 'rounded-full'
+    const list = layout === 'list'
     const cells = (members as any[]).map((m) => [
       'div',
-      { class: 'text-center' },
+      { class: cx(list ? 'flex items-start gap-4 text-left' : 'text-center', cardStyle === 'card' && 'rounded-xl border border-slate-200 bg-slate-50 p-4') },
       m.photo
-        ? ['img', { src: m.photo, alt: m.name, class: 'mx-auto h-24 w-24 rounded-full object-cover' }]
-        : ['div', { class: 'mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-blue-50 text-xl font-bold text-blue-600' }, (m.name || 'A').slice(0, 1).toUpperCase()],
-      ['p', { class: 'mt-3 text-sm font-semibold text-slate-900' }, m.name],
-      m.role ? ['p', { class: 'text-xs text-slate-500' }, m.role] : ['span', { class: 'hidden' }],
-      m.bio ? ['p', { class: 'mt-2 text-xs leading-relaxed text-slate-500' }, m.bio] : ['span', { class: 'hidden' }],
+        ? ['img', { src: m.photo, alt: m.name, class: cx('h-24 w-24 object-cover', shape, !list && 'mx-auto') }]
+        : ['div', { class: cx('flex h-24 w-24 items-center justify-center bg-blue-50 text-xl font-bold text-blue-600', shape, !list && 'mx-auto') }, (m.name || 'A').slice(0, 1).toUpperCase()],
+      [
+        'div',
+        { class: list ? 'flex-1' : '' },
+        ['p', { class: 'mt-3 text-sm font-semibold text-slate-900' }, m.name],
+        m.role ? ['p', { class: 'text-xs text-slate-500' }, m.role] : ['span', { class: 'hidden' }],
+        m.bio ? ['p', { class: 'mt-2 text-xs leading-relaxed text-slate-500' }, m.bio] : ['span', { class: 'hidden' }],
+        m.linkedin || m.website
+          ? [
+              'p',
+              { class: 'mt-2 flex gap-3 text-xs' },
+              m.linkedin ? ['a', { href: m.linkedin, target: '_blank', rel: 'noopener noreferrer', class: 'text-blue-600 underline' }, 'LinkedIn'] : ['span', { class: 'hidden' }],
+              m.website ? ['a', { href: m.website, target: '_blank', rel: 'noopener noreferrer', class: 'text-blue-600 underline' }, 'Website'] : ['span', { class: 'hidden' }],
+            ]
+          : ['span', { class: 'hidden' }],
+      ],
     ])
     return [
       'div',
-      mergeAttributes(HTMLAttributes, { 'data-block': 'team', class: 'my-6 rounded-2xl border border-slate-200 bg-white p-6' }),
+      mergeAttributes(HTMLAttributes, {
+        'data-block': 'team',
+        class: 'my-6 rounded-2xl border border-slate-200 bg-white p-6',
+        ...(bgColor ? { style: `background-color:${bgColor}` } : {}),
+      }),
       title ? ['h3', { class: 'mb-5 text-lg font-bold text-slate-900' }, title] : ['span', { class: 'hidden' }],
-      ['div', { class: 'grid gap-6', style: `grid-template-columns:repeat(${columns},minmax(0,1fr))` }, ...cells],
+      [
+        'div',
+        {
+          class: cx(list ? 'flex flex-col gap-5' : 'grid gap-6'),
+          ...(list ? {} : { style: `grid-template-columns:repeat(${columns},minmax(0,1fr))` }),
+        },
+        ...cells,
+      ],
     ]
   },
   addNodeView() { return ReactNodeViewRenderer(TeamView) },
@@ -2314,7 +3099,15 @@ export const teamBlock: BlockDefinition = {
   icon: Users,
   keywords: ['team', 'people', 'members', 'staff', 'about'],
   node: TeamNode,
-  defaults: { title: 'Our team', members: [{ name: 'Jane Doe', role: 'Founder', photo: '', bio: '' }], columns: 3 },
+  defaults: {
+    title: 'Our team',
+    members: [{ name: 'Jane Doe', role: 'Founder', photo: '', bio: '', linkedin: '', website: '' }],
+    columns: 3,
+    layout: 'grid',
+    cardStyle: 'plain',
+    avatarShape: 'circle',
+    bgColor: '',
+  },
   options: [
     { key: 'title', label: 'Title', type: 'text' },
     {
@@ -2328,17 +3121,47 @@ export const teamBlock: BlockDefinition = {
       ],
     },
     {
+      key: 'layout',
+      label: 'Layout',
+      type: 'segmented',
+      choices: [
+        { label: 'Grid', value: 'grid' },
+        { label: 'List', value: 'list' },
+      ],
+    },
+    {
+      key: 'cardStyle',
+      label: 'Card style',
+      type: 'segmented',
+      choices: [
+        { label: 'Plain', value: 'plain' },
+        { label: 'Card', value: 'card' },
+      ],
+    },
+    {
+      key: 'avatarShape',
+      label: 'Avatar shape',
+      type: 'segmented',
+      choices: [
+        { label: 'Circle', value: 'circle' },
+        { label: 'Square', value: 'square' },
+      ],
+    },
+    { key: 'bgColor', label: 'Background colour', type: 'color' },
+    {
       key: 'members',
       label: 'Members',
       type: 'list',
       itemLabel: 'Member',
       max: 12,
-      defaultItem: { name: 'New member', role: '', photo: '', bio: '' },
+      defaultItem: { name: 'New member', role: '', photo: '', bio: '', linkedin: '', website: '' },
       fields: [
         { key: 'name', label: 'Name', type: 'text' },
         { key: 'role', label: 'Role', type: 'text' },
         { key: 'photo', label: 'Photo URL', type: 'url' },
         { key: 'bio', label: 'Short bio', type: 'textarea', rows: 2 },
+        { key: 'linkedin', label: 'LinkedIn URL', type: 'url' },
+        { key: 'website', label: 'Website URL', type: 'url' },
       ],
     },
   ],
@@ -2354,15 +3177,30 @@ export const marketingBlocks: BlockDefinition[] = [
   logoGridBlock,
   teamBlock,
 ]
+
 ```
 
 <!-- FILE: components/editor/blocks/media.tsx -->
-```tsx
+```
 import { Node } from '@tiptap/core'
 import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react'
 import { Image as ImageIcon, Images, Columns2, Maximize2, Play, Code2 } from 'lucide-react'
 import type { BlockDefinition } from '../types'
 import { cx, EmptyImageBox, jsonAttr, mergeAttributes, suppress } from './helpers'
+
+/* Image aspect ratios — driven by inspector options */
+const IMG_ASPECT: Record<string, string> = {
+  '': '',
+  '16/9': 'aspect-video',
+  '4/3': 'aspect-[4/3]',
+  '1/1': 'aspect-square',
+  '3/2': 'aspect-[3/2]',
+}
+const imgLinkAttrs = (src: string, linkUrl: string, newTab: boolean, openFull: boolean) => {
+  const href = linkUrl || (openFull && src ? src : '')
+  if (!href) return null
+  return newTab ? { href, target: '_blank', rel: 'noopener noreferrer' } : { href }
+}
 
 /* ══════════════════════════════════════════════════════════════════════════
  * 1. IMAGE  — atom block + React NodeView + inspector options
@@ -2417,6 +3255,12 @@ const ImageBlockNode = Node.create({
       width: { default: 100, renderHTML: suppress },
       rounded: { default: true, renderHTML: suppress },
       shadow: { default: true, renderHTML: suppress },
+      aspect: { default: '', renderHTML: suppress },
+      objectFit: { default: 'cover', renderHTML: suppress },
+      linkUrl: { default: '', renderHTML: suppress },
+      newTab: { default: false, renderHTML: suppress },
+      openFull: { default: false, renderHTML: suppress },
+      border: { default: false, renderHTML: suppress },
     }
   },
 
@@ -2425,9 +3269,12 @@ const ImageBlockNode = Node.create({
   },
 
   renderHTML({ node, HTMLAttributes }) {
-    const { src, alt, caption, align, width, rounded, shadow } = node.attrs
+    const { src, alt, caption, align, width, rounded, shadow, aspect, objectFit, linkUrl, newTab, openFull, border } = node.attrs
     const figureClass = cx('my-6 flex flex-col gap-2', align === 'left' ? 'items-start' : align === 'right' ? 'items-end' : 'items-center')
-    const imgClass = cx('h-auto object-cover', rounded && 'rounded-xl', shadow && 'shadow-md')
+    const imgClass = cx('h-auto w-full', IMG_ASPECT[aspect] ?? '', objectFit === 'contain' ? 'object-contain' : 'object-cover',
+      rounded && 'rounded-xl', shadow && 'shadow-md', border && 'border border-slate-200')
+    const a = imgLinkAttrs(src, linkUrl, newTab, openFull)
+    const imgEl: any = ['img', { src, alt: alt || '', class: imgClass }]
 
     return [
       'figure',
@@ -2435,7 +3282,7 @@ const ImageBlockNode = Node.create({
       [
         'div',
         { style: `width:${width}%` },
-        ['img', { src, alt: alt || '', class: imgClass }],
+        a ? ['a', { href: a.href, ...(a.target ? { target: a.target, rel: a.rel } : {}) }, imgEl] : imgEl,
         caption ? ['figcaption', { class: 'mt-2 text-center text-xs italic text-slate-500' }, caption] : ['span', { class: 'hidden' }],
       ],
     ]
@@ -2454,7 +3301,8 @@ export const imageBlock: BlockDefinition = {
   icon: ImageIcon,
   keywords: ['image', 'photo', 'picture', 'img'],
   node: ImageBlockNode,
-  defaults: { src: '', alt: '', caption: '', align: 'center', width: 100, rounded: true, shadow: true },
+  defaults: { src: '', alt: '', caption: '', align: 'center', width: 100, rounded: true, shadow: true,
+    aspect: '', objectFit: 'cover', linkUrl: '', newTab: false, openFull: false, border: false },
   options: [
     { key: 'src', label: 'Image URL', type: 'url', placeholder: 'https://… or data:image/…' },
     { key: 'alt', label: 'Alt text (SEO)', type: 'text', placeholder: 'Describe the image' },
@@ -2472,6 +3320,31 @@ export const imageBlock: BlockDefinition = {
     { key: 'width', label: 'Width (%)', type: 'range', min: 20, max: 100, step: 5 },
     { key: 'rounded', label: 'Rounded corners', type: 'toggle' },
     { key: 'shadow', label: 'Drop shadow', type: 'toggle' },
+    { key: 'border', label: 'Thin border', type: 'toggle' },
+    {
+      key: 'aspect',
+      label: 'Aspect ratio',
+      type: 'select',
+      choices: [
+        { label: 'Natural', value: '' },
+        { label: '16 / 9', value: '16/9' },
+        { label: '4 / 3', value: '4/3' },
+        { label: '1 / 1', value: '1/1' },
+        { label: '3 / 2', value: '3/2' },
+      ],
+    },
+    {
+      key: 'objectFit',
+      label: 'Fit',
+      type: 'segmented',
+      choices: [
+        { label: 'Cover', value: 'cover' },
+        { label: 'Contain', value: 'contain' },
+      ],
+    },
+    { key: 'linkUrl', label: 'Link URL (optional)', type: 'url' },
+    { key: 'newTab', label: 'Open link in new tab', type: 'toggle' },
+    { key: 'openFull', label: 'Open full size on click', type: 'toggle' },
   ],
 }
 
@@ -2479,17 +3352,27 @@ export const imageBlock: BlockDefinition = {
  * 2. GALLERY / IMAGE GRID — repeater (list) options
  * ═════════════════════════════════════════════════════════════════════════*/
 const GalleryView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { images, columns, gap, rounded } = node.attrs
+  const { images, columns, gap, rounded, aspect, objectFit, hoverZoom, openFull } = node.attrs
+  const cls = cx('w-full', IMG_ASPECT[aspect] ?? 'aspect-square',
+    objectFit === 'contain' ? 'object-contain' : 'object-cover',
+    rounded && 'rounded-lg',
+    hoverZoom && 'transition-transform duration-300 hover:scale-105')
+  const cell = (img: { src: string; alt: string }, i: number) =>
+    img?.src ? (
+      openFull ? (
+        <a key={i} href={img.src} target="_blank" rel="noopener noreferrer">
+          <img src={img.src} alt={img.alt || ''} className={cls} />
+        </a>
+      ) : (
+        <img key={i} src={img.src} alt={img.alt || ''} className={cls} />
+      )
+    ) : (
+      <EmptyImageBox key={i} label={`image ${i + 1}`} className={cx('w-full', IMG_ASPECT[aspect] ?? 'aspect-square')} />
+    )
   return (
     <NodeViewWrapper data-block="gallery" className={cx('my-2', selected && 'ring-2 ring-brand-blue ring-offset-2 rounded-lg')} data-drag-handle>
       <div className="grid" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))`, gap: `${gap}px` }}>
-        {(images as { src: string; alt: string }[]).map((img, i) =>
-          img?.src ? (
-            <img key={i} src={img.src} alt={img.alt || ''} className={cx('aspect-square w-full object-cover', rounded && 'rounded-lg')} />
-          ) : (
-            <EmptyImageBox key={i} label={`image ${i + 1}`} className="aspect-square w-full" />
-          ),
-        )}
+        {(images as { src: string; alt: string }[]).map(cell)}
       </div>
     </NodeViewWrapper>
   )
@@ -2505,23 +3388,33 @@ const GalleryNode = Node.create({
       columns: { default: 3, renderHTML: suppress },
       gap: { default: 12, renderHTML: suppress },
       rounded: { default: true, renderHTML: suppress },
+      aspect: { default: '1/1', renderHTML: suppress },
+      objectFit: { default: 'cover', renderHTML: suppress },
+      mobileColumns: { default: 2, renderHTML: suppress },
+      openFull: { default: false, renderHTML: suppress },
+      hoverZoom: { default: false, renderHTML: suppress },
     }
   },
   parseHTML() {
     return [{ tag: 'div[data-block="gallery"]' }]
   },
   renderHTML({ node, HTMLAttributes }) {
-    const { images, columns, gap, rounded } = node.attrs
+    const { images, columns, gap, rounded, aspect, objectFit, mobileColumns, openFull, hoverZoom } = node.attrs
+    const imgCls = cx('w-full', IMG_ASPECT[aspect] ?? 'aspect-square', objectFit === 'contain' ? 'object-contain' : 'object-cover',
+      rounded && 'rounded-lg', hoverZoom && 'transition-transform duration-300 hover:scale-105')
     return [
       'div',
       mergeAttributes(HTMLAttributes, {
         'data-block': 'gallery',
         class: 'my-6 grid',
-        style: `grid-template-columns:repeat(${columns},minmax(0,1fr));gap:${gap}px`,
+        style: `grid-template-columns:repeat(${columns},minmax(0,1fr));gap:${gap}px;--mobile-cols:${mobileColumns}`,
       }),
       ...(images as { src: string; alt: string }[])
         .filter((i) => i?.src)
-        .map((img) => ['img', { src: img.src, alt: img.alt || '', class: cx('aspect-square w-full object-cover', rounded && 'rounded-lg') }]),
+        .map((img) => {
+          const el: any = ['img', { src: img.src, alt: img.alt || '', class: imgCls }]
+          return openFull ? ['a', { href: img.src, target: '_blank', rel: 'noopener noreferrer' }, el] : el
+        }),
     ]
   },
   addNodeView() {
@@ -2537,7 +3430,8 @@ export const galleryBlock: BlockDefinition = {
   icon: Images,
   keywords: ['gallery', 'grid', 'photos', 'masonry'],
   node: GalleryNode,
-  defaults: { images: [{ src: '', alt: '' }, { src: '', alt: '' }, { src: '', alt: '' }], columns: 3, gap: 12, rounded: true },
+  defaults: { images: [{ src: '', alt: '' }, { src: '', alt: '' }, { src: '', alt: '' }], columns: 3, gap: 12, rounded: true,
+    aspect: '1/1', objectFit: 'cover', mobileColumns: 2, openFull: false, hoverZoom: false },
   options: [
     {
       key: 'columns',
@@ -2551,6 +3445,37 @@ export const galleryBlock: BlockDefinition = {
     },
     { key: 'gap', label: 'Gap (px)', type: 'range', min: 0, max: 32, step: 4 },
     { key: 'rounded', label: 'Rounded corners', type: 'toggle' },
+    {
+      key: 'aspect',
+      label: 'Aspect ratio',
+      type: 'select',
+      choices: [
+        { label: '1 / 1 (square)', value: '1/1' },
+        { label: '16 / 9', value: '16/9' },
+        { label: '4 / 3', value: '4/3' },
+        { label: '3 / 2', value: '3/2' },
+      ],
+    },
+    {
+      key: 'objectFit',
+      label: 'Fit',
+      type: 'segmented',
+      choices: [
+        { label: 'Cover', value: 'cover' },
+        { label: 'Contain', value: 'contain' },
+      ],
+    },
+    {
+      key: 'mobileColumns',
+      label: 'Columns on mobile',
+      type: 'segmented',
+      choices: [
+        { label: '1', value: '1' },
+        { label: '2', value: '2' },
+      ],
+    },
+    { key: 'openFull', label: 'Open full size on click', type: 'toggle' },
+    { key: 'hoverZoom', label: 'Slight zoom on hover', type: 'toggle' },
     {
       key: 'images',
       label: 'Images',
@@ -2567,24 +3492,26 @@ export const galleryBlock: BlockDefinition = {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
- * 3. BEFORE / AFTER  (আপনার পুরনো image-duo block — modernized)
+ * 3. BEFORE / AFTER  (your old image-duo block — modernized)
  * ═════════════════════════════════════════════════════════════════════════*/
 const BeforeAfterView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { leftSrc, rightSrc, leftLabel, rightLabel, caption } = node.attrs
+  const { leftSrc, rightSrc, leftLabel, rightLabel, caption, orientation, showLabels, rounded } = node.attrs
   const side = (src: string, label: string) => (
     <div className="flex flex-col gap-2">
       {src ? (
-        <img src={src} alt={label} className="aspect-[4/3] w-full rounded-lg object-cover" />
+        <img src={src} alt={label} className={cx('aspect-[4/3] w-full object-cover', rounded && 'rounded-lg')} />
       ) : (
         <EmptyImageBox label={label} className="aspect-[4/3] w-full" />
       )}
-      <span className="text-center text-[11px] font-semibold uppercase tracking-wider text-slate-500">{label}</span>
+      {showLabels && (
+        <span className="text-center text-[11px] font-semibold uppercase tracking-wider text-slate-500">{label}</span>
+      )}
     </div>
   )
   return (
     <NodeViewWrapper data-block="before-after" className={cx('my-2', selected && 'ring-2 ring-brand-blue ring-offset-2 rounded-lg')} data-drag-handle>
       <figure className="flex flex-col gap-3">
-        <div className="grid grid-cols-2 gap-3">
+        <div className={cx('grid gap-3', orientation === 'vertical' ? 'grid-cols-1' : 'grid-cols-2')}>
           {side(leftSrc, leftLabel)}
           {side(rightSrc, rightLabel)}
         </div>
@@ -2605,13 +3532,39 @@ const BeforeAfterNode = Node.create({
       leftLabel: { default: 'Before', renderHTML: suppress },
       rightLabel: { default: 'After', renderHTML: suppress },
       caption: { default: '', renderHTML: suppress },
+      orientation: { default: 'horizontal', renderHTML: suppress },
+      showLabels: { default: true, renderHTML: suppress },
+      rounded: { default: true, renderHTML: suppress },
     }
   },
   parseHTML() {
     return [{ tag: 'figure[data-block="before-after"]' }]
   },
-  renderHTML({ HTMLAttributes }) {
-    return ['figure', mergeAttributes(HTMLAttributes, { 'data-block': 'before-after', class: 'my-6' })]
+  renderHTML({ node, HTMLAttributes }) {
+    const { leftSrc, rightSrc, leftLabel, rightLabel, caption, orientation, showLabels, rounded } = node.attrs
+    const side = (src: string, label: string): any[] => [
+      'div',
+      { class: 'flex flex-col gap-2' },
+      src
+        ? ['img', { src, alt: label, class: cx('aspect-[4/3] w-full object-cover', rounded && 'rounded-lg') }]
+        : ['span', { class: 'hidden' }],
+      showLabels && label
+        ? ['span', { class: 'block text-center text-[11px] font-semibold uppercase tracking-wider text-slate-500' }, label]
+        : ['span', { class: 'hidden' }],
+    ]
+    return [
+      'figure',
+      mergeAttributes(HTMLAttributes, { 'data-block': 'before-after', class: 'my-6' }),
+      [
+        'div',
+        { class: cx('grid gap-3', orientation === 'vertical' ? 'grid-cols-1' : 'grid-cols-2') },
+        side(leftSrc, leftLabel),
+        side(rightSrc, rightLabel),
+      ],
+      caption
+        ? ['figcaption', { class: 'mt-2 text-center text-xs italic text-slate-500' }, caption]
+        : ['span', { class: 'hidden' }],
+    ]
   },
   addNodeView() {
     return ReactNodeViewRenderer(BeforeAfterView)
@@ -2626,19 +3579,39 @@ export const beforeAfterBlock: BlockDefinition = {
   icon: Columns2,
   keywords: ['before', 'after', 'compare', 'duo', 'slider'],
   node: BeforeAfterNode,
-  defaults: { leftSrc: '', rightSrc: '', leftLabel: 'Before', rightLabel: 'After', caption: '' },
+  defaults: {
+    leftSrc: '',
+    rightSrc: '',
+    leftLabel: 'Before',
+    rightLabel: 'After',
+    caption: '',
+    orientation: 'horizontal',
+    showLabels: true,
+    rounded: true,
+  },
   options: [
     { key: 'leftSrc', label: 'Before image URL', type: 'url' },
     { key: 'rightSrc', label: 'After image URL', type: 'url' },
     { key: 'leftLabel', label: 'Left label', type: 'text' },
     { key: 'rightLabel', label: 'Right label', type: 'text' },
     { key: 'caption', label: 'Caption', type: 'text' },
+    {
+      key: 'orientation',
+      label: 'Layout',
+      type: 'segmented',
+      choices: [
+        { label: 'Side by side', value: 'horizontal' },
+        { label: 'Stacked', value: 'vertical' },
+      ],
+    },
+    { key: 'showLabels', label: 'Show labels', type: 'toggle' },
+    { key: 'rounded', label: 'Rounded corners', type: 'toggle' },
   ],
 }
 
 
 /* ══════════════════════════════════════════════════════════════════════════
- * 4. FULL-WIDTH IMAGE  (পুরনো full-image block — modernized, edge-to-edge)
+ * 4. FULL-WIDTH IMAGE  (old full-image block — modernized, edge-to-edge)
  * ═════════════════════════════════════════════════════════════════════════*/
 const FULL_HEIGHTS: Record<string, string> = {
   auto: 'h-auto',
@@ -2649,18 +3622,37 @@ const FULL_HEIGHTS: Record<string, string> = {
 }
 
 const FullImageView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { src, alt, caption, height, linkUrl } = node.attrs
+  const { src, alt, caption, height, linkUrl, objectPosition, overlay, overlayColor, overlayOpacity, title, subtitle } = node.attrs
   const img = src ? (
-    <img src={src} alt={alt || ''} className={`w-full object-cover ${FULL_HEIGHTS[height] ?? FULL_HEIGHTS.auto}`} />
+    <img
+      src={src}
+      alt={alt || ''}
+      className={`w-full object-cover ${FULL_HEIGHTS[height] ?? FULL_HEIGHTS.auto}`}
+      style={{ objectPosition }}
+    />
   ) : (
     <EmptyImageBox label="image" className={`w-full ${FULL_HEIGHTS[height] ?? FULL_HEIGHTS.md}`} />
   )
   return (
     <NodeViewWrapper data-block="full-image" className={cx('my-2', selected && 'ring-2 ring-brand-blue ring-offset-2 rounded-lg')} data-drag-handle>
       <figure className="w-full">
-        {linkUrl ? (
-          <a href={linkUrl} target="_blank" rel="noopener noreferrer">{img}</a>
-        ) : img}
+        <div className="relative w-full">
+          {linkUrl ? (
+            <a href={linkUrl} target="_blank" rel="noopener noreferrer">{img}</a>
+          ) : img}
+          {overlay && (
+            <div
+              className="pointer-events-none absolute inset-0"
+              style={{ backgroundColor: overlayColor, opacity: Number(overlayOpacity ?? 45) / 100 }}
+            />
+          )}
+          {overlay && (title || subtitle) && (
+            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white">
+              {title && <p className="text-2xl font-extrabold sm:text-4xl">{title}</p>}
+              {subtitle && <p className="mt-2 text-sm opacity-90 sm:text-lg">{subtitle}</p>}
+            </div>
+          )}
+        </div>
         {caption && <figcaption className="mt-2 text-center text-xs italic text-slate-500">{caption}</figcaption>}
       </figure>
     </NodeViewWrapper>
@@ -2678,17 +3670,39 @@ const FullImageNode = Node.create({
       caption: { default: '', renderHTML: suppress },
       height: { default: 'auto', renderHTML: suppress },
       linkUrl: { default: '', renderHTML: suppress },
+      objectPosition: { default: 'center', renderHTML: suppress },
+      overlay: { default: false, renderHTML: suppress },
+      overlayColor: { default: '#00346D', renderHTML: suppress },
+      overlayOpacity: { default: 45, renderHTML: suppress },
+      title: { default: '', renderHTML: suppress },
+      subtitle: { default: '', renderHTML: suppress },
+      mobileHeight: { default: 'sm', renderHTML: suppress },
     }
   },
   parseHTML() { return [{ tag: 'figure[data-block="full-image"]' }] },
   renderHTML({ node, HTMLAttributes }) {
-    const { src, alt, caption, height, linkUrl } = node.attrs
+    const { src, alt, caption, height, linkUrl, objectPosition, overlay, overlayColor, overlayOpacity, title, subtitle } = node.attrs
     const cls = FULL_HEIGHTS[height] ?? FULL_HEIGHTS.auto
-    const img = ['img', { src, alt: alt || '', class: `w-full object-cover ${cls}` }]
+    const img: any = ['img', { src, alt: alt || '', class: `w-full object-cover ${cls}`, style: `object-position:${objectPosition || 'center'}` }]
     return [
       'figure',
       mergeAttributes(HTMLAttributes, { 'data-block': 'full-image', class: 'my-6 w-full' }),
-      linkUrl ? ['a', { href: linkUrl, target: '_blank', rel: 'noopener noreferrer' }, img] : img,
+      [
+        'div',
+        { class: 'relative w-full' },
+        linkUrl ? ['a', { href: linkUrl, target: '_blank', rel: 'noopener noreferrer' }, img] : img,
+        overlay
+          ? ['div', { class: 'pointer-events-none absolute inset-0', style: `background-color:${overlayColor};opacity:${Number(overlayOpacity ?? 45) / 100}` }]
+          : ['span', { class: 'hidden' }],
+        overlay && (title || subtitle)
+          ? [
+              'div',
+              { class: 'pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white' },
+              title ? ['p', { class: 'text-2xl font-extrabold sm:text-4xl' }, title] : ['span', { class: 'hidden' }],
+              subtitle ? ['p', { class: 'mt-2 text-sm opacity-90 sm:text-lg' }, subtitle] : ['span', { class: 'hidden' }],
+            ]
+          : ['span', { class: 'hidden' }],
+      ],
       caption ? ['figcaption', { class: 'mt-2 text-center text-xs italic text-slate-500' }, caption] : ['span', { class: 'hidden' }],
     ]
   },
@@ -2703,7 +3717,11 @@ export const fullImageBlock: BlockDefinition = {
   icon: Maximize2,
   keywords: ['full', 'wide', 'hero', 'banner', 'cover', 'edge'],
   node: FullImageNode,
-  defaults: { src: '', alt: '', caption: '', height: 'auto', linkUrl: '' },
+  defaults: {
+    src: '', alt: '', caption: '', height: 'auto', linkUrl: '',
+    objectPosition: 'center', overlay: false, overlayColor: '#00346D', overlayOpacity: 45,
+    title: '', subtitle: '', mobileHeight: 'sm',
+  },
   options: [
     { key: 'src', label: 'Image URL', type: 'url', placeholder: 'https://…' },
     { key: 'alt', label: 'Alt text (SEO)', type: 'text' },
@@ -2721,11 +3739,36 @@ export const fullImageBlock: BlockDefinition = {
       ],
     },
     { key: 'linkUrl', label: 'Link (optional)', type: 'url' },
+    {
+      key: 'objectPosition',
+      label: 'Focal point',
+      type: 'select',
+      choices: [
+        { label: 'Centre', value: 'center' },
+        { label: 'Top', value: 'top' },
+        { label: 'Bottom', value: 'bottom' },
+      ],
+    },
+    {
+      key: 'mobileHeight',
+      label: 'Height on mobile',
+      type: 'select',
+      choices: [
+        { label: 'Small (240px)', value: 'sm' },
+        { label: 'Medium (380px)', value: 'md' },
+        { label: 'Large (520px)', value: 'lg' },
+      ],
+    },
+    { key: 'overlay', label: 'Show overlay / hero text', type: 'toggle' },
+    { key: 'title', label: 'Overlay title', type: 'text' },
+    { key: 'subtitle', label: 'Overlay subtitle', type: 'text' },
+    { key: 'overlayColor', label: 'Overlay colour', type: 'color' },
+    { key: 'overlayOpacity', label: 'Overlay opacity (%)', type: 'range', min: 0, max: 90, step: 5 },
   ],
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
- * 5. IMAGE + TEXT  (পুরনো image-text block — modernized)
+ * 5. IMAGE + TEXT  (old image-text block — modernized)
  * ═════════════════════════════════════════════════════════════════════════*/
 const ASPECTS: Record<string, string> = {
   '16/9': 'aspect-video',
@@ -2735,23 +3778,38 @@ const ASPECTS: Record<string, string> = {
 }
 
 const ImageTextView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { imageUrl, imagePosition, aspect, heading, body, linkUrl, alt } = node.attrs
+  const { imageUrl, imagePosition, aspect, heading, body, linkUrl, alt, bg, padding, verticalAlign, reverseOnMobile, gap, buttonLabel, buttonUrl } = node.attrs
   const imgEl = imageUrl ? (
     <img src={imageUrl} alt={alt || ''} className={`w-full h-full object-cover rounded-xl ${ASPECTS[aspect] ?? 'aspect-square'}`} />
   ) : (
     <EmptyImageBox label="image" className={`w-full ${ASPECTS[aspect] ?? 'aspect-square'}`} />
   )
+  const align = verticalAlign === 'start' ? 'items-start' : verticalAlign === 'end' ? 'items-end' : 'items-center'
+  const bgCls = bg === 'white' ? 'bg-white' : bg === 'light' ? 'bg-slate-50' : ''
   return (
     <NodeViewWrapper data-block="image-text" className={cx('my-2', selected && 'ring-2 ring-brand-blue ring-offset-2 rounded-lg')} data-drag-handle>
-      <div className="grid items-center gap-6 sm:gap-8" style={{ gridTemplateColumns: '1fr 1fr' }}>
-        <div className={imagePosition === 'right' ? 'sm:order-2' : 'sm:order-1'}>
+      <div
+        className={cx('grid', align, bgCls)}
+        style={{ gridTemplateColumns: '1fr 1fr', gap: `${gap ?? 24}px`, padding: `${padding ?? 0}px` }}
+      >
+        <div className={cx(imagePosition === 'right' ? 'sm:order-2' : 'sm:order-1', !reverseOnMobile && 'order-2')}>
           {linkUrl && imageUrl ? (
             <a href={linkUrl} target="_blank" rel="noopener noreferrer">{imgEl}</a>
           ) : imgEl}
         </div>
-        <div className={imagePosition === 'right' ? 'sm:order-1' : 'sm:order-2'}>
+        <div className={cx(imagePosition === 'right' ? 'sm:order-1' : 'sm:order-2', !reverseOnMobile && 'order-1')}>
           {heading && <h3 className="mb-2 text-xl font-bold text-slate-900">{heading}</h3>}
           {body && <div className="text-sm leading-relaxed text-slate-600" dangerouslySetInnerHTML={{ __html: body }} />}
+          {buttonLabel && buttonUrl && (
+            <a
+              href={buttonUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+              {buttonLabel}
+            </a>
+          )}
         </div>
       </div>
     </NodeViewWrapper>
@@ -2771,26 +3829,41 @@ const ImageTextNode = Node.create({
       heading: { default: '', renderHTML: suppress },
       body: { default: '', renderHTML: suppress },
       linkUrl: { default: '', renderHTML: suppress },
+      bg: { default: 'none', renderHTML: suppress },
+      padding: { default: 0, renderHTML: suppress },
+      verticalAlign: { default: 'center', renderHTML: suppress },
+      reverseOnMobile: { default: true, renderHTML: suppress },
+      gap: { default: 24, renderHTML: suppress },
+      buttonLabel: { default: '', renderHTML: suppress },
+      buttonUrl: { default: '', renderHTML: suppress },
     }
   },
   parseHTML() { return [{ tag: 'div[data-block="image-text"]' }] },
   renderHTML({ node, HTMLAttributes }) {
     const { imageUrl, alt, imagePosition, aspect, heading, body, linkUrl } = node.attrs
+    const { bg, padding, verticalAlign, reverseOnMobile, gap, buttonLabel, buttonUrl } = node.attrs
     const img = ['img', { src: imageUrl, alt: alt || '', class: `w-full h-full object-cover rounded-xl ${ASPECTS[aspect] ?? 'aspect-square'}` }]
+    const align = verticalAlign === 'start' ? 'items-start' : verticalAlign === 'end' ? 'items-end' : 'items-center'
+    const bgCls = bg === 'white' ? 'bg-white' : bg === 'light' ? 'bg-slate-50' : ''
+    const order = (first: boolean) =>
+      cx((imagePosition === 'right') === first ? 'sm:order-2' : 'sm:order-1', !reverseOnMobile && (first ? 'order-2' : 'order-1'))
     return [
       'div',
       mergeAttributes(HTMLAttributes, {
         'data-block': 'image-text',
-        class: 'my-6 grid items-center gap-6 sm:gap-8',
-        style: 'grid-template-columns:1fr 1fr',
+        class: cx('my-6 grid', align, bgCls),
+        style: `grid-template-columns:1fr 1fr;gap:${gap ?? 24}px;padding:${padding ?? 0}px`,
       }),
-      ['div', { class: imagePosition === 'right' ? 'sm:order-2' : 'sm:order-1' },
+      ['div', { class: order(true) },
         linkUrl && imageUrl
           ? ['a', { href: linkUrl, target: '_blank', rel: 'noopener noreferrer' }, img]
           : img],
-      ['div', { class: imagePosition === 'right' ? 'sm:order-1' : 'sm:order-2' },
+      ['div', { class: order(false) },
         heading ? ['h3', { class: 'mb-2 text-xl font-bold text-slate-900' }, heading] : ['span', { class: 'hidden' }],
-        body ? ['div', { class: 'text-sm leading-relaxed text-slate-600 [&_a]:text-blue-600 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_p]:mb-2' }, body] : ['span', { class: 'hidden' }]],
+        body ? ['div', { class: 'text-sm leading-relaxed text-slate-600 [&_a]:text-blue-600 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_p]:mb-2' }, body] : ['span', { class: 'hidden' }],
+        buttonLabel && buttonUrl
+          ? ['div', { class: 'mt-4' }, ['a', { href: buttonUrl, target: '_blank', rel: 'noopener noreferrer', class: 'inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700' }, buttonLabel]]
+          : ['span', { class: 'hidden' }]],
     ]
   },
   addNodeView() { return ReactNodeViewRenderer(ImageTextView) },
@@ -2804,7 +3877,10 @@ export const imageTextBlock: BlockDefinition = {
   icon: Columns2,
   keywords: ['image text', 'side by side', 'feature', 'split'],
   node: ImageTextNode,
-  defaults: { imageUrl: '', alt: '', imagePosition: 'left', aspect: '1/1', heading: '', body: '', linkUrl: '' },
+  defaults: {
+    imageUrl: '', alt: '', imagePosition: 'left', aspect: '1/1', heading: '', body: '', linkUrl: '',
+    bg: 'none', padding: 0, verticalAlign: 'center', reverseOnMobile: true, gap: 24, buttonLabel: '', buttonUrl: '',
+  },
   options: [
     { key: 'imageUrl', label: 'Image URL', type: 'url' },
     { key: 'alt', label: 'Alt text (SEO)', type: 'text' },
@@ -2831,27 +3907,53 @@ export const imageTextBlock: BlockDefinition = {
       ],
     },
     { key: 'linkUrl', label: 'Image link (optional)', type: 'url' },
+    { key: 'gap', label: 'Gap between image and text (px)', type: 'range', min: 8, max: 80, step: 4 },
+    {
+      key: 'verticalAlign',
+      label: 'Vertical align',
+      type: 'segmented',
+      choices: [
+        { label: 'Top', value: 'start' },
+        { label: 'Middle', value: 'center' },
+        { label: 'Bottom', value: 'end' },
+      ],
+    },
+    { key: 'reverseOnMobile', label: 'Show image first on mobile', type: 'toggle' },
+    {
+      key: 'bg',
+      label: 'Background',
+      type: 'select',
+      choices: [
+        { label: 'None', value: 'none' },
+        { label: 'White', value: 'white' },
+        { label: 'Light grey', value: 'light' },
+      ],
+    },
+    { key: 'padding', label: 'Padding (px)', type: 'range', min: 0, max: 80, step: 4 },
+    { key: 'buttonLabel', label: 'Button label', type: 'text' },
+    { key: 'buttonUrl', label: 'Button link', type: 'url' },
   ],
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
  * 6. VIDEO  (YouTube / Vimeo / MP4)
  * ═════════════════════════════════════════════════════════════════════════*/
-export function videoEmbedUrl(url: string): string | null {
+export function videoEmbedUrl(url: string, privacy = false): string | null {
   if (!url) return null
   const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{6,})/)
-  if (yt) return `https://www.youtube.com/embed/${yt[1]}`
+  if (yt) return `https://www.youtube${privacy ? '-nocookie' : ''}.com/embed/${yt[1]}`
   const vm = url.match(/vimeo\.com\/(\d+)/)
   if (vm) return `https://player.vimeo.com/video/${vm[1]}`
   return null
 }
 
 const VideoView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { url, caption, aspect, autoplay, muted, loop, controls } = node.attrs
-  const embed = videoEmbedUrl(url)
+  const { url, caption, aspect, autoplay, muted, loop, controls, poster, rounded, shadow, maxWidth, privacy } = node.attrs
+  const embed = videoEmbedUrl(url, privacy)
+  const cls = cx('w-full', ASPECTS[aspect] ?? 'aspect-video', rounded && 'rounded-xl', shadow && 'shadow-lg')
   return (
     <NodeViewWrapper data-block="video" className={cx('my-2', selected && 'ring-2 ring-brand-blue ring-offset-2 rounded-lg')} data-drag-handle>
-      <figure>
+      <figure style={{ maxWidth: `${maxWidth ?? 100}%`, marginLeft: 'auto', marginRight: 'auto' }}>
         {!url ? (
           <EmptyImageBox label="video" className={`w-full ${ASPECTS[aspect] ?? 'aspect-video'}`} />
         ) : embed ? (
@@ -2860,16 +3962,17 @@ const VideoView = ({ node, selected }: { node: any; selected: boolean }) => {
             title={caption || 'Video'}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
-            className={`w-full rounded-xl ${ASPECTS[aspect] ?? 'aspect-video'}`}
+            className={cls}
           />
         ) : (
           <video
             src={url}
+            poster={poster || undefined}
             controls={controls}
             autoPlay={autoplay}
             muted={muted}
             loop={loop}
-            className={`w-full rounded-xl bg-black ${ASPECTS[aspect] ?? 'aspect-video'}`}
+            className={cx(cls, 'bg-black')}
           />
         )}
         {caption && <figcaption className="mt-2 text-center text-xs italic text-slate-500">{caption}</figcaption>}
@@ -2891,21 +3994,30 @@ const VideoNode = Node.create({
       muted: { default: true, renderHTML: suppress },
       loop: { default: false, renderHTML: suppress },
       controls: { default: true, renderHTML: suppress },
+      poster: { default: '', renderHTML: suppress },
+      rounded: { default: true, renderHTML: suppress },
+      shadow: { default: false, renderHTML: suppress },
+      maxWidth: { default: 100, renderHTML: suppress },
+      privacy: { default: false, renderHTML: suppress },
     }
   },
   parseHTML() { return [{ tag: 'figure[data-block="video"]' }] },
   renderHTML({ node, HTMLAttributes }) {
-    const { url, caption, aspect, autoplay, muted, loop, controls } = node.attrs
-    const embed = videoEmbedUrl(url)
-    const cls = `w-full rounded-xl ${ASPECTS[aspect] ?? 'aspect-video'}`
-    const inner = !url
+    const { url, caption, aspect, autoplay, muted, loop, controls, poster, rounded, shadow, maxWidth, privacy } = node.attrs
+    const embed = videoEmbedUrl(url, privacy)
+    const cls = cx('w-full', ASPECTS[aspect] ?? 'aspect-video', rounded && 'rounded-xl', shadow && 'shadow-lg')
+    const inner: any = !url
       ? ['div', { class: cls }]
       : embed
         ? ['iframe', { src: `${embed}${autoplay ? '?autoplay=1' : ''}`, title: caption || 'Video', allowfullscreen: 'true', allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture', class: cls }]
-        : ['video', { src: url, controls: controls ? 'true' : 'false', autoplay: autoplay ? 'true' : 'false', muted: muted ? 'true' : 'false', loop: loop ? 'true' : 'false', class: cls }]
+        : ['video', { src: url, ...(poster ? { poster } : {}), controls: controls ? 'true' : 'false', autoplay: autoplay ? 'true' : 'false', muted: muted ? 'true' : 'false', loop: loop ? 'true' : 'false', class: cx(cls, 'bg-black') }]
     return [
       'figure',
-      mergeAttributes(HTMLAttributes, { 'data-block': 'video', class: 'my-6' }),
+      mergeAttributes(HTMLAttributes, {
+        'data-block': 'video',
+        class: 'my-6',
+        style: `max-width:${maxWidth ?? 100}%;margin-left:auto;margin-right:auto`,
+      }),
       inner,
       caption ? ['figcaption', { class: 'mt-2 text-center text-xs italic text-slate-500' }, caption] : ['span', { class: 'hidden' }],
     ]
@@ -2921,7 +4033,10 @@ export const videoBlock: BlockDefinition = {
   icon: Play,
   keywords: ['video', 'youtube', 'vimeo', 'mp4', 'embed'],
   node: VideoNode,
-  defaults: { url: '', caption: '', aspect: '16/9', autoplay: false, muted: true, loop: false, controls: true },
+  defaults: {
+    url: '', caption: '', aspect: '16/9', autoplay: false, muted: true, loop: false, controls: true,
+    poster: '', rounded: true, shadow: false, maxWidth: 100, privacy: false,
+  },
   options: [
     { key: 'url', label: 'Video URL (YouTube / Vimeo / .mp4)', type: 'url' },
     { key: 'caption', label: 'Caption', type: 'text' },
@@ -2935,10 +4050,15 @@ export const videoBlock: BlockDefinition = {
         { label: '1 / 1', value: '1/1' },
       ],
     },
+    { key: 'poster', label: 'Poster image URL (MP4)', type: 'url' },
     { key: 'autoplay', label: 'Autoplay', type: 'toggle' },
     { key: 'muted', label: 'Muted', type: 'toggle' },
     { key: 'loop', label: 'Loop', type: 'toggle' },
     { key: 'controls', label: 'Show controls (MP4)', type: 'toggle' },
+    { key: 'privacy', label: 'YouTube privacy mode (nocookie)', type: 'toggle' },
+    { key: 'maxWidth', label: 'Max width (%)', type: 'range', min: 40, max: 100, step: 5 },
+    { key: 'rounded', label: 'Rounded corners', type: 'toggle' },
+    { key: 'shadow', label: 'Drop shadow', type: 'toggle' },
   ],
 }
 
@@ -2946,20 +4066,22 @@ export const videoBlock: BlockDefinition = {
  * 7. EMBED  (generic iframe — map, social post, airtable…)
  * ═════════════════════════════════════════════════════════════════════════*/
 const EmbedView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { url, title, height } = node.attrs
+  const { url, title, height, maxWidth, rounded, border } = node.attrs
   return (
     <NodeViewWrapper data-block="embed" className={cx('my-2', selected && 'ring-2 ring-brand-blue ring-offset-2 rounded-lg')} data-drag-handle>
-      {url ? (
-        <iframe
-          src={url}
-          title={title || 'Embedded content'}
-          style={{ height: `${height}px` }}
-          className="w-full rounded-xl border border-slate-200"
-          loading="lazy"
-        />
-      ) : (
-        <EmptyImageBox label="embed URL" className="w-full" />
-      )}
+      <div style={{ maxWidth: `${maxWidth ?? 100}%`, marginLeft: 'auto', marginRight: 'auto' }}>
+        {url ? (
+          <iframe
+            src={url}
+            title={title || 'Embedded content'}
+            style={{ height: `${height}px` }}
+            className={cx('w-full', rounded && 'rounded-xl', border && 'border border-slate-200')}
+            loading="lazy"
+          />
+        ) : (
+          <EmptyImageBox label="embed URL" className="w-full" />
+        )}
+      </div>
     </NodeViewWrapper>
   )
 }
@@ -2973,16 +4095,23 @@ const EmbedNode = Node.create({
       url: { default: '', renderHTML: suppress },
       title: { default: 'Embedded content', renderHTML: suppress },
       height: { default: 420, renderHTML: suppress },
+      maxWidth: { default: 100, renderHTML: suppress },
+      rounded: { default: true, renderHTML: suppress },
+      border: { default: true, renderHTML: suppress },
     }
   },
   parseHTML() { return [{ tag: 'div[data-block="embed"]' }] },
   renderHTML({ node, HTMLAttributes }) {
-    const { url, title, height } = node.attrs
+    const { url, title, height, maxWidth, rounded, border } = node.attrs
     return [
       'div',
-      mergeAttributes(HTMLAttributes, { 'data-block': 'embed', class: 'my-6' }),
+      mergeAttributes(HTMLAttributes, {
+        'data-block': 'embed',
+        class: 'my-6',
+        style: `max-width:${maxWidth ?? 100}%;margin-left:auto;margin-right:auto`,
+      }),
       url
-        ? ['iframe', { src: url, title, loading: 'lazy', style: `height:${height}px`, class: 'w-full rounded-xl border border-slate-200' }]
+        ? ['iframe', { src: url, title, loading: 'lazy', style: `height:${height}px`, class: cx('w-full', rounded && 'rounded-xl', border && 'border border-slate-200') }]
         : ['div', { class: 'w-full' }],
     ]
   },
@@ -2997,11 +4126,14 @@ export const embedBlock: BlockDefinition = {
   icon: Code2,
   keywords: ['embed', 'iframe', 'map', 'calendar', 'social'],
   node: EmbedNode,
-  defaults: { url: '', title: 'Embedded content', height: 420 },
+  defaults: { url: '', title: 'Embedded content', height: 420, maxWidth: 100, rounded: true, border: true },
   options: [
     { key: 'url', label: 'Embed URL', type: 'url', placeholder: 'https://…' },
     { key: 'title', label: 'Title (accessibility)', type: 'text' },
     { key: 'height', label: 'Height (px)', type: 'range', min: 200, max: 900, step: 20 },
+    { key: 'maxWidth', label: 'Max width (%)', type: 'range', min: 40, max: 100, step: 5 },
+    { key: 'rounded', label: 'Rounded corners', type: 'toggle' },
+    { key: 'border', label: 'Border', type: 'toggle' },
   ],
 }
 
@@ -3014,15 +4146,16 @@ export const mediaBlocks: BlockDefinition[] = [
   videoBlock,
   embedBlock,
 ]
+
 ```
 
 <!-- FILE: components/editor/commands.ts -->
-```ts
+```
 import type { Editor } from '@tiptap/core'
 import { getBlock } from './registry'
 import type { InserterItem } from './types'
 
-/** top-level doc child index — position (pos) দিয়ে */
+/** Index of a top-level doc child — by position (pos) */
 export function blockIndexAt(editor: Editor, pos: number): number {
   let found = -1
   editor.state.doc.forEach((_node, offset, index) => {
@@ -3035,7 +4168,7 @@ export function nodeAt(editor: Editor, pos: number) {
   return editor.state.doc.resolve(pos).nodeAfter
 }
 
-/** block উপরে/নিচে সরানো */
+/** Move a block up / down */
 export function moveBlock(editor: Editor, pos: number, dir: -1 | 1) {
   const { state } = editor
   const { doc } = state
@@ -3070,7 +4203,7 @@ export function deleteBlock(editor: Editor, pos: number) {
   editor.view.dispatch(editor.state.tr.delete(pos, pos + node.nodeSize))
 }
 
-/** block কে অন্য block-এ রূপান্তর (Turn into) */
+/** Convert a block into another block (Turn into) */
 export function turnInto(editor: Editor, pos: number, type: string, attrs?: Record<string, unknown>) {
   const { state } = editor
   const node = nodeAt(editor, pos)
@@ -3079,7 +4212,7 @@ export function turnInto(editor: Editor, pos: number, type: string, attrs?: Reco
   const TEXT_TYPES = ['paragraph', 'heading', 'bulletList', 'orderedList', 'blockquote', 'codeBlock']
   const def = getBlock(type)
 
-  // textblock → textblock: লেখা রেখে শুধু type বদলায়
+  // textblock → textblock: keeps the text and only changes the type
   if (node.isTextblock && TEXT_TYPES.includes(type)) {
     editor.chain().focus().setTextSelection(pos + 1).run()
     if (def?.insert) def.insert({ editor, attrs: { ...(def.defaults ?? {}), ...attrs } })
@@ -3101,7 +4234,7 @@ export function insertAfter(editor: Editor, pos: number, item: InserterItem) {
   const attrs = { ...(def?.defaults ?? {}), ...(item.attrs ?? {}) }
 
   if (def?.insert) {
-    // core block: নতুন paragraph বসিয়ে সেখানে convert করি
+    // core block: insert a new paragraph and convert there
     editor.chain().focus().insertContentAt(at, { type: 'paragraph' }).run()
     def.insert({ editor, attrs })
     return
@@ -3109,13 +4242,13 @@ export function insertAfter(editor: Editor, pos: number, item: InserterItem) {
   editor.chain().focus().insertContentAt(at, { type: item.blockName, attrs }).run()
 }
 
-/** current selection-এর block বের করা (inspector + outline এর জন্য) */
+/** Get the block at the current selection (for inspector + outline) */
 export function activeBlock(editor: Editor) {
   if (!editor || !editor.state) return null
   const { state } = editor
   const sel = state.selection
 
-  // NodeSelection (image/gallery-এর মতো node ক্লিক করে সিলেক্ট করলে)
+  // NodeSelection (when a node like image/gallery is clicked and selected)
   if ((sel as any).node) {
     const node = (sel as any).node
     return { name: node.type.name, attrs: { ...node.attrs }, pos: sel.from }
@@ -3128,10 +4261,11 @@ export function activeBlock(editor: Editor) {
   if (!node) return null
   return { name: node.type.name, attrs: { ...node.attrs }, pos: $from.before(depth) }
 }
+
 ```
 
 <!-- FILE: components/editor/demoContent.ts -->
-```ts
+```
 import { demoImage } from './blocks/helpers'
 
 const img = (label: string, from: string, to: string) => demoImage(label, from, to)
@@ -3372,6 +4506,7 @@ export const demoDoc = {
     { type: 'paragraph', attrs: { textAlign: 'left' }, content: [] },
   ],
 }
+
 ```
 
 <!-- FILE: components/editor/editor.css -->
@@ -3379,14 +4514,14 @@ export const demoDoc = {
 /* ══════════════════════════════════════════════════════════════════════════
  *  editor.css — portable stylesheet for the block editor
  *
- *  এটা Tailwind-এর ওপর নির্ভর করে না (plain CSS) — যেকোনো প্রজেক্টে চলবে।
- *  brand রঙগুলো 10centagency-এর Tailwind theme থেকে নেওয়া:
+ *  It does not depend on Tailwind (plain CSS) — works in any project.
+ *  The brand colours come from the 10centagency Tailwind theme:
  *    navy #00346D · blue #2F85F3 · accent #B6D7FF
  *    textDark #16324F · textMid #5C718A · border #D9E8FA
  *
- *  প্রয়োগ:
- *    .tiptap-canvas   → admin editor-এর লেখার এলাকা
- *    .doc-content     → public page-এ render করা HTML-এর wrapper
+ *  Usage:
+ *    .tiptap-canvas   → the writing area in the admin editor
+ *    .doc-content     → wrapper around the rendered HTML on the public page
  * ══════════════════════════════════════════════════════════════════════════*/
 
 /* ── 1. Editor canvas ─────────────────────────────────────────────────── */
@@ -3452,7 +4587,7 @@ export const demoDoc = {
   color: #94a3b8;
 }
 
-/* selected node (image/gallery click করলে) */
+/* selected node (when an image/gallery is clicked) */
 .tiptap-canvas .ProseMirror .ProseMirror-selectednode {
   outline: 2px solid #2f85f3;
   outline-offset: 2px;
@@ -3545,10 +4680,158 @@ export const demoDoc = {
 /* ── 5. Misc ──────────────────────────────────────────────────────────── */
 .raw-html { width: 100%; }
 .raw-html iframe { max-width: 100%; }
+
+/* ── 6. Columns — background / padding / border (inspector option) ────── */
+:is(.doc-content, .preview-content, .tiptap-canvas) [data-block="column"] {
+  background: var(--column-bg, transparent);
+  padding: var(--column-pad, 0px);
+  border: var(--column-border, 0);
+  border-radius: 8px;
+}
+
+/* ── 7. Table styles (driven by inspector options) ───────────────────────── */
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-borders="none"] th,
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-borders="none"] td {
+  border: 0;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-borders="horizontal"] th,
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-borders="horizontal"] td {
+  border-left: 0;
+  border-right: 0;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-striped="true"] tbody tr:nth-child(even) {
+  background: #f8fbff;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-compact="true"] th,
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-compact="true"] td {
+  padding: 0.35rem 0.5rem;
+  font-size: 0.85rem;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-hover="true"] tbody tr:hover {
+  background: #eef6ff;
+}
+
+/* ── 8. Responsive — multi-column blocks stack on mobile ─────────── */
+@media (max-width: 640px) {
+  :is(.doc-content, .preview-content) [data-block="columns"],
+  :is(.doc-content, .preview-content) [data-block="stats"],
+  :is(.doc-content, .preview-content) [data-block="image-text"],
+  :is(.doc-content, .preview-content) [data-block="pricing"] > div:last-of-type,
+  :is(.doc-content, .preview-content) [data-block="team"] > div:last-of-type {
+    grid-template-columns: 1fr !important;
+  }
+  /* images/logos — two columns still look good on mobile */
+  :is(.doc-content, .preview-content) [data-block="gallery"],
+  :is(.doc-content, .preview-content) [data-block="logo-grid"] > div:last-of-type {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  /* tables — do not break the page; the table itself scrolls */
+  :is(.doc-content, .preview-content) table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 360px) {
+  :is(.doc-content, .preview-content) [data-block="gallery"],
+  :is(.doc-content, .preview-content) [data-block="logo-grid"] > div:last-of-type {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── 9. Text block styling (inspector options) ─────────────────────── */
+
+/* Blockquote — variant + citation (citation shown via ::after) */
+:is(.doc-content, .preview-content, .tiptap-canvas) blockquote[data-quote="card"] {
+  margin: 1.5rem 0;
+  padding: 1.25rem 1.5rem;
+  border-left-width: 4px;
+  border-radius: 0.75rem;
+  background: #f8fbff;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) blockquote[data-quote="centered"] {
+  margin: 2rem 0;
+  padding: 0 1rem;
+  border: 0;
+  text-align: center;
+  font-size: 1.15rem;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) blockquote[data-quote="plain"] {
+  border: 0;
+  padding-left: 0;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) blockquote[data-citation]:not([data-citation=""])::after {
+  content: attr(data-citation);
+  display: block;
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  font-style: normal;
+  font-weight: 600;
+  color: #16324f;
+}
+
+/* Code block — theme + line numbers */
+:is(.doc-content, .preview-content, .tiptap-canvas) pre[data-theme="light"] {
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 1px solid #d9e8fa;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) pre[data-language]:not([data-language=""]) {
+  position: relative;
+  padding-top: 2.1rem;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) pre[data-language]:not([data-language=""])::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) pre[data-linenumbers="true"] {
+  counter-reset: line;
+  padding-left: 0;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) pre[data-linenumbers="true"] code {
+  display: block;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) pre[data-linenumbers="true"] code > * {
+  display: block;
+}
+
+/* Gallery — columns on mobile (inspector option) */
+@media (max-width: 640px) {
+  :is(.doc-content, .preview-content, .tiptap-canvas) [data-block="gallery"] {
+    grid-template-columns: repeat(var(--mobile-cols, 2), minmax(0, 1fr)) !important;
+  }
+}
+
+/* Columns — reverse order on mobile (inspector option) */
+@media (max-width: 640px) {
+  :is(.doc-content, .preview-content, .tiptap-canvas) [data-reverse-mobile="true"] {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+}
+
+/* ── 10. Table — header background + sticky header (inspector option) ────── */
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-header-bg] th,
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-header-bg] thead td {
+  background: var(--table-header-bg, transparent);
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-sticky="true"] thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
 ```
 
 <!-- FILE: components/editor/extensions/slashCommand.ts -->
-```ts
+```
 import { Extension } from '@tiptap/core'
 import Suggestion from '@tiptap/suggestion'
 import { ReactRenderer } from '@tiptap/react'
@@ -3557,8 +4840,8 @@ import { insertBlock, searchBlocks } from '../registry'
 import type { InserterItem } from '../types'
 
 /**
- * Slash command ("/") — registry থেকে সরাসরি items আসে,
- * তাই নতুন block যোগ করলে স্ল্যাশ মেনুতেও সাথে সাথে চলে আসে।
+ * Slash command ("/") — items come straight from the registry,
+ * so a newly added block appears in the slash menu immediately.
  */
 export const SlashCommand = Extension.create({
   name: 'slashCommand',
@@ -3631,25 +4914,316 @@ export const SlashCommand = Extension.create({
 })
 
 type SlashListProps = { items: InserterItem[]; command: (item: InserterItem) => void }
+
+```
+
+<!-- FILE: components/editor/extensions/tableStyles.ts -->
+```
+import { Extension } from '@tiptap/core'
+import { Plugin, PluginKey } from '@tiptap/pm/state'
+
+/**
+ * TableStyles — TableKit itself provides no style options,
+ * so we add attributes that can be controlled from the inspector.
+ *
+ * ⚠️ Two special things:
+ * 1. A resizable table uses Tiptap TableView, which does not apply the node
+ *    renderHTML attributes to the DOM. So the plugin below
+ *    copies the attributes onto <table> on every document change.
+ * 2. It must be present in BOTH editorExtensions() and renderExtensions(),
+ *    otherwise the attributes are dropped in the server render.
+ */
+export const TableStyles = Extension.create({
+  name: 'tableStyles',
+
+  addGlobalAttributes() {
+    return [
+      {
+        types: ['table'],
+        attributes: {
+          tableBorders: {
+            default: 'all',
+            parseHTML: (el) => el.getAttribute('data-table-borders') || 'all',
+            renderHTML: (attrs) => ({ 'data-table-borders': attrs.tableBorders || 'all' }),
+          },
+          tableStriped: {
+            default: false,
+            parseHTML: (el) => el.getAttribute('data-table-striped') === 'true',
+            renderHTML: (attrs) => (attrs.tableStriped ? { 'data-table-striped': 'true' } : {}),
+          },
+          tableCompact: {
+            default: false,
+            parseHTML: (el) => el.getAttribute('data-table-compact') === 'true',
+            renderHTML: (attrs) => (attrs.tableCompact ? { 'data-table-compact': 'true' } : {}),
+          },
+          tableHover: {
+            default: false,
+            parseHTML: (el) => el.getAttribute('data-table-hover') === 'true',
+            renderHTML: (attrs) => (attrs.tableHover ? { 'data-table-hover': 'true' } : {}),
+          },
+          // Set as a CSS custom property — so it also works on the public page
+          // (background-colour cannot be set with attr(), but var() works)
+          tableHeaderBg: {
+            default: '',
+            parseHTML: (el) => el.getAttribute('data-table-header-bg') || el.style.getPropertyValue('--table-header-bg') || '',
+            renderHTML: (attrs) =>
+              attrs.tableHeaderBg
+                ? { 'data-table-header-bg': String(attrs.tableHeaderBg), style: `--table-header-bg:${attrs.tableHeaderBg}` }
+                : {},
+          },
+          tableSticky: {
+            default: false,
+            parseHTML: (el) => el.getAttribute('data-table-sticky') === 'true',
+            renderHTML: (attrs) => (attrs.tableSticky ? { 'data-table-sticky': 'true' } : {}),
+          },
+        },
+      },
+    ]
+  },
+
+  addProseMirrorPlugins() {
+    const apply = (el: HTMLElement, name: string, value: unknown) => {
+      if (value === null || value === undefined || value === false || value === '') {
+        el.removeAttribute(name)
+      } else {
+        el.setAttribute(name, String(value))
+      }
+    }
+
+    return [
+      new Plugin({
+        key: new PluginKey('tableStylesSync'),
+        view(pmView) {
+          const sync = () => {
+            const { state } = pmView
+            state.doc.descendants((node, pos) => {
+              if (node.type.name !== 'table') return
+              const dom = pmView.nodeDOM(pos)
+              if (!dom || !(dom instanceof HTMLElement)) return
+              const table: HTMLElement | null =
+                dom.tagName === 'TABLE' ? dom : dom.querySelector('table')
+              if (!table) return
+              apply(table, 'data-table-borders', node.attrs.tableBorders || 'all')
+              apply(table, 'data-table-striped', node.attrs.tableStriped ? 'true' : null)
+              apply(table, 'data-table-compact', node.attrs.tableCompact ? 'true' : null)
+              apply(table, 'data-table-hover', node.attrs.tableHover ? 'true' : null)
+              apply(table, 'data-table-sticky', node.attrs.tableSticky ? 'true' : null)
+              if (node.attrs.tableHeaderBg) {
+                apply(table, 'data-table-header-bg', node.attrs.tableHeaderBg)
+                table.style.setProperty('--table-header-bg', String(node.attrs.tableHeaderBg))
+              } else {
+                apply(table, 'data-table-header-bg', null)
+                table.style.removeProperty('--table-header-bg')
+              }
+            })
+          }
+
+          // Must run after TableView is created on the first render
+          requestAnimationFrame(sync)
+          return { update: sync }
+        },
+      }),
+    ]
+  },
+})
+
+```
+
+<!-- FILE: components/editor/extensions/textStyles.ts -->
+```
+import { Extension } from '@tiptap/core'
+
+/**
+ * TextStyles — for the text blocks (paragraph, heading, list, quote, code)
+ * there is no custom node (they come from StarterKit), so we add
+ * styling options via global attributes.
+ *
+ * ⚠️ Must be present in BOTH editorExtensions() and renderExtensions().
+ *
+ * 💡 Tiptap mergeAttributes() joins style values by itself
+ *    (`style="color:…; font-size:…"`), so each attribute can return
+ *    its own style without clashing.
+ */
+
+export const FONT_SIZES: Record<string, string> = {
+  sm: '0.875rem',
+  base: '1rem',
+  lg: '1.125rem',
+  xl: '1.25rem',
+  '2xl': '1.5rem',
+  '3xl': '1.875rem',
+}
+
+export const LINE_HEIGHTS: Record<string, string> = {
+  tight: '1.35',
+  snug: '1.5',
+  normal: '1.7',
+  relaxed: '1.9',
+}
+
+const styleIf = (v: unknown, css: (x: string) => string) =>
+  v && String(v).trim() ? { style: css(String(v)) } : {}
+
+export const TextStyles = Extension.create({
+  name: 'textStyles',
+
+  addGlobalAttributes() {
+    return [
+      /* ── Common text styles ─────────────────────────────────────── */
+      {
+        types: ['paragraph', 'heading', 'blockquote'],
+        attributes: {
+          fontSize: {
+            default: '',
+            parseHTML: (el) => el.getAttribute('data-fs') || '',
+            renderHTML: (attrs) => {
+              const v = FONT_SIZES[attrs.fontSize as string]
+              return styleIf(v, (x) => `font-size:${x}`)
+            },
+          },
+          lineHeight: {
+            default: '',
+            parseHTML: (el) => el.getAttribute('data-lh') || '',
+            renderHTML: (attrs) => {
+              const v = LINE_HEIGHTS[attrs.lineHeight as string]
+              return styleIf(v, (x) => `line-height:${x}`)
+            },
+          },
+          textColor: {
+            default: '',
+            parseHTML: (el) => el.getAttribute('data-tc') || '',
+            renderHTML: (attrs) => styleIf(attrs.textColor, (x) => `color:${x}`),
+          },
+          bgColor: {
+            default: '',
+            parseHTML: (el) => el.getAttribute('data-bc') || '',
+            renderHTML: (attrs) => styleIf(attrs.bgColor, (x) => `background-color:${x}`),
+          },
+          paddingY: {
+            default: 0,
+            parseHTML: (el) => Number(el.getAttribute('data-py') || 0),
+            renderHTML: (attrs) =>
+              Number(attrs.paddingY) > 0
+                ? { style: `padding-top:${attrs.paddingY}px;padding-bottom:${attrs.paddingY}px` }
+                : {},
+          },
+        },
+      },
+
+      /* ── Heading only ─────────────────────────────────────────────── */
+      {
+        types: ['heading'],
+        attributes: {
+          // For TOC block jump links
+          anchorId: {
+            default: '',
+            parseHTML: (el) => el.getAttribute('id') || '',
+            renderHTML: (attrs) => (attrs.anchorId ? { id: String(attrs.anchorId) } : {}),
+          },
+          uppercase: {
+            default: false,
+            parseHTML: (el) => el.getAttribute('data-upper') === 'true',
+            renderHTML: (attrs) =>
+              attrs.uppercase ? { style: 'text-transform:uppercase;letter-spacing:0.04em' } : {},
+          },
+        },
+      },
+
+      /* ── List ──────────────────────────────────────────────────────── */
+      {
+        types: ['bulletList', 'orderedList'],
+        attributes: {
+          listStyle: {
+            default: '',
+            parseHTML: (el) => el.getAttribute('data-list-style') || '',
+            renderHTML: (attrs) => styleIf(attrs.listStyle, (x) => `list-style-type:${x}`),
+          },
+          textColor: {
+            default: '',
+            parseHTML: (el) => el.getAttribute('data-tc') || '',
+            renderHTML: (attrs) => styleIf(attrs.textColor, (x) => `color:${x}`),
+          },
+        },
+      },
+      {
+        types: ['orderedList'],
+        attributes: {
+          start: {
+            default: 1,
+            parseHTML: (el) => Number(el.getAttribute('start') || 1),
+            renderHTML: (attrs) =>
+              Number(attrs.start) > 1 ? { start: String(attrs.start) } : {},
+          },
+        },
+      },
+
+      /* ── Blockquote ────────────────────────────────────────────────── */
+      {
+        types: ['blockquote'],
+        attributes: {
+          // The citation is shown via a CSS ::after (see editor.css)
+          citation: {
+            default: '',
+            parseHTML: (el) => el.getAttribute('data-citation') || '',
+            renderHTML: (attrs) => (attrs.citation ? { 'data-citation': String(attrs.citation) } : {}),
+          },
+          quoteVariant: {
+            default: '',
+            parseHTML: (el) => el.getAttribute('data-quote') || '',
+            renderHTML: (attrs) => (attrs.quoteVariant ? { 'data-quote': String(attrs.quoteVariant) } : {}),
+          },
+          borderColor: {
+            default: '',
+            parseHTML: (el) => el.getAttribute('data-bc2') || '',
+            renderHTML: (attrs) => styleIf(attrs.borderColor, (x) => `border-left-color:${x}`),
+          },
+        },
+      },
+
+      /* ── Code block ────────────────────────────────────────────────── */
+      {
+        types: ['codeBlock'],
+        attributes: {
+          language: {
+            default: '',
+            parseHTML: (el) => el.getAttribute('data-language') || '',
+            renderHTML: (attrs) => (attrs.language ? { 'data-language': String(attrs.language) } : {}),
+          },
+          lineNumbers: {
+            default: false,
+            parseHTML: (el) => el.getAttribute('data-linenumbers') === 'true',
+            renderHTML: (attrs) => (attrs.lineNumbers ? { 'data-linenumbers': 'true' } : {}),
+          },
+          codeTheme: {
+            default: 'dark',
+            parseHTML: (el) => el.getAttribute('data-theme') || 'dark',
+            renderHTML: (attrs) => ({ 'data-theme': String(attrs.codeTheme || 'dark') }),
+          },
+        },
+      },
+    ]
+  },
+})
+
 ```
 
 <!-- FILE: components/editor/index.ts -->
-```ts
+```
 /**
  * ══════════════════════════════════════════════════════════════════════════
  *  components/editor/index.ts — public API
  *
- *  বাইরের কোড (BlogForm, PortfolioForm, public pages, RSS) শুধু এই ফাইল
- *  থেকে import করবে। ভেতরের ফাইল-গঠন বদলালেও এই API একই থাকবে।
+ *  Outside code (BlogForm, PortfolioForm, public pages, RSS) should only
+ *  import from this file. Internals may change; this API will not.
  *
  *  import { BlockEditor, renderDocToHtml, plainTextFromDoc } from '@/components/editor'
  * ══════════════════════════════════════════════════════════════════════════*/
 
-/* ── React কম্পোনেন্ট ──────────────────────────────────────────────────── */
+/* ── React components ──────────────────────────────────────────────────── */
 export { default as BlockEditor, editorExtensions } from './BlockEditor'
 export type { BlockEditorProps } from './BlockEditor'
 
-/* ── Registry (block যোগ/খোঁজা) ────────────────────────────────────────── */
+/* ── Registry (add / find blocks) ────────────────────────────────────────── */
 export { registerAllBlocks } from './blocks'
 export { registerBlock, registerBlocks, getBlock, allBlocks, inserterItems } from './registry'
 export { moveBlock, duplicateBlock, deleteBlock, turnInto } from './commands'
@@ -3670,19 +5244,20 @@ export type {
   OptionField,
 } from './types'
 export { CATEGORIES } from './types'
+
 ```
 
 <!-- FILE: components/editor/legacy.ts -->
-```ts
+```
 import type { JSONContent } from '@tiptap/core'
 import { htmlToNodes } from './render'
 
 /**
- * পুরনো ৮-ব্লক সিস্টেম (content_blocks array) → নতুন Tiptap document।
+ * Old 8-block system (content_blocks array) → new Tiptap document.
  *
- * কেন দরকার: পুরনো blog/portfolio post গুলো এডিটরে খুললে যেন লেখা হারিয়ে না যায়।
- * এটা optional কিন্তু strongly recommended — এটা ছাড়া পুরনো post গুলো
- * শুধু read-only (fallback renderer) হিসেবে থাকবে।
+ * Why: so older blog/portfolio posts do not lose content when opened in the editor.
+ * Optional but strongly recommended — without it, old posts
+ * stay read-only via the fallback renderer.
  *
  * Mapping:
  *   text          → heading + rich text nodes
@@ -3838,15 +5413,16 @@ export function convertLegacyBlocks(blocks: unknown): JSONContent | null {
   if (!content.length) return null
   return { type: 'doc', content }
 }
+
 ```
 
 <!-- FILE: components/editor/plainText.ts -->
-```ts
+```
 import type { JSONContent } from '@tiptap/core'
 
 /**
  * Tiptap JSON document → plain text.
- * RSS feed, excerpt, meta description, search index — সব জায়গায় লাগবে।
+ * Needed for RSS feed, excerpt, meta description, search index — everywhere.
  */
 export function plainTextFromDoc(doc: unknown, maxLength?: number): string {
   if (!doc || typeof doc !== 'object') return ''
@@ -3857,7 +5433,7 @@ export function plainTextFromDoc(doc: unknown, maxLength?: number): string {
       if (typeof node.text === 'string') out.push(node.text)
       return
     }
-    // atom block-এর attrs-এ লেখা থাকতে পারে (image+text body, CTA title, quote…)
+    // text may live in atom block attrs (image+text body, CTA title, quote…)
     if (node.attrs && typeof node.attrs === 'object') {
       for (const key of TEXT_ATTRS) {
         const v = node.attrs[key]
@@ -3866,7 +5442,7 @@ export function plainTextFromDoc(doc: unknown, maxLength?: number): string {
         }
       }
     }
-    // block গুলোর পরে space দিলে শব্দ জুড়ে যায় না
+    // a space after each block stops words running together
     if (node.content && Array.isArray(node.content)) {
       node.content.forEach(walk)
       if (BLOCK_TYPES.has(node.type)) out.push(' ')
@@ -3887,7 +5463,7 @@ export function plainTextFromDoc(doc: unknown, maxLength?: number): string {
   return text
 }
 
-/** node attrs-এ থাকা লেখা (image+text-এর body, caption, CTA title ইত্যাদি) */
+/** Text stored in node attrs (image+text body, caption, CTA title etc.) */
 const TEXT_ATTRS = ['heading', 'body', 'caption', 'label', 'quote', 'text', 'title', 'bio', 'sample']
 
 function stripHtml(input: string): string {
@@ -3905,7 +5481,7 @@ const BLOCK_TYPES = new Set([
   'ctaBlock', 'statsBlock', 'testimonialBlock', 'faqBlock',
 ])
 
-/** doc-এ আসল content আছে কিনা — empty save guard এর জন্য */
+/** Whether the doc has real content — used as an empty-save guard */
 export function isDocEmpty(doc: unknown): boolean {
   if (!doc || typeof doc !== 'object') return true
   const content = (doc as any).content
@@ -3922,17 +5498,18 @@ const NON_TEXT_NODES = new Set([
   'colorPaletteBlock', 'testimonialBlock', 'statsBlock', 'ctaBlock', 'faqBlock',
   'columnsBlock', 'calloutBlock',
 ])
+
 ```
 
 <!-- FILE: components/editor/registry.ts -->
-```ts
+```
 import type { AnyExtension, Editor } from '@tiptap/core'
 import type { BlockDefinition, InserterItem } from './types'
 
 /* ────────────────────────────────────────────────────────────────────────────
  *  SINGLE SOURCE OF TRUTH
- *  নতুন block যোগ করতে = blocks/ ফোল্ডারে একটা ফাইল + registerBlocks([...])
- *  Inserter, slash menu, inspector, extension list, static render — সব auto.
+ *  To add a block = one file in blocks/ + registerBlocks([...])
+ *  Inserter, slash menu, inspector, extension list, static render — all automatic.
  * ──────────────────────────────────────────────────────────────────────────*/
 const store = new Map<string, BlockDefinition>()
 
@@ -3953,7 +5530,7 @@ export function allBlocks(): BlockDefinition[] {
   return Array.from(store.values())
 }
 
-/** registry থেকে Tiptap extension list — editor তৈরির সময় ব্যবহার হয় */
+/** Tiptap extension list from the registry — used when creating the editor */
 export function extensionsFromRegistry(): AnyExtension[] {
   const out: AnyExtension[] = []
   for (const block of allBlocks()) {
@@ -3964,7 +5541,7 @@ export function extensionsFromRegistry(): AnyExtension[] {
   return out
 }
 
-/** registry থেকে UniqueID টাইপ list */
+/** UniqueID type list from the registry */
 export function customNodeNames(): string[] {
   return allBlocks()
     .filter((b) => b.node)
@@ -4005,7 +5582,7 @@ export function inserterItems(): InserterItem[] {
   return items
 }
 
-/** fuzzy-ish search: title / keywords / category দিয়ে */
+/** fuzzy-ish search: by title / keywords / category */
 export function searchBlocks(query: string, items = inserterItems()): InserterItem[] {
   const q = query.trim().toLowerCase()
   if (!q) return items
@@ -4021,14 +5598,14 @@ export function insertBlock(
   editor: Editor,
   blockName: string,
   attrs?: Record<string, unknown>,
-  /** কোথায় insert করবে — default: কার্সার/শেষে */
+  /** Where to insert — default: at the cursor / end */
   pos?: number,
 ): void {
   const def = getBlock(blockName)
   if (!def || !editor) return
   const finalAttrs = { ...(def.defaults ?? {}), ...(attrs ?? {}) }
 
-  // "insert after position pos" mode (drag handle ➕ থেকে)
+  // "insert after position pos" mode (from the drag handle ➕)
   if (typeof pos === 'number') {
     editor
       .chain()
@@ -4046,7 +5623,7 @@ export function insertBlock(
   editor.chain().focus().insertContent({ type: blockName, attrs: finalAttrs }).run()
 }
 
-/** core node (paragraph/heading/list) — variations দিয়ে insert */
+/** core node (paragraph/heading/list) — inserted via variations */
 export function insertCore(
   editor: Editor,
   blockName: string,
@@ -4055,39 +5632,62 @@ export function insertCore(
   const def = getBlock(blockName)
   if (def?.insert) def.insert({ editor, attrs: { ...(def.defaults ?? {}), ...(attrs ?? {}) } })
 }
+
 ```
 
 <!-- FILE: components/editor/render.ts -->
-```ts
+```
 import StarterKit from '@tiptap/starter-kit'
 import TextAlign from '@tiptap/extension-text-align'
 import { generateHTML, generateJSON } from '@tiptap/html'
 import type { JSONContent } from '@tiptap/core'
-import { extensionsFromRegistry } from './registry'
+import { extensionsFromRegistry, allBlocks } from './registry'
+import { TextStyles } from './extensions/textStyles'
+import { isDocEmpty } from './plainText'
+import { registerAllBlocks } from './blocks'
 
 /**
- * SERVER-SAFE extension list — শুধু node + mark।
+ * SERVER-SAFE extension list — nodes and marks only.
  *
  * SlashCommand / Placeholder / UniqueID / TrailingNode / FileHandler
- * এগুলো plugin-only → server-এ দরকার নেই, রাখলে সমস্যা হতে পারে।
+ * These are plugin-only → not needed on the server; keeping them can cause problems.
  *
- * ⚠️ editorExtensions() (BlockEditor.tsx) আর renderExtensions() —
- *    দুটোতেই যেন block node গুলো একই থাকে, নাহলে unknown node drop হয়ে যাবে।
+ * ⚠️ editorExtensions() (BlockEditor.tsx) and renderExtensions() —
+ *    both must contain the same block nodes, or unknown nodes get dropped.
  */
+/**
+ * SERVER-SAFETY: when renderDocToHtml() is called in a server component
+ * (e.g. app/blog/[slug]/page.tsx), BlogForm module-level `registerAllBlocks()`
+ * does not run, so the registry may be empty and custom blocks are silently dropped.
+ * So if the registry is empty, we register it here.
+ */
+function ensureBlocksRegistered() {
+  if (allBlocks().length === 0) {
+    // lazy require → avoids a circular import
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    registerAllBlocks()
+  }
+}
+
 export function renderExtensions() {
+  ensureBlocksRegistered()
   return [
     StarterKit.configure({
       heading: { levels: [1, 2, 3, 4] },
       link: { openOnClick: false },
-      trailingNode: false, // render করার সময় extra paragraph লাগবে না
+      trailingNode: false, // no extra paragraph needed when rendering
     }),
-    TextAlign.configure({ types: ['heading', 'paragraph'] }),
+    TextAlign.configure({ types: ['heading', 'paragraph', 'tableCell', 'tableHeader'] }),
     ...extensionsFromRegistry(),
+    TextStyles,
   ]
 }
 
 /** Tiptap JSON → HTML (public page / RSS / meta description) */
 export function renderDocToHtml(doc: JSONContent | null | undefined): string {
+  // empty doc → return '' so the caller falls back (old content_blocks)
+  if (!doc || isDocEmpty(doc)) return ''
+
   if (!doc || typeof doc !== 'object') return ''
   let html = ''
   try {
@@ -4108,7 +5708,7 @@ export function renderDocToHtml(doc: JSONContent | null | undefined): string {
   })
 }
 
-/** Legacy HTML string → Tiptap nodes (পুরনো block.content ছিল HTML) */
+/** Legacy HTML string → Tiptap nodes (old block.content was HTML) */
 export function htmlToNodes(html: string): JSONContent[] {
   if (!html || !html.trim()) return []
   try {
@@ -4119,10 +5719,11 @@ export function htmlToNodes(html: string): JSONContent[] {
     return []
   }
 }
+
 ```
 
 <!-- FILE: components/editor/surfaces/BlockHandle.tsx -->
-```tsx
+```
 import { useRef, useState } from 'react'
 import DragHandle from '@tiptap/extension-drag-handle-react'
 import type { Editor } from '@tiptap/core'
@@ -4296,10 +5897,11 @@ function MenuItem({
     </button>
   )
 }
+
 ```
 
 <!-- FILE: components/editor/surfaces/BlockPicker.tsx -->
-```tsx
+```
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Search } from 'lucide-react'
 import { CATEGORIES, type BlockCategoryId, type InserterItem } from '../types'
@@ -4411,7 +6013,9 @@ export default function BlockPicker({ onPick, onClose, compact = false }: BlockP
               return (
                 <button
                   key={item.id}
-                  ref={(el) => (itemRefs.current[i] = el)}
+                  ref={(el) => {
+                    itemRefs.current[i] = el
+                  }}
                   type="button"
                   onMouseEnter={() => setActive(i)}
                   onClick={() => pick(item)}
@@ -4433,7 +6037,9 @@ export default function BlockPicker({ onPick, onClose, compact = false }: BlockP
               return (
                 <button
                   key={item.id}
-                  ref={(el) => (itemRefs.current[i] = el)}
+                  ref={(el) => {
+                    itemRefs.current[i] = el
+                  }}
                   type="button"
                   onMouseEnter={() => setActive(i)}
                   onClick={() => pick(item)}
@@ -4462,10 +6068,11 @@ export default function BlockPicker({ onPick, onClose, compact = false }: BlockP
     </div>
   )
 }
+
 ```
 
 <!-- FILE: components/editor/surfaces/FormatToolbar.tsx -->
-```tsx
+```
 import { useState } from 'react'
 import { BubbleMenu } from '@tiptap/react/menus'
 import type { Editor } from '@tiptap/core'
@@ -4612,10 +6219,11 @@ export default function FormatToolbar({ editor }: { editor: Editor }) {
     </BubbleMenu>
   )
 }
+
 ```
 
 <!-- FILE: components/editor/surfaces/Inspector.tsx -->
-```tsx
+```
 import { useRef, useState } from 'react'
 import type { Editor } from '@tiptap/core'
 import { Plus, Trash2, ChevronUp, ChevronDown, Settings2, FileText, ChevronRight, Upload, Loader2 } from 'lucide-react'
@@ -5107,10 +6715,11 @@ function Stat({ label, value }: { label: string; value: number }) {
     </div>
   )
 }
+
 ```
 
 <!-- FILE: components/editor/surfaces/SlashList.tsx -->
-```tsx
+```
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { InserterItem } from '../types'
 import { cx } from '../blocks/helpers'
@@ -5124,7 +6733,7 @@ interface SlashListProps {
   command: (item: InserterItem) => void
 }
 
-/** "/" টাইপ করলে যে লিস্ট দেখায় — BlockPicker-এর compact ভার্সন */
+/** The list shown when you type "/" — compact version of BlockPicker */
 const SlashList = forwardRef<SlashListHandle, SlashListProps>(({ items, command }, ref) => {
   const [selected, setSelected] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -5194,24 +6803,175 @@ const SlashList = forwardRef<SlashListHandle, SlashListProps>(({ items, command 
 
 SlashList.displayName = 'SlashList'
 export default SlashList
+
+```
+
+<!-- FILE: components/editor/surfaces/TableToolbar.tsx -->
+```
+import { useEffect, useState } from 'react'
+import type { Editor } from '@tiptap/core'
+import { Plus, Minus, Trash2, Merge, Split, Rows3, Columns3, Table2 } from 'lucide-react'
+import { cx } from '../blocks/helpers'
+
+/**
+ * TableToolbar — floats above the table while the cursor is inside it.
+ * Row/Column add-delete, merge/split, header toggle, table delete।
+ */
+export default function TableToolbar({ editor }: { editor: Editor | null }) {
+  const [box, setBox] = useState<{ top: number; left: number } | null>(null)
+
+  useEffect(() => {
+    if (!editor) return
+
+    const update = () => {
+      if (!editor.isActive('table')) {
+        setBox(null)
+        return
+      }
+      const { state } = editor
+      const $from = state.selection.$from
+      let tablePos = -1
+      for (let d = $from.depth; d > 0; d--) {
+        if ($from.node(d).type.name === 'table') {
+          tablePos = $from.before(d)
+          break
+        }
+      }
+      if (tablePos < 0) {
+        setBox(null)
+        return
+      }
+      const dom = editor.view.nodeDOM(tablePos)
+      if (!dom || !(dom instanceof HTMLElement)) {
+        setBox(null)
+        return
+      }
+      const r = dom.getBoundingClientRect()
+      setBox({ top: r.top, left: r.left })
+    }
+
+    editor.on('transaction', update)
+    editor.on('selectionUpdate', update)
+    editor.on('focus', update)
+    update()
+    return () => {
+      editor.off('transaction', update)
+      editor.off('selectionUpdate', update)
+      editor.off('focus', update)
+    }
+  }, [editor])
+
+  if (!editor || !box) return null
+
+  /* mousedown must be prevented so the editor selection is not lost */
+  const run = (fn: () => void) => (e: React.MouseEvent) => {
+    e.preventDefault()
+    fn()
+  }
+  const chain = () => editor.chain().focus()
+
+  const Btn = ({
+    onClick,
+    title,
+    children,
+    danger,
+  }: {
+    onClick: () => void
+    title: string
+    children: React.ReactNode
+    danger?: boolean
+  }) => (
+    <button
+      type="button"
+      title={title}
+      onMouseDown={run(onClick)}
+      className={cx(
+        'flex h-7 items-center gap-1 rounded px-1.5 text-[11px] font-medium transition-colors',
+        danger ? 'text-red-600 hover:bg-red-50' : 'text-slate-600 hover:bg-slate-100',
+      )}
+    >
+      {children}
+    </button>
+  )
+
+  return (
+    <div
+      className="drag-handle fixed z-40 flex items-center gap-0.5 rounded-lg border border-slate-200 bg-white px-1 py-1 shadow-panel"
+      style={{ top: Math.max(8, box.top - 36), left: box.left }}
+    >
+      <Table2 className="mx-1 h-3.5 w-3.5 text-slate-400" />
+
+      <Btn onClick={() => chain().addRowBefore().run()} title="Add row above">
+        <Rows3 className="h-3.5 w-3.5" />
+        <Plus className="h-2.5 w-2.5" />
+      </Btn>
+      <Btn onClick={() => chain().addRowAfter().run()} title="Add row below">
+        <Rows3 className="h-3.5 w-3.5" />
+        <Plus className="h-2.5 w-2.5" />
+      </Btn>
+      <Btn onClick={() => chain().deleteRow().run()} title="Delete row" danger>
+        <Rows3 className="h-3.5 w-3.5" />
+        <Minus className="h-2.5 w-2.5" />
+      </Btn>
+
+      <span className="mx-1 h-4 w-px bg-slate-200" />
+
+      <Btn onClick={() => chain().addColumnBefore().run()} title="Add column left">
+        <Columns3 className="h-3.5 w-3.5" />
+        <Plus className="h-2.5 w-2.5" />
+      </Btn>
+      <Btn onClick={() => chain().addColumnAfter().run()} title="Add column right">
+        <Columns3 className="h-3.5 w-3.5" />
+        <Plus className="h-2.5 w-2.5" />
+      </Btn>
+      <Btn onClick={() => chain().deleteColumn().run()} title="Delete column" danger>
+        <Columns3 className="h-3.5 w-3.5" />
+        <Minus className="h-2.5 w-2.5" />
+      </Btn>
+
+      <span className="mx-1 h-4 w-px bg-slate-200" />
+
+      <Btn onClick={() => chain().mergeCells().run()} title="Cell merge">
+        <Merge className="h-3.5 w-3.5" />
+      </Btn>
+      <Btn onClick={() => chain().splitCell().run()} title="Cell split">
+        <Split className="h-3.5 w-3.5" />
+      </Btn>
+      <Btn onClick={() => chain().toggleHeaderRow().run()} title="Header row">
+        <span className="text-[10px] font-bold">HR</span>
+      </Btn>
+      <Btn onClick={() => chain().toggleHeaderColumn().run()} title="Header column">
+        <span className="text-[10px] font-bold">HC</span>
+      </Btn>
+
+      <span className="mx-1 h-4 w-px bg-slate-200" />
+
+      <Btn onClick={() => chain().deleteTable().run()} title="Delete table" danger>
+        <Trash2 className="h-3.5 w-3.5" />
+      </Btn>
+    </div>
+  )
+}
+
 ```
 
 <!-- FILE: components/editor/types.runtime.ts -->
-```ts
+```
 export interface ActiveBlock {
   name: string
   attrs: Record<string, unknown>
   pos: number
 }
+
 ```
 
 <!-- FILE: components/editor/types.ts -->
-```ts
+```
 import type { AnyExtension, Editor } from '@tiptap/core'
 import type { ComponentType } from 'react'
 
 /* ────────────────────────────────────────────────────────────────────────────
- * Block categories — inserter panel + slash menu এই ভাগ ব্যবহার করে
+ * Block categories — used by the inserter panel and the slash menu
  * ─�─────────────────────────────────────────────────────────────────────────*/
 export type UploadFn = (file: File) => Promise<string | null>
 
@@ -5255,40 +7015,40 @@ export type OptionField =
     }
 
 /* ────────────────────────────────────────────────────────────────────────────
- * Block definition — একটি block = একটি ফাইল = registry তে একটা entry
+ * Block definition — one block = one file = one registry entry
  * ──────────────────────────────────────────────────────────────────────────*/
 export interface BlockVariation {
-  /** "Heading 2", "3 Columns" — inserter-এ আলাদা item হিসেবে দেখায় */
+  /** "Heading 2", "3 Columns" — shown as a separate item in the inserter */
   title: string
   keywords?: string[]
   attrs?: Record<string, unknown>
 }
 
 export interface BlockDefinition {
-  /** ProseMirror node name (অথবা core node-এর নাম: paragraph, heading …) */
+  /** ProseMirror node name (or a core node name: paragraph, heading …) */
   name: string
   title: string
   description: string
   category: BlockCategoryId
   icon: ComponentType<{ className?: string }>
-  /** স্ল্যাশ কমান্ড + সার্চ-এ মিলবে */
+  /** Matched by the slash command and search */
   keywords?: string[]
-  /** কাস্টম node (থাকলে registry থেকে extension list-এ যাবে) — Table-এর মতো block-এ array */
+  /** Custom node (added to the extension list) — an array for blocks like Table */
   node?: AnyExtension | AnyExtension[]
-  /** insert করার সময় default attrs */
+  /** Default attributes used when inserting */
   defaults?: Record<string, unknown>
-  /** Inspector-এ যে options দেখাবে */
+  /** Options shown in the inspector */
   options?: OptionField[]
-  /** Gutenberg-এর block variations */
+  /** Gutenberg-style block variations */
   variations?: BlockVariation[]
-  /** insert logic (না দিলে default: insertContent node) */
+  /** Insert logic (default: insertContent node) */
   insert?: (args: { editor: Editor; attrs?: Record<string, unknown> }) => void
-  /** inserter-এ লুকানো (যেমন: column — parent দিয়েই তৈরি হয়) */
+  /** Hidden in the inserter (e.g. column — created by its parent) */
   hidden?: boolean
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
- * Inserter item — block + variation flatten করে তৈরি হয়
+ * Inserter item — built by flattening block + variation
  * ──────────────────────────────────────────────────────────────────────────*/
 export interface InserterItem {
   id: string
@@ -5300,4 +7060,5 @@ export interface InserterItem {
   keywords: string[]
   attrs?: Record<string, unknown>
 }
+
 ```

@@ -10,6 +10,7 @@ import UniqueID from '@tiptap/extension-unique-id'
 import FileHandler from '@tiptap/extension-file-handler'
 import {
   Plus, Undo2, Redo2, Eye, Pencil, Braces, Copy, Check, RotateCcw, Sparkles,
+  PanelRightClose, PanelRightOpen,
 } from 'lucide-react'
 
 import { customNodeNames, extensionsFromRegistry, insertBlock } from './registry'
@@ -19,6 +20,7 @@ import BlockPicker from './surfaces/BlockPicker'
 import BlockHandle from './surfaces/BlockHandle'
 import FormatToolbar from './surfaces/FormatToolbar'
 import Inspector from './surfaces/Inspector'
+import TableToolbar from './surfaces/TableToolbar'
 import { activeBlock } from './commands'
 import { renderDocToHtml } from './render'
 import { demoDoc } from './demoContent'
@@ -33,17 +35,17 @@ const IMAGE_MIME = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/
 
 /**
  * Client editor extension list.
- * ⚠️ renderExtensions() (render.ts) এর সাথে node/mark list মিল থাকতে হবে।
+ * ⚠️ The node/mark list here must match renderExtensions() (render.ts).
  */
 export function editorExtensions(upload?: UploadFn) {
   const list = [
-    // StarterKit v3.31-এ বিল্ট-ইন: underline, link, trailingNode, listKeymap, undoRedo
+    // Built into StarterKit v3.31: underline, link, trailingNode, listKeymap, undoRedo
     StarterKit.configure({
       heading: { levels: [1, 2, 3, 4] },
       link: { openOnClick: false, autolink: true },
-      trailingNode: {}, // ডকুমেন্টের শেষে সবসময় একটা paragraph
+      trailingNode: {}, // always keep a trailing paragraph
     }),
-    TextAlign.configure({ types: ['heading', 'paragraph'] }),
+    TextAlign.configure({ types: ['heading', 'paragraph', 'tableCell', 'tableHeader'] }),
     Placeholder.configure({
       placeholder: ({ node }) =>
         node.type.name === 'heading' ? 'Heading…' : "Type '/' to choose a block",
@@ -84,17 +86,18 @@ export function editorExtensions(upload?: UploadFn) {
 type Mode = 'edit' | 'preview' | 'json'
 
 export interface BlockEditorProps {
-  /** 저장된 Tiptap JSON — null হলে empty doc */
+  /** Saved Tiptap JSON — null means an empty document */
   value?: JSONContent | null
   onChange?: (json: JSONContent) => void
-  /** Supabase-এ আপলোড করে public URL দেয় (FileHandler + inspector upload) */
+  /** Uploads to Supabase and returns a public URL (FileHandler + inspector upload) */
   upload?: UploadFn
-  /** demo mode: Preview/JSON tab + Reset বাটন + demo content */
+  /** demo mode: Preview/JSON tab + Reset button + demo content */
   demo?: boolean
 }
 
 export default function BlockEditor({ value, onChange, upload, demo = false }: BlockEditorProps) {
   const [mode, setMode] = useState<Mode>('edit')
+  const [inspectorOpen, setInspectorOpen] = useState(true)
   const [pickerOpen, setPickerOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -119,7 +122,7 @@ export default function BlockEditor({ value, onChange, upload, demo = false }: B
     },
   })
 
-  /* value বাইরে থেকে change হলে (যেমন async load) editor সিঙ্ক করো */
+  /* Sync the editor when value changes from outside (e.g. async load) */
   useEffect(() => {
     if (!editor || value === undefined) return
     if (value === lastEmitted.current) return
@@ -140,7 +143,7 @@ export default function BlockEditor({ value, onChange, upload, demo = false }: B
     }),
   })
 
-  // ★ public page-এ যা render হবে, ঠিক সেটাই (renderExtensions + raw-HTML decode)
+  // ★ Exactly what the public page will render (renderExtensions + raw-HTML decode)
   const html = useMemo(() => {
     if (mode !== 'preview' || !editor) return ''
     try {
@@ -218,6 +221,22 @@ export default function BlockEditor({ value, onChange, upload, demo = false }: B
             {state?.blocks ?? 0} blocks · {state?.words ?? 0} words
           </span>
 
+          {/* Inspector show/hide */}
+          <button
+            type="button"
+            onClick={() => setInspectorOpen((v) => !v)}
+            title={inspectorOpen ? 'Hide inspector' : 'Show inspector'}
+            className={cx(
+              'flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors',
+              inspectorOpen
+                ? 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                : 'border-brand-blue bg-brand-blue/10 text-brand-blue',
+            )}
+          >
+            {inspectorOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
+            <span className="hidden sm:inline">{inspectorOpen ? 'Hide panel' : 'Show panel'}</span>
+          </button>
+
           {demo && (
             <>
               <div className="flex overflow-hidden rounded-lg border border-slate-200">
@@ -281,6 +300,7 @@ export default function BlockEditor({ value, onChange, upload, demo = false }: B
               <div className="rounded-2xl border border-slate-200 bg-white px-8 py-8 shadow-sm">
                 <FormatToolbar editor={editor} />
                 <BlockHandle editor={editor} />
+                <TableToolbar editor={editor} />
                 <EditorContent editor={editor} className="tiptap-canvas" />
               </div>
             )}
@@ -288,7 +308,7 @@ export default function BlockEditor({ value, onChange, upload, demo = false }: B
             {mode === 'preview' && (
               <div className="rounded-2xl border border-slate-200 bg-white px-8 py-8 shadow-sm">
                 <div className="mb-6 rounded-lg bg-amber-50 px-4 py-2.5 text-xs text-amber-800">
-                  <strong>Static render</strong> — public page-এ যা দেখাবে (<code>generateHTML()</code>)
+                  <strong>Static render</strong> — what the public page will show (<code>generateHTML()</code>)
                 </div>
                 <div className="preview-content" dangerouslySetInnerHTML={{ __html: html }} />
               </div>
@@ -304,8 +324,11 @@ export default function BlockEditor({ value, onChange, upload, demo = false }: B
           </div>
         </main>
 
-        <Inspector editor={editor} active={state?.active ?? null} upload={upload} />
+        {inspectorOpen && (
+          <Inspector editor={editor} active={state?.active ?? null} upload={upload} />
+        )}
       </div>
     </div>
   )
 }
+

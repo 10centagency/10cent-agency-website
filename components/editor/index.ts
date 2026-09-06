@@ -2,17 +2,17 @@
  * ══════════════════════════════════════════════════════════════════════════
  *  components/editor/index.ts — public API
  *
- *  বাইরের কোড (BlogForm, PortfolioForm, public pages, RSS) শুধু এই ফাইল
- *  থেকে import করবে। ভেতরের ফাইল-গঠন বদলালেও এই API একই থাকবে।
+ *  Outside code (BlogForm, PortfolioForm, public pages, RSS) should only
+ *  import from this file. Internals may change; this API will not.
  *
  *  import { BlockEditor, renderDocToHtml, plainTextFromDoc } from '@/components/editor'
  * ══════════════════════════════════════════════════════════════════════════*/
 
-/* ── React কম্পোনেন্ট ──────────────────────────────────────────────────── */
+/* ── React components ──────────────────────────────────────────────────── */
 export { default as BlockEditor, editorExtensions } from './BlockEditor'
 export type { BlockEditorProps } from './BlockEditor'
 
-/* ── Registry (block যোগ/খোঁজা) ────────────────────────────────────────── */
+/* ── Registry (add / find blocks) ────────────────────────────────────────── */
 export { registerAllBlocks } from './blocks'
 export { registerBlock, registerBlocks, getBlock, allBlocks, inserterItems } from './registry'
 export { moveBlock, duplicateBlock, deleteBlock, turnInto } from './commands'
@@ -33,3 +33,4 @@ export type {
   OptionField,
 } from './types'
 export { CATEGORIES } from './types'
+

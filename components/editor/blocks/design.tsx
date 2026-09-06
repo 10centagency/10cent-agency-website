@@ -101,7 +101,7 @@ export const calloutBlock: BlockDefinition = {
         { label: 'Note', value: 'note' },
       ],
     },
-    { key: 'showIcon', label: 'Icon দেখান', type: 'toggle' },
+    { key: 'showIcon', label: 'Show icon', type: 'toggle' },
     { key: 'padding', label: 'Padding (px)', type: 'range', min: 8, max: 48, step: 4 },
     { key: 'rounded', label: 'Rounded corners', type: 'toggle' },
     { key: 'border', label: 'Border', type: 'toggle' },
@@ -119,7 +119,7 @@ export const calloutBlock: BlockDefinition = {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
- * COLOR PALETTE (আপনার পুরনো block — modernized + repeater)
+ * COLOR PALETTE (your old block — modernized + repeater)
  * ═════════════════════════════════════════════════════════════════════════*/
 const PaletteView = ({ node, selected }: { node: any; selected: boolean }) => {
   const { title, colors, size, layout, showHex, shape, gap } = node.attrs
@@ -234,7 +234,7 @@ export const colorPaletteBlock: BlockDefinition = {
         { label: 'Circle', value: 'circle' },
       ],
     },
-    { key: 'showHex', label: 'Hex code দেখান', type: 'toggle' },
+    { key: 'showHex', label: 'Show hex code', type: 'toggle' },
     {
       key: 'colors',
       label: 'Colors',
@@ -252,7 +252,7 @@ export const colorPaletteBlock: BlockDefinition = {
 
 
 /* ══════════════════════════════════════════════════════════════════════════
- * TYPOGRAPHY  (আপনার পুরনো typography block — modernized)
+ * TYPOGRAPHY  (your old typography block — modernized)
  * ═════════════════════════════════════════════════════════════════════════*/
 const TypographyView = ({ node, selected }: { node: any; selected: boolean }) => {
   const { title, fonts, showMeta, layout, sampleSize, border } = node.attrs
@@ -539,7 +539,7 @@ export const buttonBlock: BlockDefinition = {
     },
     { key: 'fullWidth', label: 'Full width', type: 'toggle' },
     { key: 'newTab', label: 'Open in new tab', type: 'toggle' },
-    { key: 'icon', label: 'Icon (emoji বা চিহ্ন)', type: 'text', placeholder: '→' },
+    { key: 'icon', label: 'Icon (emoji or symbol)', type: 'text', placeholder: '→' },
     {
       key: 'iconPosition',
       label: 'Icon position',

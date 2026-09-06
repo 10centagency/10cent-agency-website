@@ -1,15 +1,15 @@
 import { Extension } from '@tiptap/core'
 
 /**
- * TextStyles — Text block গুলোর (paragraph, heading, list, quote, code)
- * কোনো custom node নেই (StarterKit-এর), তাই global attributes দিয়ে
- * styling option যোগ করা হচ্ছে।
+ * TextStyles — for the text blocks (paragraph, heading, list, quote, code)
+ * there is no custom node (they come from StarterKit), so we add
+ * styling options via global attributes.
  *
- * ⚠️ editorExtensions() আর renderExtensions() — দুটোতেই থাকতে হবে।
+ * ⚠️ Must be present in BOTH editorExtensions() and renderExtensions().
  *
- * 💡 Tiptap-এর mergeAttributes() style-গুলো নিজেই জোড়া লাগিয়ে দেয়
- *    (`style="color:…; font-size:…"`), তাই প্রতিটা attribute আলাদা ভাবে
- *    style return করলেও clash হয় না।
+ * 💡 Tiptap mergeAttributes() joins style values by itself
+ *    (`style="color:…; font-size:…"`), so each attribute can return
+ *    its own style without clashing.
  */
 
 export const FONT_SIZES: Record<string, string> = {
@@ -36,7 +36,7 @@ export const TextStyles = Extension.create({
 
   addGlobalAttributes() {
     return [
-      /* ── সাধারণ টেক্সট স্টাইল ─────────────────────────────────────── */
+      /* ── Common text styles ─────────────────────────────────────── */
       {
         types: ['paragraph', 'heading', 'blockquote'],
         attributes: {
@@ -77,11 +77,11 @@ export const TextStyles = Extension.create({
         },
       },
 
-      /* ── শুধু Heading ─────────────────────────────────────────────── */
+      /* ── Heading only ─────────────────────────────────────────────── */
       {
         types: ['heading'],
         attributes: {
-          // TOC block-এর jump link-এর জন্য
+          // For TOC block jump links
           anchorId: {
             default: '',
             parseHTML: (el) => el.getAttribute('id') || '',
@@ -128,7 +128,7 @@ export const TextStyles = Extension.create({
       {
         types: ['blockquote'],
         attributes: {
-          // citation CSS ::after দিয়ে দেখানো হয় (editor.css)
+          // The citation is shown via a CSS ::after (see editor.css)
           citation: {
             default: '',
             parseHTML: (el) => el.getAttribute('data-citation') || '',

@@ -164,3 +164,4 @@ export default function BlockPicker({ onPick, onClose, compact = false }: BlockP
     </div>
   )
 }
+

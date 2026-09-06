@@ -2,7 +2,7 @@ import type { Editor } from '@tiptap/core'
 import { getBlock } from './registry'
 import type { InserterItem } from './types'
 
-/** top-level doc child index — position (pos) দিয়ে */
+/** Index of a top-level doc child — by position (pos) */
 export function blockIndexAt(editor: Editor, pos: number): number {
   let found = -1
   editor.state.doc.forEach((_node, offset, index) => {
@@ -15,7 +15,7 @@ export function nodeAt(editor: Editor, pos: number) {
   return editor.state.doc.resolve(pos).nodeAfter
 }
 
-/** block উপরে/নিচে সরানো */
+/** Move a block up / down */
 export function moveBlock(editor: Editor, pos: number, dir: -1 | 1) {
   const { state } = editor
   const { doc } = state
@@ -50,7 +50,7 @@ export function deleteBlock(editor: Editor, pos: number) {
   editor.view.dispatch(editor.state.tr.delete(pos, pos + node.nodeSize))
 }
 
-/** block কে অন্য block-এ রূপান্তর (Turn into) */
+/** Convert a block into another block (Turn into) */
 export function turnInto(editor: Editor, pos: number, type: string, attrs?: Record<string, unknown>) {
   const { state } = editor
   const node = nodeAt(editor, pos)
@@ -59,7 +59,7 @@ export function turnInto(editor: Editor, pos: number, type: string, attrs?: Reco
   const TEXT_TYPES = ['paragraph', 'heading', 'bulletList', 'orderedList', 'blockquote', 'codeBlock']
   const def = getBlock(type)
 
-  // textblock → textblock: লেখা রেখে শুধু type বদলায়
+  // textblock → textblock: keeps the text and only changes the type
   if (node.isTextblock && TEXT_TYPES.includes(type)) {
     editor.chain().focus().setTextSelection(pos + 1).run()
     if (def?.insert) def.insert({ editor, attrs: { ...(def.defaults ?? {}), ...attrs } })
@@ -81,7 +81,7 @@ export function insertAfter(editor: Editor, pos: number, item: InserterItem) {
   const attrs = { ...(def?.defaults ?? {}), ...(item.attrs ?? {}) }
 
   if (def?.insert) {
-    // core block: নতুন paragraph বসিয়ে সেখানে convert করি
+    // core block: insert a new paragraph and convert there
     editor.chain().focus().insertContentAt(at, { type: 'paragraph' }).run()
     def.insert({ editor, attrs })
     return
@@ -89,13 +89,13 @@ export function insertAfter(editor: Editor, pos: number, item: InserterItem) {
   editor.chain().focus().insertContentAt(at, { type: item.blockName, attrs }).run()
 }
 
-/** current selection-এর block বের করা (inspector + outline এর জন্য) */
+/** Get the block at the current selection (for inspector + outline) */
 export function activeBlock(editor: Editor) {
   if (!editor || !editor.state) return null
   const { state } = editor
   const sel = state.selection
 
-  // NodeSelection (image/gallery-এর মতো node ক্লিক করে সিলেক্ট করলে)
+  // NodeSelection (when a node like image/gallery is clicked and selected)
   if ((sel as any).node) {
     const node = (sel as any).node
     return { name: node.type.name, attrs: { ...node.attrs }, pos: sel.from }
@@ -108,3 +108,4 @@ export function activeBlock(editor: Editor) {
   if (!node) return null
   return { name: node.type.name, attrs: { ...node.attrs }, pos: $from.before(depth) }
 }
+

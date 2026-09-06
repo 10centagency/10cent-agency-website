@@ -238,3 +238,4 @@ export const demoDoc = {
     { type: 'paragraph', attrs: { textAlign: 'left' }, content: [] },
   ],
 }
+

@@ -1,14 +1,14 @@
 /* ══════════════════════════════════════════════════════════════════════════
  *  editor.css — portable stylesheet for the block editor
  *
- *  এটা Tailwind-এর ওপর নির্ভর করে না (plain CSS) — যেকোনো প্রজেক্টে চলবে।
- *  brand রঙগুলো 10centagency-এর Tailwind theme থেকে নেওয়া:
+ *  It does not depend on Tailwind (plain CSS) — works in any project.
+ *  The brand colours come from the 10centagency Tailwind theme:
  *    navy #00346D · blue #2F85F3 · accent #B6D7FF
  *    textDark #16324F · textMid #5C718A · border #D9E8FA
  *
- *  প্রয়োগ:
- *    .tiptap-canvas   → admin editor-এর লেখার এলাকা
- *    .doc-content     → public page-এ render করা HTML-এর wrapper
+ *  Usage:
+ *    .tiptap-canvas   → the writing area in the admin editor
+ *    .doc-content     → wrapper around the rendered HTML on the public page
  * ══════════════════════════════════════════════════════════════════════════*/
 
 /* ── 1. Editor canvas ─────────────────────────────────────────────────── */
@@ -74,7 +74,7 @@
   color: #94a3b8;
 }
 
-/* selected node (image/gallery click করলে) */
+/* selected node (when an image/gallery is clicked) */
 .tiptap-canvas .ProseMirror .ProseMirror-selectednode {
   outline: 2px solid #2f85f3;
   outline-offset: 2px;
@@ -176,7 +176,7 @@
   border-radius: 8px;
 }
 
-/* ── 7. Table styles (inspector option থেকে আসে) ───────────────────────── */
+/* ── 7. Table styles (driven by inspector options) ───────────────────────── */
 :is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-borders="none"] th,
 :is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-borders="none"] td {
   border: 0;
@@ -198,7 +198,7 @@
   background: #eef6ff;
 }
 
-/* ── 8. Responsive — মোবাইলে multi-column block গুলো stack হবে ─────────── */
+/* ── 8. Responsive — multi-column blocks stack on mobile ─────────── */
 @media (max-width: 640px) {
   :is(.doc-content, .preview-content) [data-block="columns"],
   :is(.doc-content, .preview-content) [data-block="stats"],
@@ -207,12 +207,12 @@
   :is(.doc-content, .preview-content) [data-block="team"] > div:last-of-type {
     grid-template-columns: 1fr !important;
   }
-  /* ছবি/লোগো — মোবাইলে ২ কলামই ভালো দেখায় */
+  /* images/logos — two columns still look good on mobile */
   :is(.doc-content, .preview-content) [data-block="gallery"],
   :is(.doc-content, .preview-content) [data-block="logo-grid"] > div:last-of-type {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
-  /* টেবিল — পেজ ভাঙবে না, টেবিল নিজেই স্ক্রল হবে */
+  /* tables — do not break the page; the table itself scrolls */
   :is(.doc-content, .preview-content) table {
     display: block;
     overflow-x: auto;
@@ -227,9 +227,9 @@
   }
 }
 
-/* ── 9. Text block styling (inspector option থেকে) ─────────────────────── */
+/* ── 9. Text block styling (inspector options) ─────────────────────── */
 
-/* Blockquote — variant + citation (citation ::after দিয়ে দেখানো হয়) */
+/* Blockquote — variant + citation (citation shown via ::after) */
 :is(.doc-content, .preview-content, .tiptap-canvas) blockquote[data-quote="card"] {
   margin: 1.5rem 0;
   padding: 1.25rem 1.5rem;
@@ -289,14 +289,14 @@
   display: block;
 }
 
-/* Gallery — মোবাইলে কলাম (inspector option থেকে) */
+/* Gallery — columns on mobile (inspector option) */
 @media (max-width: 640px) {
   :is(.doc-content, .preview-content, .tiptap-canvas) [data-block="gallery"] {
     grid-template-columns: repeat(var(--mobile-cols, 2), minmax(0, 1fr)) !important;
   }
 }
 
-/* Columns — মোবাইলে উল্টো ক্রম (inspector option) */
+/* Columns — reverse order on mobile (inspector option) */
 @media (max-width: 640px) {
   :is(.doc-content, .preview-content, .tiptap-canvas) [data-reverse-mobile="true"] {
     display: flex;

@@ -6,8 +6,8 @@ import { insertBlock, searchBlocks } from '../registry'
 import type { InserterItem } from '../types'
 
 /**
- * Slash command ("/") — registry থেকে সরাসরি items আসে,
- * তাই নতুন block যোগ করলে স্ল্যাশ মেনুতেও সাথে সাথে চলে আসে।
+ * Slash command ("/") — items come straight from the registry,
+ * so a newly added block appears in the slash menu immediately.
  */
 export const SlashCommand = Extension.create({
   name: 'slashCommand',
@@ -80,3 +80,4 @@ export const SlashCommand = Extension.create({
 })
 
 type SlashListProps = { items: InserterItem[]; command: (item: InserterItem) => void }
+

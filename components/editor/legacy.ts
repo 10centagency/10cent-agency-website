@@ -2,11 +2,11 @@ import type { JSONContent } from '@tiptap/core'
 import { htmlToNodes } from './render'
 
 /**
- * পুরনো ৮-ব্লক সিস্টেম (content_blocks array) → নতুন Tiptap document।
+ * Old 8-block system (content_blocks array) → new Tiptap document.
  *
- * কেন দরকার: পুরনো blog/portfolio post গুলো এডিটরে খুললে যেন লেখা হারিয়ে না যায়।
- * এটা optional কিন্তু strongly recommended — এটা ছাড়া পুরনো post গুলো
- * শুধু read-only (fallback renderer) হিসেবে থাকবে।
+ * Why: so older blog/portfolio posts do not lose content when opened in the editor.
+ * Optional but strongly recommended — without it, old posts
+ * stay read-only via the fallback renderer.
  *
  * Mapping:
  *   text          → heading + rich text nodes
@@ -162,3 +162,4 @@ export function convertLegacyBlocks(blocks: unknown): JSONContent | null {
   if (!content.length) return null
   return { type: 'doc', content }
 }
+

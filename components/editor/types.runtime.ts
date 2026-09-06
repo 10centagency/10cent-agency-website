@@ -3,3 +3,4 @@ export interface ActiveBlock {
   attrs: Record<string, unknown>
   pos: number
 }
+

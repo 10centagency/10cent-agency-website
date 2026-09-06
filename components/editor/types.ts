@@ -2,7 +2,7 @@ import type { AnyExtension, Editor } from '@tiptap/core'
 import type { ComponentType } from 'react'
 
 /* ────────────────────────────────────────────────────────────────────────────
- * Block categories — inserter panel + slash menu এই ভাগ ব্যবহার করে
+ * Block categories — used by the inserter panel and the slash menu
  * ─�─────────────────────────────────────────────────────────────────────────*/
 export type UploadFn = (file: File) => Promise<string | null>
 
@@ -46,40 +46,40 @@ export type OptionField =
     }
 
 /* ────────────────────────────────────────────────────────────────────────────
- * Block definition — একটি block = একটি ফাইল = registry তে একটা entry
+ * Block definition — one block = one file = one registry entry
  * ──────────────────────────────────────────────────────────────────────────*/
 export interface BlockVariation {
-  /** "Heading 2", "3 Columns" — inserter-এ আলাদা item হিসেবে দেখায় */
+  /** "Heading 2", "3 Columns" — shown as a separate item in the inserter */
   title: string
   keywords?: string[]
   attrs?: Record<string, unknown>
 }
 
 export interface BlockDefinition {
-  /** ProseMirror node name (অথবা core node-এর নাম: paragraph, heading …) */
+  /** ProseMirror node name (or a core node name: paragraph, heading …) */
   name: string
   title: string
   description: string
   category: BlockCategoryId
   icon: ComponentType<{ className?: string }>
-  /** স্ল্যাশ কমান্ড + সার্চ-এ মিলবে */
+  /** Matched by the slash command and search */
   keywords?: string[]
-  /** কাস্টম node (থাকলে registry থেকে extension list-এ যাবে) — Table-এর মতো block-এ array */
+  /** Custom node (added to the extension list) — an array for blocks like Table */
   node?: AnyExtension | AnyExtension[]
-  /** insert করার সময় default attrs */
+  /** Default attributes used when inserting */
   defaults?: Record<string, unknown>
-  /** Inspector-এ যে options দেখাবে */
+  /** Options shown in the inspector */
   options?: OptionField[]
-  /** Gutenberg-এর block variations */
+  /** Gutenberg-style block variations */
   variations?: BlockVariation[]
-  /** insert logic (না দিলে default: insertContent node) */
+  /** Insert logic (default: insertContent node) */
   insert?: (args: { editor: Editor; attrs?: Record<string, unknown> }) => void
-  /** inserter-এ লুকানো (যেমন: column — parent দিয়েই তৈরি হয়) */
+  /** Hidden in the inserter (e.g. column — created by its parent) */
   hidden?: boolean
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
- * Inserter item — block + variation flatten করে তৈরি হয়
+ * Inserter item — built by flattening block + variation
  * ──────────────────────────────────────────────────────────────────────────*/
 export interface InserterItem {
   id: string
@@ -91,3 +91,4 @@ export interface InserterItem {
   keywords: string[]
   attrs?: Record<string, unknown>
 }
+

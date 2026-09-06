@@ -5,7 +5,7 @@ import type { BlockDefinition } from '../types'
 import { cx, mergeAttributes, suppress } from './helpers'
 
 /* ══════════════════════════════════════════════════════════════════════════
- * COLUMNS  — nested content block (Gutenberg-এর মতো block-এর ভেতরে block)
+ * COLUMNS  — nested content block (blocks inside blocks, like Gutenberg)
  * columnsBlock → columnBlock+ → block+
  * ═════════════════════════════════════════════════════════════════════════*/
 const ALIGN: Record<string, string> = { start: 'start', center: 'center', end: 'end', stretch: 'stretch' }
@@ -58,7 +58,7 @@ const ColumnsNode = Node.create({
     const { template, gap, divider, verticalAlign, columnBg, columnPadding, columnBorder, reverseOnMobile } = node.attrs
     const children: any[] = [0]
     if (divider) children.push(['div', { class: 'mt-4 h-px w-full bg-slate-200' }])
-    // ⚠️ content hole (0) ছাড়া nested column-এর content server-render-এ বাদ পড়ে যায়
+    // ⚠️ Without the content hole (0), nested column content is dropped on the server
     return [
       'div',
       mergeAttributes(HTMLAttributes, {
@@ -104,7 +104,7 @@ const ColumnNode = Node.create({
   },
   renderHTML({ node, HTMLAttributes }) {
     const { width } = node.attrs
-    // ⚠️ content hole (0) — nested block গুলো এখানে render হয়
+    // ⚠️ content hole (0) — nested blocks render here
     return [
       'div',
       mergeAttributes(HTMLAttributes, {
@@ -175,7 +175,7 @@ export const columnsBlock: BlockDefinition = {
     { key: 'columnPadding', label: 'Column padding (px)', type: 'range', min: 0, max: 40, step: 2 },
     { key: 'columnBorder', label: 'Column border', type: 'toggle' },
     { key: 'divider', label: 'Divider below columns', type: 'toggle' },
-    { key: 'reverseOnMobile', label: 'মোবাইলে উল্টো ক্রম', type: 'toggle' },
+    { key: 'reverseOnMobile', label: 'Reverse order on mobile', type: 'toggle' },
   ],
   insert: ({ editor, attrs }) => {
     const count = String(attrs?.template ?? '1fr 1fr').includes('repeat(4')
@@ -297,7 +297,7 @@ export const dividerBlock: BlockDefinition = {
     { key: 'thickness', label: 'Thickness', type: 'range', min: 1, max: 12, step: 1 },
     { key: 'width', label: 'Width (%)', type: 'range', min: 10, max: 100, step: 5 },
     { key: 'color', label: 'Color', type: 'color' },
-    { key: 'marginY', label: 'উপর–নিচের ফাঁকা (px)', type: 'range', min: 0, max: 80, step: 4 },
+    { key: 'marginY', label: 'Space above & below (px)', type: 'range', min: 0, max: 80, step: 4 },
     {
       key: 'align',
       label: 'Alignment',
@@ -365,7 +365,7 @@ export const spacerBlock: BlockDefinition = {
   defaults: { height: 48, hideOnMobile: false },
   options: [
     { key: 'height', label: 'Height (px)', type: 'range', min: 8, max: 200, step: 8 },
-    { key: 'hideOnMobile', label: 'মোবাইলে লুকান', type: 'toggle' },
+    { key: 'hideOnMobile', label: 'Hide on mobile', type: 'toggle' },
   ],
 }
 

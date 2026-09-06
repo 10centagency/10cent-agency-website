@@ -3,8 +3,8 @@ import type { BlockDefinition, InserterItem } from './types'
 
 /* ────────────────────────────────────────────────────────────────────────────
  *  SINGLE SOURCE OF TRUTH
- *  নতুন block যোগ করতে = blocks/ ফোল্ডারে একটা ফাইল + registerBlocks([...])
- *  Inserter, slash menu, inspector, extension list, static render — সব auto.
+ *  To add a block = one file in blocks/ + registerBlocks([...])
+ *  Inserter, slash menu, inspector, extension list, static render — all automatic.
  * ──────────────────────────────────────────────────────────────────────────*/
 const store = new Map<string, BlockDefinition>()
 
@@ -25,7 +25,7 @@ export function allBlocks(): BlockDefinition[] {
   return Array.from(store.values())
 }
 
-/** registry থেকে Tiptap extension list — editor তৈরির সময় ব্যবহার হয় */
+/** Tiptap extension list from the registry — used when creating the editor */
 export function extensionsFromRegistry(): AnyExtension[] {
   const out: AnyExtension[] = []
   for (const block of allBlocks()) {
@@ -36,7 +36,7 @@ export function extensionsFromRegistry(): AnyExtension[] {
   return out
 }
 
-/** registry থেকে UniqueID টাইপ list */
+/** UniqueID type list from the registry */
 export function customNodeNames(): string[] {
   return allBlocks()
     .filter((b) => b.node)
@@ -77,7 +77,7 @@ export function inserterItems(): InserterItem[] {
   return items
 }
 
-/** fuzzy-ish search: title / keywords / category দিয়ে */
+/** fuzzy-ish search: by title / keywords / category */
 export function searchBlocks(query: string, items = inserterItems()): InserterItem[] {
   const q = query.trim().toLowerCase()
   if (!q) return items
@@ -93,14 +93,14 @@ export function insertBlock(
   editor: Editor,
   blockName: string,
   attrs?: Record<string, unknown>,
-  /** কোথায় insert করবে — default: কার্সার/শেষে */
+  /** Where to insert — default: at the cursor / end */
   pos?: number,
 ): void {
   const def = getBlock(blockName)
   if (!def || !editor) return
   const finalAttrs = { ...(def.defaults ?? {}), ...(attrs ?? {}) }
 
-  // "insert after position pos" mode (drag handle ➕ থেকে)
+  // "insert after position pos" mode (from the drag handle ➕)
   if (typeof pos === 'number') {
     editor
       .chain()
@@ -118,7 +118,7 @@ export function insertBlock(
   editor.chain().focus().insertContent({ type: blockName, attrs: finalAttrs }).run()
 }
 
-/** core node (paragraph/heading/list) — variations দিয়ে insert */
+/** core node (paragraph/heading/list) — inserted via variations */
 export function insertCore(
   editor: Editor,
   blockName: string,
@@ -127,3 +127,4 @@ export function insertCore(
   const def = getBlock(blockName)
   if (def?.insert) def.insert({ editor, attrs: { ...(def.defaults ?? {}), ...(attrs ?? {}) } })
 }
+

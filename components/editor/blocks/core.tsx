@@ -2,8 +2,8 @@ import { Text as TextIcon, Heading as HeadingIcon, List, ListOrdered, Quote, Cod
 import type { BlockDefinition } from '../types'
 
 /**
- * Core text blocks — এগুলোর কোনো custom node নেই,
- * StarterKit-এর node-কে registry দিয়ে "block" হিসেবে expose করা হয়েছে মাত্র।
+ * Core text blocks — these have no custom node,
+ * the StarterKit nodes are simply exposed as "blocks" through the registry.
  */
 
 export const paragraphBlock: BlockDefinition = {
@@ -125,7 +125,7 @@ export const headingBlock: BlockDefinition = {
     { key: 'bgColor', label: 'Background colour', type: 'color' },
     { key: 'paddingY', label: 'Padding top/bottom (px)', type: 'range', min: 0, max: 48, step: 2 },
     { key: 'uppercase', label: 'UPPERCASE', type: 'toggle' },
-    { key: 'anchorId', label: 'Anchor id (TOC link-এর জন্য)', type: 'text', placeholder: 'section-one' },
+    { key: 'anchorId', label: 'Anchor id (for TOC links)', type: 'text', placeholder: 'section-one' },
   ],
   insert: ({ editor, attrs }) =>
     editor.chain().focus().toggleHeading({ level: (attrs?.level as 1 | 2 | 3 | 4) ?? 2 }).run(),

@@ -2,15 +2,15 @@ import { Extension } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 
 /**
- * TableStyles — TableKit নিজে কোনো স্টাইল option দেয় না,
- * তাই আমরা ৪টা attribute যোগ করছি (inspector থেকে control করা যাবে)।
+ * TableStyles — TableKit itself provides no style options,
+ * so we add attributes that can be controlled from the inspector.
  *
- * ⚠️ বিশেষ দুটো জিনিস:
- * 1. resizable টেবিল Tiptap-এর TableView ব্যবহার করে — সেটা node-এর
- *    renderHTML attribute গুলো DOM-এ বসায় না। তাই নিচে একটা plugin
- *    দিয়ে প্রতিবার doc change-এ attribute গুলো <table>-এ কপি করা হচ্ছে।
- * 2. editorExtensions() আর renderExtensions() — দুটোতেই থাকতে হবে,
- *    নাহলে server render-এ attribute বাদ পড়বে।
+ * ⚠️ Two special things:
+ * 1. A resizable table uses Tiptap TableView, which does not apply the node
+ *    renderHTML attributes to the DOM. So the plugin below
+ *    copies the attributes onto <table> on every document change.
+ * 2. It must be present in BOTH editorExtensions() and renderExtensions(),
+ *    otherwise the attributes are dropped in the server render.
  */
 export const TableStyles = Extension.create({
   name: 'tableStyles',
@@ -40,8 +40,8 @@ export const TableStyles = Extension.create({
             parseHTML: (el) => el.getAttribute('data-table-hover') === 'true',
             renderHTML: (attrs) => (attrs.tableHover ? { 'data-table-hover': 'true' } : {}),
           },
-          // CSS custom property হিসেবে বসানো হয় — তাই public page-এও কাজ করে
-          // (attr() দিয়ে background-colour সেট করা যায় না, কিন্তু var() যায়)
+          // Set as a CSS custom property — so it also works on the public page
+          // (background-colour cannot be set with attr(), but var() works)
           tableHeaderBg: {
             default: '',
             parseHTML: (el) => el.getAttribute('data-table-header-bg') || el.style.getPropertyValue('--table-header-bg') || '',
@@ -97,7 +97,7 @@ export const TableStyles = Extension.create({
             })
           }
 
-          // প্রথম render-এ TableView তৈরি হওয়ার পর চালাতে হবে
+          // Must run after TableView is created on the first render
           requestAnimationFrame(sync)
           return { update: sync }
         },

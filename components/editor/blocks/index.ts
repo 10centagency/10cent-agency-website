@@ -7,10 +7,10 @@ import { marketingBlocks } from './marketing'
 import { advancedBlocks } from './advanced'
 
 /**
- * ★★★  নতুন block যোগ করার একমাত্র জায়গা  ★★★
- * 1. blocks/ ফোল্ডারে নতুন ফাইল বানান (যেমন blocks/embeds.tsx)
- * 2. নিচের array তে সেটা যোগ করুন
- * → Inserter, slash menu, inspector, extension list, static render — সব auto-update
+ * ★★★  The single place to add a new block  ★★★
+ * 1. Create a new file in blocks/ (e.g. blocks/embeds.tsx)
+ * 2. Add it to the array below
+ * → Inserter, slash menu, inspector, extension list, static render — all update automatically
  */
 export function registerAllBlocks() {
   registerBlocks([
@@ -24,3 +24,4 @@ export function registerAllBlocks() {
 }
 
 export { coreBlocks, mediaBlocks, layoutBlocks, designBlocks, marketingBlocks, advancedBlocks }
+

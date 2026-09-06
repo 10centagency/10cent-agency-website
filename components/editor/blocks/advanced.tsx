@@ -7,7 +7,7 @@ import type { BlockDefinition } from '../types'
 import { cx, jsonAttr, mergeAttributes, suppress } from './helpers'
 
 /* ══════════════════════════════════════════════════════════════════════════
- * TABLE  (Tiptap-এর official TableKit — সম্পূর্ণ editable)
+ * TABLE  (Tiptap official TableKit — fully editable)
  * ═════════════════════════════════════════════════════════════════════════*/
 export const tableBlock: BlockDefinition = {
   name: 'table',
@@ -16,7 +16,7 @@ export const tableBlock: BlockDefinition = {
   category: 'advanced',
   icon: Table2,
   keywords: ['table', 'grid', 'rows', 'columns', 'data'],
-  // TableKit + TableStyles (আমাদের বানানো স্টাইল attributes) — array হিসেবে
+  // TableKit + TableStyles (our own style attributes) — as an array
   node: [
     TableKit.configure({
       table: { resizable: true, lastColumnResizable: true, allowTableNodeSelection: true },
@@ -48,7 +48,7 @@ export const tableBlock: BlockDefinition = {
     { key: 'tableCompact', label: 'Compact padding', type: 'toggle' },
     { key: 'tableHover', label: 'Highlight row on hover', type: 'toggle' },
     { key: 'tableHeaderBg', label: 'Header background', type: 'color' },
-    { key: 'tableSticky', label: 'Sticky header (স্ক্রল করলে উপরে থাকবে)', type: 'toggle' },
+    { key: 'tableSticky', label: 'Sticky header (stays visible when scrolling)', type: 'toggle' },
   ],
 }
 

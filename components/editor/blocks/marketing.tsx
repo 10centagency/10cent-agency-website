@@ -309,7 +309,7 @@ export const statsBlock: BlockDefinition = {
     },
     { key: 'bgColor', label: 'Custom background', type: 'color' },
     { key: 'textColor', label: 'Custom text colour', type: 'color' },
-    { key: 'dividers', label: 'কলামের মাঝে divider', type: 'toggle' },
+    { key: 'dividers', label: 'Dividers between columns', type: 'toggle' },
     { key: 'padding', label: 'Padding (px)', type: 'range', min: 8, max: 80, step: 4 },
     {
       key: 'items',
@@ -573,7 +573,7 @@ export const faqBlock: BlockDefinition = {
   options: [
     { key: 'title', label: 'Section title', type: 'text' },
     { key: 'openFirst', label: 'Open first item', type: 'toggle' },
-    { key: 'accordion', label: 'এক সময়ে একটি মাত্র খোলা থাকবে', type: 'toggle' },
+    { key: 'accordion', label: 'Open only one at a time', type: 'toggle' },
     {
       key: 'iconStyle',
       label: 'Icon style',
@@ -614,7 +614,7 @@ export const faqBlock: BlockDefinition = {
  * PRICING TABLE
  * ═════════════════════════════════════════════════════════════════════════*/
 const PRICE_ROUND: Record<string, string> = { none: 'rounded-none', md: 'rounded-xl', lg: 'rounded-2xl' }
-/** price স্ট্রিংয়ের আগের currency চিহ্ন সরিয়ে inspector-এর currency বসায় */
+/** Strips the leading currency symbol and applies the inspector currency */
 const withCurrency = (price: string, currency: string, position = 'before') => {
   const bare = String(price ?? '').replace(/^[^\d.,-]+/, '')
   if (!currency) return String(price ?? '')
@@ -769,7 +769,7 @@ export const pricingBlock: BlockDefinition = {
         { label: '4', value: '4' },
       ],
     },
-    { key: 'currency', label: 'Currency symbol', type: 'text', placeholder: '$ / € / ৳' },
+    { key: 'currency', label: 'Currency symbol', type: 'text', placeholder: '$ / € / £' },
     {
       key: 'currencyPosition',
       label: 'Currency position',
@@ -802,7 +802,7 @@ export const pricingBlock: BlockDefinition = {
         { key: 'name', label: 'Plan name', type: 'text' },
         { key: 'price', label: 'Price', type: 'text' },
         { key: 'period', label: 'Period', type: 'text' },
-        { key: 'features', label: 'Features (প্রতি লাইনে একটা)', type: 'textarea', rows: 4 },
+        { key: 'features', label: 'Features (one per line)', type: 'textarea', rows: 4 },
         { key: 'ctaLabel', label: 'Button text', type: 'text' },
         { key: 'ctaUrl', label: 'Button URL', type: 'url' },
         { key: 'highlight', label: 'Highlight this plan', type: 'toggle' },

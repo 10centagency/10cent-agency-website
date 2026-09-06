@@ -4,7 +4,7 @@ import { Image as ImageIcon, Images, Columns2, Maximize2, Play, Code2 } from 'lu
 import type { BlockDefinition } from '../types'
 import { cx, EmptyImageBox, jsonAttr, mergeAttributes, suppress } from './helpers'
 
-/* ছবির aspect ratio — inspector option থেকে আসে */
+/* Image aspect ratios — driven by inspector options */
 const IMG_ASPECT: Record<string, string> = {
   '': '',
   '16/9': 'aspect-video',
@@ -160,7 +160,7 @@ export const imageBlock: BlockDefinition = {
     },
     { key: 'linkUrl', label: 'Link URL (optional)', type: 'url' },
     { key: 'newTab', label: 'Open link in new tab', type: 'toggle' },
-    { key: 'openFull', label: 'Click করে বড় ছবি খুলবে', type: 'toggle' },
+    { key: 'openFull', label: 'Open full size on click', type: 'toggle' },
   ],
 }
 
@@ -283,15 +283,15 @@ export const galleryBlock: BlockDefinition = {
     },
     {
       key: 'mobileColumns',
-      label: 'মোবাইলে কলাম',
+      label: 'Columns on mobile',
       type: 'segmented',
       choices: [
         { label: '1', value: '1' },
         { label: '2', value: '2' },
       ],
     },
-    { key: 'openFull', label: 'Click করে বড় ছবি খুলবে', type: 'toggle' },
-    { key: 'hoverZoom', label: 'Hover-এ সামান্য zoom', type: 'toggle' },
+    { key: 'openFull', label: 'Open full size on click', type: 'toggle' },
+    { key: 'hoverZoom', label: 'Slight zoom on hover', type: 'toggle' },
     {
       key: 'images',
       label: 'Images',
@@ -308,7 +308,7 @@ export const galleryBlock: BlockDefinition = {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
- * 3. BEFORE / AFTER  (আপনার পুরনো image-duo block — modernized)
+ * 3. BEFORE / AFTER  (your old image-duo block — modernized)
  * ═════════════════════════════════════════════════════════════════════════*/
 const BeforeAfterView = ({ node, selected }: { node: any; selected: boolean }) => {
   const { leftSrc, rightSrc, leftLabel, rightLabel, caption, orientation, showLabels, rounded } = node.attrs
@@ -420,14 +420,14 @@ export const beforeAfterBlock: BlockDefinition = {
         { label: 'Stacked', value: 'vertical' },
       ],
     },
-    { key: 'showLabels', label: 'Labels দেখান', type: 'toggle' },
+    { key: 'showLabels', label: 'Show labels', type: 'toggle' },
     { key: 'rounded', label: 'Rounded corners', type: 'toggle' },
   ],
 }
 
 
 /* ══════════════════════════════════════════════════════════════════════════
- * 4. FULL-WIDTH IMAGE  (পুরনো full-image block — modernized, edge-to-edge)
+ * 4. FULL-WIDTH IMAGE  (old full-image block — modernized, edge-to-edge)
  * ═════════════════════════════════════════════════════════════════════════*/
 const FULL_HEIGHTS: Record<string, string> = {
   auto: 'h-auto',
@@ -567,7 +567,7 @@ export const fullImageBlock: BlockDefinition = {
     },
     {
       key: 'mobileHeight',
-      label: 'মোবাইলে height',
+      label: 'Height on mobile',
       type: 'select',
       choices: [
         { label: 'Small (240px)', value: 'sm' },
@@ -575,7 +575,7 @@ export const fullImageBlock: BlockDefinition = {
         { label: 'Large (520px)', value: 'lg' },
       ],
     },
-    { key: 'overlay', label: 'ওভারলে / hero text দেখান', type: 'toggle' },
+    { key: 'overlay', label: 'Show overlay / hero text', type: 'toggle' },
     { key: 'title', label: 'Overlay title', type: 'text' },
     { key: 'subtitle', label: 'Overlay subtitle', type: 'text' },
     { key: 'overlayColor', label: 'Overlay colour', type: 'color' },
@@ -584,7 +584,7 @@ export const fullImageBlock: BlockDefinition = {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
- * 5. IMAGE + TEXT  (পুরনো image-text block — modernized)
+ * 5. IMAGE + TEXT  (old image-text block — modernized)
  * ═════════════════════════════════════════════════════════════════════════*/
 const ASPECTS: Record<string, string> = {
   '16/9': 'aspect-video',
@@ -723,7 +723,7 @@ export const imageTextBlock: BlockDefinition = {
       ],
     },
     { key: 'linkUrl', label: 'Image link (optional)', type: 'url' },
-    { key: 'gap', label: 'ছবি ও টেক্সটের ফাঁকা (px)', type: 'range', min: 8, max: 80, step: 4 },
+    { key: 'gap', label: 'Gap between image and text (px)', type: 'range', min: 8, max: 80, step: 4 },
     {
       key: 'verticalAlign',
       label: 'Vertical align',
@@ -734,7 +734,7 @@ export const imageTextBlock: BlockDefinition = {
         { label: 'Bottom', value: 'end' },
       ],
     },
-    { key: 'reverseOnMobile', label: 'মোবাইলে ছবি আগে দেখান', type: 'toggle' },
+    { key: 'reverseOnMobile', label: 'Show image first on mobile', type: 'toggle' },
     {
       key: 'bg',
       label: 'Background',

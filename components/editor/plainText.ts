@@ -2,7 +2,7 @@ import type { JSONContent } from '@tiptap/core'
 
 /**
  * Tiptap JSON document → plain text.
- * RSS feed, excerpt, meta description, search index — সব জায়গায় লাগবে।
+ * Needed for RSS feed, excerpt, meta description, search index — everywhere.
  */
 export function plainTextFromDoc(doc: unknown, maxLength?: number): string {
   if (!doc || typeof doc !== 'object') return ''
@@ -13,7 +13,7 @@ export function plainTextFromDoc(doc: unknown, maxLength?: number): string {
       if (typeof node.text === 'string') out.push(node.text)
       return
     }
-    // atom block-এর attrs-এ লেখা থাকতে পারে (image+text body, CTA title, quote…)
+    // text may live in atom block attrs (image+text body, CTA title, quote…)
     if (node.attrs && typeof node.attrs === 'object') {
       for (const key of TEXT_ATTRS) {
         const v = node.attrs[key]
@@ -22,7 +22,7 @@ export function plainTextFromDoc(doc: unknown, maxLength?: number): string {
         }
       }
     }
-    // block গুলোর পরে space দিলে শব্দ জুড়ে যায় না
+    // a space after each block stops words running together
     if (node.content && Array.isArray(node.content)) {
       node.content.forEach(walk)
       if (BLOCK_TYPES.has(node.type)) out.push(' ')
@@ -43,7 +43,7 @@ export function plainTextFromDoc(doc: unknown, maxLength?: number): string {
   return text
 }
 
-/** node attrs-এ থাকা লেখা (image+text-এর body, caption, CTA title ইত্যাদি) */
+/** Text stored in node attrs (image+text body, caption, CTA title etc.) */
 const TEXT_ATTRS = ['heading', 'body', 'caption', 'label', 'quote', 'text', 'title', 'bio', 'sample']
 
 function stripHtml(input: string): string {
@@ -61,7 +61,7 @@ const BLOCK_TYPES = new Set([
   'ctaBlock', 'statsBlock', 'testimonialBlock', 'faqBlock',
 ])
 
-/** doc-এ আসল content আছে কিনা — empty save guard এর জন্য */
+/** Whether the doc has real content — used as an empty-save guard */
 export function isDocEmpty(doc: unknown): boolean {
   if (!doc || typeof doc !== 'object') return true
   const content = (doc as any).content
@@ -78,3 +78,4 @@ const NON_TEXT_NODES = new Set([
   'colorPaletteBlock', 'testimonialBlock', 'statsBlock', 'ctaBlock', 'faqBlock',
   'columnsBlock', 'calloutBlock',
 ])
+

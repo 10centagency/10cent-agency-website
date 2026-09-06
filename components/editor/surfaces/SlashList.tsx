@@ -11,7 +11,7 @@ interface SlashListProps {
   command: (item: InserterItem) => void
 }
 
-/** "/" টাইপ করলে যে লিস্ট দেখায় — BlockPicker-এর compact ভার্সন */
+/** The list shown when you type "/" — compact version of BlockPicker */
 const SlashList = forwardRef<SlashListHandle, SlashListProps>(({ items, command }, ref) => {
   const [selected, setSelected] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -81,3 +81,4 @@ const SlashList = forwardRef<SlashListHandle, SlashListProps>(({ items, command 
 
 SlashList.displayName = 'SlashList'
 export default SlashList
+

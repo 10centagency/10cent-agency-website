@@ -1,6 +1,6 @@
 import { mergeAttributes } from '@tiptap/core'
 
-/** attribute-কে root element-এ auto-render করতে দেবে না (আমরা নিজেরা markup বানাই) */
+/** Prevents an attribute from being auto-rendered on the root element (we build the markup) */
 export const suppress = () => ({})
 
 /** array / object attribute (images, colors, items …) — JSON round-trip */
@@ -20,13 +20,13 @@ export function jsonAttr<T>(defaultValue: T) {
   }
 }
 
-/** দুইটা class list একসাথে করে */
+/** Merges two class lists */
 export const cx = (...parts: (string | false | null | undefined)[]) =>
   parts.filter(Boolean).join(' ')
 
 export { mergeAttributes }
 
-/* ── Demo assets: data-URI SVG (কোনো external network লাগে না) ─────────────*/
+/* ── Demo assets: data-URI SVG (no external network needed) ─────────────*/
 export function demoImage(label: string, from = '#93C5FD', to = '#2563EB', w = 1200, h = 675) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
     <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
@@ -63,3 +63,4 @@ export function EmptyImageBox({
     </div>
   )
 }
+

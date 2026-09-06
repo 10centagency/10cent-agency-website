@@ -144,3 +144,4 @@ export default function FormatToolbar({ editor }: { editor: Editor }) {
     </BubbleMenu>
   )
 }
+

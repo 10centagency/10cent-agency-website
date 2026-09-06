@@ -2,29 +2,41 @@ import StarterKit from '@tiptap/starter-kit'
 import TextAlign from '@tiptap/extension-text-align'
 import { generateHTML, generateJSON } from '@tiptap/html'
 import type { JSONContent } from '@tiptap/core'
-import { allBlocks, extensionsFromRegistry } from './registry'
+import { extensionsFromRegistry, allBlocks } from './registry'
 import { TextStyles } from './extensions/textStyles'
-import { registerAllBlocks } from './blocks'
 import { isDocEmpty } from './plainText'
+import { registerAllBlocks } from './blocks'
 
 /**
- * SERVER-SAFE extension list — শুধু node + mark।
+ * SERVER-SAFE extension list — nodes and marks only.
  *
  * SlashCommand / Placeholder / UniqueID / TrailingNode / FileHandler
- * এগুলো plugin-only → server-এ দরকার নেই, রাখলে সমস্যা হতে পারে।
+ * These are plugin-only → not needed on the server; keeping them can cause problems.
  *
- * ⚠️ editorExtensions() (BlockEditor.tsx) আর renderExtensions() —
- *    দুটোতেই যেন block node গুলো একই থাকে, নাহলে unknown node drop হয়ে যাবে।
+ * ⚠️ editorExtensions() (BlockEditor.tsx) and renderExtensions() —
+ *    both must contain the same block nodes, or unknown nodes get dropped.
  */
-export function renderExtensions() {
+/**
+ * SERVER-SAFETY: when renderDocToHtml() is called in a server component
+ * (e.g. app/blog/[slug]/page.tsx), BlogForm module-level `registerAllBlocks()`
+ * does not run, so the registry may be empty and custom blocks are silently dropped.
+ * So if the registry is empty, we register it here.
+ */
+function ensureBlocksRegistered() {
   if (allBlocks().length === 0) {
+    // lazy require → avoids a circular import
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     registerAllBlocks()
   }
+}
+
+export function renderExtensions() {
+  ensureBlocksRegistered()
   return [
     StarterKit.configure({
       heading: { levels: [1, 2, 3, 4] },
       link: { openOnClick: false },
-      trailingNode: false, // render করার সময় extra paragraph লাগবে না
+      trailingNode: false, // no extra paragraph needed when rendering
     }),
     TextAlign.configure({ types: ['heading', 'paragraph', 'tableCell', 'tableHeader'] }),
     ...extensionsFromRegistry(),
@@ -34,7 +46,10 @@ export function renderExtensions() {
 
 /** Tiptap JSON → HTML (public page / RSS / meta description) */
 export function renderDocToHtml(doc: JSONContent | null | undefined): string {
-  if (!doc || typeof doc !== 'object' || isDocEmpty(doc)) return ''
+  // empty doc → return '' so the caller falls back (old content_blocks)
+  if (!doc || isDocEmpty(doc)) return ''
+
+  if (!doc || typeof doc !== 'object') return ''
   let html = ''
   try {
     html = generateHTML(doc as JSONContent, renderExtensions())
@@ -54,7 +69,7 @@ export function renderDocToHtml(doc: JSONContent | null | undefined): string {
   })
 }
 
-/** Legacy HTML string → Tiptap nodes (পুরনো block.content ছিল HTML) */
+/** Legacy HTML string → Tiptap nodes (old block.content was HTML) */
 export function htmlToNodes(html: string): JSONContent[] {
   if (!html || !html.trim()) return []
   try {
@@ -65,3 +80,4 @@ export function htmlToNodes(html: string): JSONContent[] {
     return []
   }
 }
+
