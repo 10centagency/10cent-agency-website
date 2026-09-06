@@ -315,3 +315,14 @@
   z-index: 2;
 }
 
+/* ── 9b. Nested React node-views (Columns) — flatten Tiptap's portal wrapper ─
+ * Columns/Callout render their child blocks with ReactNodeViewRenderer, which
+ * mounts each child into a display:block [data-node-view-wrapper] portal host.
+ * For Columns that host becomes the only grid item, so the columns stack in one
+ * cell. Flatten it so the columns themselves are the grid items.
+ * Editor only — the server render (renderDocToHtml) emits no such wrapper. */
+.tiptap-canvas .ProseMirror [data-node-view-content] > [data-node-view-wrapper],
+.tiptap-canvas .ProseMirror [data-node-view-content] > [data-node-view-wrapper] [data-node-view-wrapper] {
+  display: contents;
+}
+
