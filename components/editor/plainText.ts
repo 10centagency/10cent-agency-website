@@ -21,6 +21,16 @@ export function plainTextFromDoc(doc: unknown, maxLength?: number): string {
           out.push(stripHtml(v), ' ')
         }
       }
+      // Repeater (list) attributes hold arrays of objects — stats items, FAQ q/a,
+      // pricing plans, timeline steps, team members, logos, TOC links, gallery
+      // alts. Pull the human-readable strings out of every nested object.
+      for (const v of Object.values(node.attrs)) {
+        if (Array.isArray(v)) {
+          for (const item of v) {
+            if (item && typeof item === 'object') collectStrings(item, out)
+          }
+        }
+      }
     }
     // a space after each block stops words running together
     if (node.content && Array.isArray(node.content)) {
@@ -54,6 +64,28 @@ function stripHtml(input: string): string {
     .trim()
 }
 
+/** Recursively collect readable strings from a repeater item (skips URL fields). */
+function collectStrings(obj: Record<string, unknown>, out: string[]) {
+  for (const [key, value] of Object.entries(obj)) {
+    if (typeof value === 'string') {
+      const t = value.trim()
+      if (t && !URL_KEYS.has(key.toLowerCase()) && !/^(https?:|\/|#|data:)/.test(t)) {
+        out.push(stripHtml(value), ' ')
+      }
+    } else if (Array.isArray(value)) {
+      value.forEach((x) => {
+        if (x && typeof x === 'object') collectStrings(x as Record<string, unknown>, out)
+      })
+    }
+  }
+}
+
+const URL_KEYS = new Set([
+  'src', 'url', 'href', 'image', 'avatar', 'logo', 'photo', 'poster',
+  'linkurl', 'link', 'ctaurl', 'linkedin', 'website', 'bgimage', 'buttonurl',
+  'button2url',
+])
+
 const BLOCK_TYPES = new Set([
   'paragraph', 'heading', 'blockquote', 'bulletList', 'orderedList', 'listItem',
   'codeBlock', 'imageBlock', 'galleryBlock', 'beforeAfterBlock', 'columnsBlock',
@@ -77,5 +109,9 @@ const NON_TEXT_NODES = new Set([
   'imageBlock', 'galleryBlock', 'beforeAfterBlock', 'dividerBlock', 'spacerBlock',
   'colorPaletteBlock', 'testimonialBlock', 'statsBlock', 'ctaBlock', 'faqBlock',
   'columnsBlock', 'calloutBlock',
+  // Added: blocks whose text lives in attrs (or that are purely visual). Without
+  // these, a doc made only of such blocks was treated as empty and saved as null.
+  'pricingBlock', 'timelineBlock', 'logoGridBlock', 'teamBlock', 'typographyBlock',
+  'tocBlock', 'buttonBlock', 'fullImageBlock', 'videoBlock', 'embedBlock',
+  'htmlBlock', 'imageTextBlock',
 ])
-

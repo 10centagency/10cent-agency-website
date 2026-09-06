@@ -58,15 +58,34 @@ export function renderDocToHtml(doc: JSONContent | null | undefined): string {
     return ''
   }
 
-  // Raw HTML block: content is stored URI-encoded in data-code, put it back
-  return html.replace(/<div([^>]*?)data-code="([^"]*)"([^>]*?)><\/div>/g, (match, _pre, code, _post) => {
-    if (!match.includes('data-block="html"')) return match
+  // Raw HTML block: its code is stored URI-encoded in data-code. Attribute order
+  // is not guaranteed (mergeAttributes may emit class/data-block before data-code),
+  // so match an empty div that carries data-block="html", then pull data-code out.
+  html = html.replace(/<div([^>]*?)><\/div>/g, (match, attrs) => {
+    if (!attrs.includes('data-block="html"')) return match
+    const codeMatch = /data-code="([^"]*)"/.exec(attrs)
+    if (!codeMatch) return match
     try {
-      return `<div class="my-6 raw-html">${decodeURIComponent(code)}</div>`
+      const cls = /class="([^"]*)"/.exec(attrs)?.[1] ?? 'my-6 raw-html'
+      return `<div class="${cls}">${decodeURIComponent(codeMatch[1])}</div>`
     } catch {
       return match
     }
   })
+
+  // Image+Text block: the rich-text body is stored URI-encoded in data-body.
+  html = html.replace(/<div([^>]*?)><\/div>/g, (match, attrs) => {
+    const bodyMatch = /data-body="([^"]*)"/.exec(attrs)
+    if (!bodyMatch) return match
+    try {
+      const cls = /class="([^"]*)"/.exec(attrs)?.[1] ?? ''
+      return `<div class="${cls}">${decodeURIComponent(bodyMatch[1])}</div>`
+    } catch {
+      return match
+    }
+  })
+
+  return html
 }
 
 /** Legacy HTML string → Tiptap nodes (old block.content was HTML) */
@@ -80,4 +99,3 @@ export function htmlToNodes(html: string): JSONContent[] {
     return []
   }
 }
-

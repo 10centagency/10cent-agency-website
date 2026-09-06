@@ -676,7 +676,11 @@ const ImageTextNode = Node.create({
           : img],
       ['div', { class: order(false) },
         heading ? ['h3', { class: 'mb-2 text-xl font-bold text-slate-900' }, heading] : ['span', { class: 'hidden' }],
-        body ? ['div', { class: 'text-sm leading-relaxed text-slate-600 [&_a]:text-blue-600 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_p]:mb-2' }, body] : ['span', { class: 'hidden' }],
+        body
+          // Rich HTML is stored URI-encoded in data-body; renderDocToHtml() decodes it
+          // back after generateHTML (a raw string here would be escaped by ProseMirror).
+          ? ['div', { class: 'it-body text-sm leading-relaxed text-slate-600 [&_a]:text-blue-600 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_p]:mb-2', 'data-body': encodeURIComponent(body) }]
+          : ['span', { class: 'hidden' }],
         buttonLabel && buttonUrl
           ? ['div', { class: 'mt-4' }, ['a', { href: buttonUrl, target: '_blank', rel: 'noopener noreferrer', class: 'inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700' }, buttonLabel]]
           : ['span', { class: 'hidden' }]],
@@ -822,11 +826,15 @@ const VideoNode = Node.create({
     const { url, caption, aspect, autoplay, muted, loop, controls, poster, rounded, shadow, maxWidth, privacy } = node.attrs
     const embed = videoEmbedUrl(url, privacy)
     const cls = cx('w-full', ASPECTS[aspect] ?? 'aspect-video', rounded && 'rounded-xl', shadow && 'shadow-lg')
+    // YouTube/Vimeo query options — all three flags must be reflected (not just autoplay)
+    const params = [autoplay ? 'autoplay=1' : '', muted ? 'mute=1' : '', loop ? 'loop=1' : ''].filter(Boolean).join('&')
     const inner: any = !url
       ? ['div', { class: cls }]
       : embed
-        ? ['iframe', { src: `${embed}${autoplay ? '?autoplay=1' : ''}`, title: caption || 'Video', allowfullscreen: 'true', allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture', class: cls }]
-        : ['video', { src: url, ...(poster ? { poster } : {}), controls: controls ? 'true' : 'false', autoplay: autoplay ? 'true' : 'false', muted: muted ? 'true' : 'false', loop: loop ? 'true' : 'false', class: cx(cls, 'bg-black') }]
+        ? ['iframe', { src: params ? `${embed}?${params}` : embed, title: caption || 'Video', allowfullscreen: 'true', allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture', class: cls }]
+        // Boolean HTML attributes must be OMITTED when off — controls="false" is
+        // still truthy in the browser, so the player would show controls anyway.
+        : ['video', { src: url, ...(poster ? { poster } : {}), ...(controls ? { controls: 'true' } : {}), ...(autoplay ? { autoplay: 'true' } : {}), ...(muted ? { muted: 'true' } : {}), ...(loop ? { loop: 'true' } : {}), class: cx(cls, 'bg-black') }]
     return [
       'figure',
       mergeAttributes(HTMLAttributes, {
@@ -962,4 +970,3 @@ export const mediaBlocks: BlockDefinition[] = [
   videoBlock,
   embedBlock,
 ]
-

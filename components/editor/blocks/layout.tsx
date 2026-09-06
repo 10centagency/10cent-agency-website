@@ -56,25 +56,31 @@ const ColumnsNode = Node.create({
   },
   renderHTML({ node, HTMLAttributes }) {
     const { template, gap, divider, verticalAlign, columnBg, columnPadding, columnBorder, reverseOnMobile } = node.attrs
-    const children: any[] = [0]
-    if (divider) children.push(['div', { class: 'mt-4 h-px w-full bg-slate-200' }])
-    // ⚠️ Without the content hole (0), nested column content is dropped on the server
+    // ⚠️ The content hole (0) MUST be the only child of its parent node, otherwise
+    // ProseMirror throws "Content hole must be the only child". So the grid wrapper
+    // (which holds the content hole) and the optional divider line are SIBLINGS
+    // inside an outer element. data-block stays on the grid so the mobile CSS
+    // ([data-block="columns"]) and the [data-reverse-mobile] rule keep matching.
     return [
       'div',
-      mergeAttributes(HTMLAttributes, {
-        'data-block': 'columns',
-        ...(reverseOnMobile ? { 'data-reverse-mobile': 'true' } : {}),
-        class: 'my-6 grid',
-        style: [
-          `grid-template-columns:${template}`,
-          `gap:${gap}px`,
-          `align-items:${ALIGN[verticalAlign] ?? 'start'}`,
-          columnBg ? `--column-bg:${columnBg}` : '',
-          columnPadding ? `--column-pad:${columnPadding}px` : '',
-          columnBorder ? '--column-border:1px solid #D9E8FA' : '',
-        ].filter(Boolean).join(';'),
-      }),
-      ...children,
+      mergeAttributes(HTMLAttributes, { 'data-block': 'columns', class: 'my-6' }),
+      [
+        'div',
+        {
+          ...(reverseOnMobile ? { 'data-reverse-mobile': 'true' } : {}),
+          class: 'grid',
+          style: [
+            `grid-template-columns:${template}`,
+            `gap:${gap}px`,
+            `align-items:${ALIGN[verticalAlign] ?? 'start'}`,
+            columnBg ? `--column-bg:${columnBg}` : '',
+            columnPadding ? `--column-pad:${columnPadding}px` : '',
+            columnBorder ? '--column-border:1px solid #D9E8FA' : '',
+          ].filter(Boolean).join(';'),
+        },
+        0,
+      ],
+      divider ? ['div', { class: 'mt-4 h-px w-full bg-slate-200' }] : ['span', { class: 'hidden' }],
     ]
   },
   addNodeView() {
@@ -370,4 +376,3 @@ export const spacerBlock: BlockDefinition = {
 }
 
 export const layoutBlocks: BlockDefinition[] = [columnsBlock, columnBlock, dividerBlock, spacerBlock]
-
