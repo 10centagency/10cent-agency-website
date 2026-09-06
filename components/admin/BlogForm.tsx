@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
@@ -14,6 +14,7 @@ import {
   X,
   Plus,
   ArrowLeft,
+  Eye,
 } from 'lucide-react'
 
 registerAllBlocks()
@@ -30,6 +31,8 @@ export default function BlogForm({ postId }: BlogFormProps) {
   const [loading, setLoading] = useState(isEditing)
   const [uploading, setUploading] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const [feedback, setFeedback] = useState('')
+  const targetStatusRef = useRef<'draft' | 'published'>('draft')
 
   const [title, setTitle] = useState('')
   const [slug, setSlug] = useState('')
@@ -156,13 +159,45 @@ export default function BlogForm({ postId }: BlogFormProps) {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handlePreview = () => {
+    if (typeof window === 'undefined') return
+    const categoryObj = categories.find((c) => c.id === categoryId)
+    sessionStorage.setItem(
+      'blog-preview',
+      JSON.stringify({
+        title: title || 'Untitled post',
+        slug: slug || generateSlug(title),
+        excerpt: excerpt || '',
+        metaDescription: metaDescription || '',
+        featuredImageUrl: featuredImageUrl || '',
+        featuredImageLink: featuredImageLink || '',
+        featuredImageAlt: featuredImageAlt || '',
+        content: content ?? null,
+        tags: tags
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
+        categoryName: categoryObj?.name || '',
+        savedAt: new Date().toISOString(),
+      })
+    )
+    window.open('/admin/blog/preview', '_blank', 'noopener,noreferrer')
+  }
+
+  const submitWithStatus = async (
+    e: React.FormEvent,
+    nextStatus: 'draft' | 'published'
+  ) => {
     e.preventDefault()
     setError('')
+    setFeedback('')
     setSaving(true)
 
     const client = await getAuthenticatedClient()
-    if (!client) return
+    if (!client) {
+      setSaving(false)
+      return
+    }
 
     const finalSlug = slug || generateSlug(title)
     const tagsArray = tags
@@ -183,7 +218,7 @@ export default function BlogForm({ postId }: BlogFormProps) {
       tags: tagsArray,
       is_featured: isFeatured,
       sort_order: sortOrder,
-      status,
+      status: nextStatus,
     }
 
     if (isEditing) {
@@ -215,7 +250,21 @@ export default function BlogForm({ postId }: BlogFormProps) {
       }
     }
 
-    window.location.replace('/admin/blog')
+    setStatus(nextStatus)
+    setFeedback(
+      nextStatus === 'draft'
+        ? 'Draft saved'
+        : isEditing && status === 'published'
+        ? 'Post updated'
+        : 'Post published'
+    )
+    setTimeout(() => {
+      window.location.replace('/admin/blog')
+    }, 600)
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    submitWithStatus(e, targetStatusRef.current)
   }
 
   if (loading) {
@@ -231,6 +280,11 @@ export default function BlogForm({ postId }: BlogFormProps) {
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
           {error}
+        </div>
+      )}
+      {feedback && (
+        <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+          {feedback}
         </div>
       )}
 
@@ -515,23 +569,53 @@ export default function BlogForm({ postId }: BlogFormProps) {
       )}
 
       {/* Actions */}
-      <div className="sticky bottom-0 bg-white border-t border-brand-border p-4 rounded-t-xl shadow-lg flex gap-3 justify-end">
+      <div className="sticky bottom-0 bg-white border-t border-brand-border p-4 rounded-t-xl shadow-lg flex flex-wrap gap-3 justify-end items-center">
+        <button
+          type="button"
+          onClick={handlePreview}
+          className="px-5 py-2 border border-brand-border rounded-lg text-brand-textDark hover:bg-gray-50 text-sm font-medium flex items-center gap-2 transition-colors cursor-pointer"
+        >
+          <Eye className="w-4 h-4 text-brand-textMid" />
+          Preview
+        </button>
+        <button
+          type="submit"
+          onClick={() => {
+            targetStatusRef.current = 'draft'
+          }}
+          disabled={saving}
+          className="px-5 py-2 border border-brand-border bg-white text-brand-textDark rounded-lg hover:bg-gray-50 text-sm font-medium disabled:opacity-50 flex items-center gap-2 transition-colors cursor-pointer"
+        >
+          {saving && targetStatusRef.current === 'draft' && (
+            <Loader className="w-4 h-4 animate-spin" />
+          )}
+          {saving && targetStatusRef.current === 'draft' ? 'Saving…' : 'Save Draft'}
+        </button>
+        <button
+          type="submit"
+          onClick={() => {
+            targetStatusRef.current = 'published'
+          }}
+          disabled={saving}
+          className="px-6 py-2 bg-brand-blue text-white rounded-lg hover:bg-brand-blue/90 text-sm font-medium disabled:opacity-50 flex items-center gap-2 transition-colors cursor-pointer"
+        >
+          {saving && targetStatusRef.current === 'published' && (
+            <Loader className="w-4 h-4 animate-spin" />
+          )}
+          {saving && targetStatusRef.current === 'published'
+            ? 'Saving…'
+            : isEditing && status === 'published'
+            ? 'Update'
+            : 'Publish'}
+        </button>
         <Link href="/admin/blog">
           <button
             type="button"
-            className="px-6 py-2 border border-brand-border rounded-lg text-brand-textDark hover:bg-gray-50"
+            className="px-5 py-2 border border-brand-border rounded-lg text-brand-textDark hover:bg-gray-50 text-sm font-medium transition-colors"
           >
             Cancel
           </button>
         </Link>
-        <button
-          type="submit"
-          disabled={saving}
-          className="px-6 py-2 bg-brand-blue text-white rounded-lg hover:bg-brand-blue/90 disabled:opacity-50 flex items-center gap-2"
-        >
-          {saving && <Loader className="w-4 h-4 animate-spin" />}
-          {isEditing ? 'Update Post' : 'Create Post'}
-        </button>
       </div>
     </form>
   )

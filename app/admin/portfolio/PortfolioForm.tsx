@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import NextLink from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { getAuthenticatedClient } from '@/lib/auth-helpers';
 import { ContentBlock, PortfolioItem } from '@/lib/database.types';
 import RichTextEditor from '@/components/admin/RichTextEditor';
+import { convertLegacyBlocks } from '@/components/editor';
 import {
   Loader,
   Upload,
@@ -24,6 +25,7 @@ import {
   CaseSensitive,
   ChevronUp,
   ChevronDown,
+  Eye,
 } from 'lucide-react';
 
 const CATEGORIES = ['Meta', 'Website', 'Design', 'Automation'] as const;
@@ -51,6 +53,8 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
   const [loading, setLoading] = useState(isEditing);
   const [uploading, setUploading] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [feedback, setFeedback] = useState('');
+  const targetStatusRef = useRef<'draft' | 'published'>('draft');
 
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
@@ -248,14 +252,44 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
     setUploading(null);
   };
 
-  // ── Submit ─────────────────────────────────────────────────────────────
-  const handleSubmit = async (e: React.FormEvent) => {
+  // ── Preview & Submit ──────────────────────────────────────────────────
+  const handlePreview = () => {
+    if (typeof window === 'undefined') return;
+    const docContent = convertLegacyBlocks(contentBlocks);
+    sessionStorage.setItem(
+      'portfolio-preview',
+      JSON.stringify({
+        title: title || 'Untitled Project',
+        slug: slug || generateSlug(title),
+        category,
+        industry,
+        clientName,
+        resultHighlight,
+        excerpt: excerpt || '',
+        metaDescription: metaDescription || '',
+        featuredImageUrl: featuredImageUrl || '',
+        featuredImageLink: featuredImageLink || '',
+        featuredImageAlt: featuredImageAlt || '',
+        content: docContent,
+        contentBlocks,
+        tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
+        savedAt: new Date().toISOString(),
+      })
+    );
+    window.open('/admin/portfolio/preview', '_blank', 'noopener,noreferrer');
+  };
+
+  const submitWithStatus = async (e: React.FormEvent, nextStatus: 'draft' | 'published') => {
     e.preventDefault();
     setError('');
+    setFeedback('');
     setSaving(true);
 
     const client = await getAuthenticatedClient();
-    if (!client) return;
+    if (!client) {
+      setSaving(false);
+      return;
+    }
 
     const finalSlug = slug || generateSlug(title);
     const tagsArray = tags.split(',').map((t) => t.trim()).filter(Boolean);
@@ -276,7 +310,7 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
       content_blocks: contentBlocks as unknown as Record<string, unknown>[],
       is_featured: isFeatured,
       sort_order: sortOrder,
-      status,
+      status: nextStatus,
     };
 
     if (isEditing) {
@@ -287,7 +321,21 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
       if (error) { setError(`Create failed: ${error.message}`); setSaving(false); return; }
     }
 
-    window.location.replace('/admin/portfolio');
+    setStatus(nextStatus);
+    setFeedback(
+      nextStatus === 'draft'
+        ? 'Draft saved'
+        : isEditing && status === 'published'
+        ? 'Project updated'
+        : 'Project published'
+    );
+    setTimeout(() => {
+      window.location.replace('/admin/portfolio');
+    }, 600);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    submitWithStatus(e, targetStatusRef.current);
   };
 
   if (loading) {
@@ -922,6 +970,11 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
           {error}
         </div>
       )}
+      {feedback && (
+        <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg px-4 py-3">
+          {feedback}
+        </div>
+      )}
 
       {/* ── Basic Info ── */}
       <div className="bg-white rounded-xl border border-brand-border p-5 space-y-4">
@@ -1142,14 +1195,43 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
       </div>
 
       {/* ── Actions ── */}
-      <div className="flex items-center gap-3 pt-2">
-        <button type="submit" disabled={saving}
-          className="bg-brand-navy text-white text-sm font-semibold rounded-lg px-6 py-2.5 hover:bg-brand-blue transition-colors disabled:opacity-60 flex items-center gap-2"
+      <div className="flex flex-wrap items-center gap-3 pt-2">
+        <button
+          type="button"
+          onClick={handlePreview}
+          className="px-5 py-2.5 rounded-lg border border-brand-border bg-white text-sm font-medium text-brand-textDark hover:bg-gray-50 transition-colors flex items-center gap-2 cursor-pointer"
         >
-          {saving && <Loader className="w-4 h-4 animate-spin" />}
-          {saving ? 'Saving...' : isEditing ? 'Update Item' : 'Create Item'}
+          <Eye className="w-4 h-4 text-brand-textMid" />
+          Preview
         </button>
-        <NextLink href="/admin/portfolio"
+        <button
+          type="submit"
+          onClick={() => {
+            targetStatusRef.current = 'draft';
+          }}
+          disabled={saving}
+          className="px-5 py-2.5 rounded-lg border border-brand-border bg-white text-sm font-medium text-brand-textDark hover:bg-gray-50 transition-colors disabled:opacity-60 flex items-center gap-2 cursor-pointer"
+        >
+          {saving && targetStatusRef.current === 'draft' && <Loader className="w-4 h-4 animate-spin" />}
+          {saving && targetStatusRef.current === 'draft' ? 'Saving…' : 'Save Draft'}
+        </button>
+        <button
+          type="submit"
+          onClick={() => {
+            targetStatusRef.current = 'published';
+          }}
+          disabled={saving}
+          className="bg-brand-navy text-white text-sm font-semibold rounded-lg px-6 py-2.5 hover:bg-brand-blue transition-colors disabled:opacity-60 flex items-center gap-2 cursor-pointer"
+        >
+          {saving && targetStatusRef.current === 'published' && <Loader className="w-4 h-4 animate-spin" />}
+          {saving && targetStatusRef.current === 'published'
+            ? 'Saving…'
+            : isEditing && status === 'published'
+            ? 'Update'
+            : 'Publish'}
+        </button>
+        <NextLink
+          href="/admin/portfolio"
           className="text-sm font-medium text-brand-textMid hover:text-brand-textDark transition-colors px-4 py-2.5"
         >
           Cancel
