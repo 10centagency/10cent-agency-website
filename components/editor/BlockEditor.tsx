@@ -14,6 +14,7 @@ import {
 
 import { customNodeNames, extensionsFromRegistry, insertBlock } from './registry'
 import { SlashCommand } from './extensions/slashCommand'
+import { TextStyles } from './extensions/textStyles'
 import BlockPicker from './surfaces/BlockPicker'
 import BlockHandle from './surfaces/BlockHandle'
 import FormatToolbar from './surfaces/FormatToolbar'
@@ -52,6 +53,7 @@ export function editorExtensions(upload?: UploadFn) {
       types: [...customNodeNames(), 'heading'],
     }),
     ...extensionsFromRegistry(),
+    TextStyles,
     SlashCommand,
   ]
 

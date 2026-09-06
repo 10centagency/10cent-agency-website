@@ -3,6 +3,7 @@ import TextAlign from '@tiptap/extension-text-align'
 import { generateHTML, generateJSON } from '@tiptap/html'
 import type { JSONContent } from '@tiptap/core'
 import { allBlocks, extensionsFromRegistry } from './registry'
+import { TextStyles } from './extensions/textStyles'
 import { registerAllBlocks } from './blocks'
 import { isDocEmpty } from './plainText'
 
@@ -25,8 +26,9 @@ export function renderExtensions() {
       link: { openOnClick: false },
       trailingNode: false, // render করার সময় extra paragraph লাগবে না
     }),
-    TextAlign.configure({ types: ['heading', 'paragraph'] }),
+    TextAlign.configure({ types: ['heading', 'paragraph', 'tableCell', 'tableHeader'] }),
     ...extensionsFromRegistry(),
+    TextStyles,
   ]
 }
 

@@ -184,3 +184,73 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+/* ── 9. Text block styling (inspector option থেকে) ─────────────────────── */
+
+/* Blockquote — variant + citation (citation ::after দিয়ে দেখানো হয়) */
+:is(.doc-content, .preview-content, .tiptap-canvas) blockquote[data-quote="card"] {
+  margin: 1.5rem 0;
+  padding: 1.25rem 1.5rem;
+  border-left-width: 4px;
+  border-radius: 0.75rem;
+  background: #f8fbff;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) blockquote[data-quote="centered"] {
+  margin: 2rem 0;
+  padding: 0 1rem;
+  border: 0;
+  text-align: center;
+  font-size: 1.15rem;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) blockquote[data-quote="plain"] {
+  border: 0;
+  padding-left: 0;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) blockquote[data-citation]:not([data-citation=""])::after {
+  content: attr(data-citation);
+  display: block;
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  font-style: normal;
+  font-weight: 600;
+  color: #16324f;
+}
+
+/* Code block — theme + line numbers */
+:is(.doc-content, .preview-content, .tiptap-canvas) pre[data-theme="light"] {
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 1px solid #d9e8fa;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) pre[data-language]:not([data-language=""]) {
+  position: relative;
+  padding-top: 2.1rem;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) pre[data-language]:not([data-language=""])::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) pre[data-linenumbers="true"] {
+  counter-reset: line;
+  padding-left: 0;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) pre[data-linenumbers="true"] code {
+  display: block;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) pre[data-linenumbers="true"] code > * {
+  display: block;
+}
+
+/* Gallery — মোবাইলে কলাম (inspector option থেকে) */
+@media (max-width: 640px) {
+  :is(.doc-content, .preview-content, .tiptap-canvas) [data-block="gallery"] {
+    grid-template-columns: repeat(var(--mobile-cols, 2), minmax(0, 1fr)) !important;
+  }
+}
+
