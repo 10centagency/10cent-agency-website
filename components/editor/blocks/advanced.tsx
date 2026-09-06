@@ -1,6 +1,7 @@
 import { Node } from '@tiptap/core'
 import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react'
 import { TableKit } from '@tiptap/extension-table'
+import { TableStyles } from '../extensions/tableStyles'
 import { Table2, Code, ListTree } from 'lucide-react'
 import type { BlockDefinition } from '../types'
 import { cx, jsonAttr, mergeAttributes, suppress } from './helpers'
@@ -15,11 +16,40 @@ export const tableBlock: BlockDefinition = {
   category: 'advanced',
   icon: Table2,
   keywords: ['table', 'grid', 'rows', 'columns', 'data'],
-  node: TableKit.configure({
-    table: { resizable: true, lastColumnResizable: true, allowTableNodeSelection: true },
-  }),
+  // TableKit + TableStyles (আমাদের বানানো স্টাইল attributes) — array হিসেবে
+  node: [
+    TableKit.configure({
+      table: { resizable: true, lastColumnResizable: true, allowTableNodeSelection: true },
+    }),
+    TableStyles,
+  ],
   insert: ({ editor }) =>
     editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+  defaults: {
+    tableBorders: 'all',
+    tableStriped: false,
+    tableCompact: false,
+    tableHover: false,
+    tableHeaderBg: '',
+    tableSticky: false,
+  },
+  options: [
+    {
+      key: 'tableBorders',
+      label: 'Borders',
+      type: 'segmented',
+      choices: [
+        { label: 'All', value: 'all' },
+        { label: 'Rows', value: 'horizontal' },
+        { label: 'None', value: 'none' },
+      ],
+    },
+    { key: 'tableStriped', label: 'Zebra rows', type: 'toggle' },
+    { key: 'tableCompact', label: 'Compact padding', type: 'toggle' },
+    { key: 'tableHover', label: 'Highlight row on hover', type: 'toggle' },
+    { key: 'tableHeaderBg', label: 'Header background', type: 'color' },
+    { key: 'tableSticky', label: 'Sticky header (স্ক্রল করলে উপরে থাকবে)', type: 'toggle' },
+  ],
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -84,16 +114,19 @@ export const htmlBlock: BlockDefinition = {
  * TABLE OF CONTENTS  (manual links)
  * ═════════════════════════════════════════════════════════════════════════*/
 const TocView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { title, links } = node.attrs
+  const { title, links, columns, numbered, bgColor, border } = node.attrs
   return (
     <NodeViewWrapper
       data-block="toc"
       className={cx('my-2', selected && 'ring-2 ring-brand-blue ring-offset-2 rounded-lg')}
       data-drag-handle
     >
-      <nav className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+      <nav
+        className={cx('rounded-xl bg-slate-50 p-5', border && 'border border-slate-200')}
+        style={bgColor ? { backgroundColor: bgColor } : undefined}
+      >
         {title && <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">{title}</p>}
-        <ol className="space-y-1">
+        <ol className={cx(numbered ? 'list-decimal space-y-1 pl-5' : 'space-y-1', Number(columns) === 2 && 'grid gap-1 sm:grid-cols-2')}>
           {(links as { label: string; url: string }[]).map((l, i) => (
             <li key={i}>
               <a href={l.url || '#'} className="text-sm text-blue-600 hover:underline">
@@ -115,13 +148,17 @@ const TocNode = Node.create({
     return {
       title: { default: 'On this page', renderHTML: suppress },
       links: jsonAttr([{ label: 'Section one', url: '#section-one' }]),
+      columns: { default: 1, renderHTML: suppress },
+      numbered: { default: false, renderHTML: suppress },
+      bgColor: { default: '', renderHTML: suppress },
+      border: { default: true, renderHTML: suppress },
     }
   },
   parseHTML() {
     return [{ tag: 'nav[data-block="toc"]' }]
   },
   renderHTML({ node, HTMLAttributes }) {
-    const { title, links } = node.attrs
+    const { title, links, columns, numbered, bgColor, border } = node.attrs
     const items = (links as { label: string; url: string }[]).map((l) => [
       'li',
       {},
@@ -129,9 +166,13 @@ const TocNode = Node.create({
     ])
     return [
       'nav',
-      mergeAttributes(HTMLAttributes, { 'data-block': 'toc', class: 'my-6 rounded-xl border border-slate-200 bg-slate-50 p-5' }),
+      mergeAttributes(HTMLAttributes, {
+        'data-block': 'toc',
+        class: cx('my-6 rounded-xl bg-slate-50 p-5', border && 'border border-slate-200'),
+        ...(bgColor ? { style: `background-color:${bgColor}` } : {}),
+      }),
       title ? ['p', { class: 'mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500' }, title] : ['span', { class: 'hidden' }],
-      ['ol', { class: 'space-y-1' }, ...items],
+      ['ol', { class: cx(numbered ? 'list-decimal space-y-1 pl-5' : 'space-y-1', Number(columns) === 2 && 'grid gap-1 sm:grid-cols-2') }, ...items],
     ]
   },
   addNodeView() {
@@ -147,9 +188,28 @@ export const tocBlock: BlockDefinition = {
   icon: ListTree,
   keywords: ['toc', 'contents', 'index', 'jump', 'outline'],
   node: TocNode,
-  defaults: { title: 'On this page', links: [{ label: 'Section one', url: '#section-one' }] },
+  defaults: {
+    title: 'On this page',
+    links: [{ label: 'Section one', url: '#section-one' }],
+    columns: 1,
+    numbered: false,
+    bgColor: '',
+    border: true,
+  },
   options: [
     { key: 'title', label: 'Title', type: 'text' },
+    {
+      key: 'columns',
+      label: 'Layout',
+      type: 'segmented',
+      choices: [
+        { label: 'Single', value: '1' },
+        { label: 'Two column', value: '2' },
+      ],
+    },
+    { key: 'numbered', label: 'Numbered list', type: 'toggle' },
+    { key: 'bgColor', label: 'Background colour', type: 'color' },
+    { key: 'border', label: 'Border', type: 'toggle' },
     {
       key: 'links',
       label: 'Links',
@@ -166,3 +226,4 @@ export const tocBlock: BlockDefinition = {
 }
 
 export const advancedBlocks: BlockDefinition[] = [tableBlock, htmlBlock, tocBlock]
+

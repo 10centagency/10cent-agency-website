@@ -8,18 +8,22 @@ import { cx, mergeAttributes, suppress } from './helpers'
  * COLUMNS  — nested content block (Gutenberg-এর মতো block-এর ভেতরে block)
  * columnsBlock → columnBlock+ → block+
  * ═════════════════════════════════════════════════════════════════════════*/
+const ALIGN: Record<string, string> = { start: 'start', center: 'center', end: 'end', stretch: 'stretch' }
+
 const ColumnsView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { template, gap, divider } = node.attrs
+  const { template, gap, divider, verticalAlign, reverseOnMobile } = node.attrs
   return (
     <NodeViewWrapper data-block="columns"
       className={cx('my-2 rounded-lg', selected && 'ring-2 ring-brand-blue ring-offset-2')}
       data-drag-handle
     >
       <div
+        data-reverse-mobile={reverseOnMobile ? 'true' : undefined}
         className="grid"
         style={{
           gridTemplateColumns: template,
           gap: `${gap}px`,
+          alignItems: ALIGN[verticalAlign] ?? 'start',
         }}
       >
         <NodeViewContent className="contents" />
@@ -40,22 +44,37 @@ const ColumnsNode = Node.create({
       template: { default: '1fr 1fr', renderHTML: suppress },
       gap: { default: 24, renderHTML: suppress },
       divider: { default: false, renderHTML: suppress },
+      reverseOnMobile: { default: false, renderHTML: suppress },
       verticalAlign: { default: 'start', renderHTML: suppress },
+      columnBg: { default: '', renderHTML: suppress },
+      columnPadding: { default: 0, renderHTML: suppress },
+      columnBorder: { default: false, renderHTML: suppress },
     }
   },
   parseHTML() {
     return [{ tag: 'div[data-block="columns"]' }]
   },
   renderHTML({ node, HTMLAttributes }) {
-    const { template, gap } = node.attrs
+    const { template, gap, divider, verticalAlign, columnBg, columnPadding, columnBorder, reverseOnMobile } = node.attrs
+    const children: any[] = [0]
+    if (divider) children.push(['div', { class: 'mt-4 h-px w-full bg-slate-200' }])
+    // ⚠️ content hole (0) ছাড়া nested column-এর content server-render-এ বাদ পড়ে যায়
     return [
       'div',
       mergeAttributes(HTMLAttributes, {
         'data-block': 'columns',
+        ...(reverseOnMobile ? { 'data-reverse-mobile': 'true' } : {}),
         class: 'my-6 grid',
-        style: `grid-template-columns: ${template || '1fr 1fr'}; gap: ${gap ?? 24}px;`,
+        style: [
+          `grid-template-columns:${template}`,
+          `gap:${gap}px`,
+          `align-items:${ALIGN[verticalAlign] ?? 'start'}`,
+          columnBg ? `--column-bg:${columnBg}` : '',
+          columnPadding ? `--column-pad:${columnPadding}px` : '',
+          columnBorder ? '--column-border:1px solid #D9E8FA' : '',
+        ].filter(Boolean).join(';'),
       }),
-      0,
+      ...children,
     ]
   },
   addNodeView() {
@@ -83,8 +102,18 @@ const ColumnNode = Node.create({
   parseHTML() {
     return [{ tag: 'div[data-block="column"]' }]
   },
-  renderHTML({ HTMLAttributes }) {
-    return ['div', mergeAttributes(HTMLAttributes, { 'data-block': 'column', class: 'min-w-0' }), 0]
+  renderHTML({ node, HTMLAttributes }) {
+    const { width } = node.attrs
+    // ⚠️ content hole (0) — nested block গুলো এখানে render হয়
+    return [
+      'div',
+      mergeAttributes(HTMLAttributes, {
+        'data-block': 'column',
+        class: 'min-w-0',
+        style: `grid-column:span 1;min-width:0${width && width !== '1fr' ? `;flex-basis:${width}` : ''}`,
+      }),
+      0,
+    ]
   },
   addNodeView() {
     return ReactNodeViewRenderer(ColumnView)
@@ -99,7 +128,16 @@ export const columnsBlock: BlockDefinition = {
   icon: Columns3,
   keywords: ['columns', 'grid', 'row', 'split', 'side by side'],
   node: ColumnsNode,
-  defaults: { template: '1fr 1fr', gap: 24, divider: false, verticalAlign: 'start' },
+  defaults: {
+    template: '1fr 1fr',
+    gap: 24,
+    divider: false,
+    verticalAlign: 'start',
+    columnBg: '',
+    columnPadding: 0,
+    columnBorder: false,
+    reverseOnMobile: false,
+  },
   variations: [
     { title: '2 Columns', attrs: { template: '1fr 1fr' }, keywords: ['two', 'half'] },
     { title: '3 Columns', attrs: { template: '1fr 1fr 1fr' }, keywords: ['three', 'thirds'] },
@@ -113,11 +151,12 @@ export const columnsBlock: BlockDefinition = {
       label: 'Layout',
       type: 'select',
       choices: [
-        { label: '1 / 1', value: '1fr 1fr' },
-        { label: '1 / 1 / 1', value: '1fr 1fr 1fr' },
-        { label: '1 / 1 / 1 / 1', value: 'repeat(4, 1fr)' },
-        { label: '1 / 2', value: '1fr 2fr' },
-        { label: '2 / 1', value: '2fr 1fr' },
+        { label: '2 equal (1/2 · 1/2)', value: '1fr 1fr' },
+        { label: '3 equal (1/3 · 1/3 · 1/3)', value: '1fr 1fr 1fr' },
+        { label: '4 equal', value: 'repeat(4, 1fr)' },
+        { label: 'Sidebar right (2/3 · 1/3)', value: '2fr 1fr' },
+        { label: 'Sidebar left (1/3 · 2/3)', value: '1fr 2fr' },
+        { label: 'Wide centre (1/4 · 1/2 · 1/4)', value: '1fr 2fr 1fr' },
       ],
     },
     {
@@ -126,12 +165,17 @@ export const columnsBlock: BlockDefinition = {
       type: 'segmented',
       choices: [
         { label: 'Top', value: 'start' },
-        { label: 'Center', value: 'center' },
+        { label: 'Middle', value: 'center' },
         { label: 'Bottom', value: 'end' },
+        { label: 'Stretch', value: 'stretch' },
       ],
     },
-    { key: 'gap', label: 'Gap (px)', type: 'range', min: 0, max: 64, step: 4 },
-    { key: 'divider', label: 'Show divider under', type: 'toggle' },
+    { key: 'gap', label: 'Gap between columns (px)', type: 'range', min: 0, max: 64, step: 4 },
+    { key: 'columnBg', label: 'Column background', type: 'color' },
+    { key: 'columnPadding', label: 'Column padding (px)', type: 'range', min: 0, max: 40, step: 2 },
+    { key: 'columnBorder', label: 'Column border', type: 'toggle' },
+    { key: 'divider', label: 'Divider below columns', type: 'toggle' },
+    { key: 'reverseOnMobile', label: 'মোবাইলে উল্টো ক্রম', type: 'toggle' },
   ],
   insert: ({ editor, attrs }) => {
     const count = String(attrs?.template ?? '1fr 1fr').includes('repeat(4')
@@ -142,7 +186,16 @@ export const columnsBlock: BlockDefinition = {
       .focus()
       .insertContent({
         type: 'columnsBlock',
-        attrs: { template: '1fr 1fr', gap: 24, divider: false, verticalAlign: 'start', ...attrs },
+        attrs: {
+          template: '1fr 1fr',
+          gap: 24,
+          divider: false,
+          verticalAlign: 'start',
+          columnBg: '',
+          columnPadding: 0,
+          columnBorder: false,
+          ...attrs,
+        },
         content: Array.from({ length: count }).map(() => ({
           type: 'columnBlock',
           content: [{ type: 'paragraph' }],
@@ -166,7 +219,8 @@ export const columnBlock: BlockDefinition = {
  * DIVIDER
  * ═════════════════════════════════════════════════════════════════════════*/
 const DividerView = ({ node, selected }: { node: any; selected: boolean }) => {
-  const { variant, thickness, width, color } = node.attrs
+  const { variant, thickness, width, color, marginY, align } = node.attrs
+  const just = align === 'left' ? 'justify-start' : align === 'right' ? 'justify-end' : 'justify-center'
   const style =
     variant === 'solid'
       ? { borderTopWidth: `${thickness}px`, borderTopStyle: 'solid' as const, borderTopColor: color }
@@ -176,8 +230,8 @@ const DividerView = ({ node, selected }: { node: any; selected: boolean }) => {
           ? { borderTopWidth: `${thickness}px`, borderTopStyle: 'dotted' as const, borderTopColor: color }
           : { height: `${thickness}px`, background: `linear-gradient(90deg, transparent, ${color}, transparent)` }
   return (
-    <NodeViewWrapper data-block="divider" className={cx('my-1 flex', selected && 'ring-2 ring-brand-blue')} data-drag-handle>
-      <div className="mx-auto" style={{ width: `${width}%` }}>
+    <NodeViewWrapper data-block="divider" className={cx('flex', just, selected && 'ring-2 ring-brand-blue')} data-drag-handle>
+      <div style={{ width: `${width}%`, marginTop: `${marginY}px`, marginBottom: `${marginY}px` }}>
         <div style={style} />
       </div>
     </NodeViewWrapper>
@@ -194,18 +248,25 @@ const DividerNode = Node.create({
       thickness: { default: 1, renderHTML: suppress },
       width: { default: 60, renderHTML: suppress },
       color: { default: '#E2E8F0', renderHTML: suppress },
+      marginY: { default: 24, renderHTML: suppress },
+      align: { default: 'center', renderHTML: suppress },
     }
   },
   parseHTML() {
     return [{ tag: 'div[data-block="divider"]' }]
   },
   renderHTML({ node, HTMLAttributes }) {
-    const { variant, thickness, width, color } = node.attrs
+    const { variant, thickness, width, color, marginY, align } = node.attrs
+    const just = align === 'left' ? 'flex-start' : align === 'right' ? 'flex-end' : 'center'
     const style =
       variant === 'gradient'
-        ? `height:${thickness}px;background:linear-gradient(90deg,transparent,${color},transparent);width:${width}%;margin:2rem auto`
-        : `border-top:${thickness}px ${variant} ${color};width:${width}%;margin:2rem auto`
-    return ['div', mergeAttributes(HTMLAttributes, { 'data-block': 'divider', style })]
+        ? `height:${thickness}px;background:linear-gradient(90deg,transparent,${color},transparent)`
+        : `border-top:${thickness}px ${variant} ${color}`
+    return [
+      'div',
+      mergeAttributes(HTMLAttributes, { 'data-block': 'divider', style: `display:flex;justify-content:${just}` }),
+      ['div', { style: `width:${width}%;margin-top:${marginY}px;margin-bottom:${marginY}px;${style}` }],
+    ]
   },
   addNodeView() {
     return ReactNodeViewRenderer(DividerView)
@@ -220,7 +281,7 @@ export const dividerBlock: BlockDefinition = {
   icon: Minus,
   keywords: ['divider', 'hr', 'separator', 'line', 'rule'],
   node: DividerNode,
-  defaults: { variant: 'solid', thickness: 1, width: 60, color: '#E2E8F0' },
+  defaults: { variant: 'solid', thickness: 1, width: 60, color: '#E2E8F0', marginY: 24, align: 'center' },
   options: [
     {
       key: 'variant',
@@ -236,6 +297,17 @@ export const dividerBlock: BlockDefinition = {
     { key: 'thickness', label: 'Thickness', type: 'range', min: 1, max: 12, step: 1 },
     { key: 'width', label: 'Width (%)', type: 'range', min: 10, max: 100, step: 5 },
     { key: 'color', label: 'Color', type: 'color' },
+    { key: 'marginY', label: 'উপর–নিচের ফাঁকা (px)', type: 'range', min: 0, max: 80, step: 4 },
+    {
+      key: 'align',
+      label: 'Alignment',
+      type: 'segmented',
+      choices: [
+        { label: 'Left', value: 'left' },
+        { label: 'Center', value: 'center' },
+        { label: 'Right', value: 'right' },
+      ],
+    },
   ],
 }
 
@@ -245,7 +317,7 @@ export const dividerBlock: BlockDefinition = {
 const SpacerView = ({ node, selected }: { node: any; selected: boolean }) => (
   <NodeViewWrapper data-block="spacer" data-drag-handle>
     <div
-      className={cx('w-full', selected && 'bg-brand-blue/10')}
+      className={cx('w-full', node.attrs.hideOnMobile && 'hidden sm:block', selected && 'bg-brand-blue/10')}
       style={{
         height: `${node.attrs.height}px`,
         backgroundImage: selected ? undefined : 'repeating-linear-gradient(45deg,#F1F5F9,#F1F5F9 6px,transparent 6px,transparent 12px)',
@@ -259,13 +331,23 @@ const SpacerNode = Node.create({
   group: 'block',
   draggable: true,
   addAttributes() {
-    return { height: { default: 48, renderHTML: suppress } }
+    return {
+      height: { default: 48, renderHTML: suppress },
+      hideOnMobile: { default: false, renderHTML: suppress },
+    }
   },
   parseHTML() {
     return [{ tag: 'div[data-block="spacer"]' }]
   },
   renderHTML({ node, HTMLAttributes }) {
-    return ['div', mergeAttributes(HTMLAttributes, { 'data-block': 'spacer', style: `height:${node.attrs.height}px` })]
+    return [
+      'div',
+      mergeAttributes(HTMLAttributes, {
+        'data-block': 'spacer',
+        class: node.attrs.hideOnMobile ? 'hidden sm:block' : '',
+        style: `height:${node.attrs.height}px`,
+      }),
+    ]
   },
   addNodeView() {
     return ReactNodeViewRenderer(SpacerView)
@@ -280,8 +362,12 @@ export const spacerBlock: BlockDefinition = {
   icon: MoveVertical,
   keywords: ['spacer', 'space', 'gap', 'whitespace'],
   node: SpacerNode,
-  defaults: { height: 48 },
-  options: [{ key: 'height', label: 'Height (px)', type: 'range', min: 8, max: 200, step: 8 }],
+  defaults: { height: 48, hideOnMobile: false },
+  options: [
+    { key: 'height', label: 'Height (px)', type: 'range', min: 8, max: 200, step: 8 },
+    { key: 'hideOnMobile', label: 'মোবাইলে লুকান', type: 'toggle' },
+  ],
 }
 
 export const layoutBlocks: BlockDefinition[] = [columnsBlock, columnBlock, dividerBlock, spacerBlock]
+

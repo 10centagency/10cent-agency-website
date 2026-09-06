@@ -168,19 +168,61 @@
 .raw-html { width: 100%; }
 .raw-html iframe { max-width: 100%; }
 
-/* ── 6. Mobile responsiveness ────────────────────────────────────────── */
+/* ── 6. Columns — background / padding / border (inspector option) ────── */
+:is(.doc-content, .preview-content, .tiptap-canvas) [data-block="column"] {
+  background: var(--column-bg, transparent);
+  padding: var(--column-pad, 0px);
+  border: var(--column-border, 0);
+  border-radius: 8px;
+}
+
+/* ── 7. Table styles (inspector option থেকে আসে) ───────────────────────── */
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-borders="none"] th,
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-borders="none"] td {
+  border: 0;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-borders="horizontal"] th,
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-borders="horizontal"] td {
+  border-left: 0;
+  border-right: 0;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-striped="true"] tbody tr:nth-child(even) {
+  background: #f8fbff;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-compact="true"] th,
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-compact="true"] td {
+  padding: 0.35rem 0.5rem;
+  font-size: 0.85rem;
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-hover="true"] tbody tr:hover {
+  background: #eef6ff;
+}
+
+/* ── 8. Responsive — মোবাইলে multi-column block গুলো stack হবে ─────────── */
 @media (max-width: 640px) {
-  .doc-content [data-block="columns"] {
+  :is(.doc-content, .preview-content) [data-block="columns"],
+  :is(.doc-content, .preview-content) [data-block="stats"],
+  :is(.doc-content, .preview-content) [data-block="image-text"],
+  :is(.doc-content, .preview-content) [data-block="pricing"] > div:last-of-type,
+  :is(.doc-content, .preview-content) [data-block="team"] > div:last-of-type {
     grid-template-columns: 1fr !important;
-    gap: 16px !important;
   }
-  .doc-content [data-block="gallery"] {
+  /* ছবি/লোগো — মোবাইলে ২ কলামই ভালো দেখায় */
+  :is(.doc-content, .preview-content) [data-block="gallery"],
+  :is(.doc-content, .preview-content) [data-block="logo-grid"] > div:last-of-type {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 8px !important;
+  }
+  /* টেবিল — পেজ ভাঙবে না, টেবিল নিজেই স্ক্রল হবে */
+  :is(.doc-content, .preview-content) table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
   }
 }
-@media (max-width: 420px) {
-  .doc-content [data-block="gallery"] {
+
+@media (max-width: 360px) {
+  :is(.doc-content, .preview-content) [data-block="gallery"],
+  :is(.doc-content, .preview-content) [data-block="logo-grid"] > div:last-of-type {
     grid-template-columns: 1fr !important;
   }
 }
@@ -252,5 +294,24 @@
   :is(.doc-content, .preview-content, .tiptap-canvas) [data-block="gallery"] {
     grid-template-columns: repeat(var(--mobile-cols, 2), minmax(0, 1fr)) !important;
   }
+}
+
+/* Columns — মোবাইলে উল্টো ক্রম (inspector option) */
+@media (max-width: 640px) {
+  :is(.doc-content, .preview-content, .tiptap-canvas) [data-reverse-mobile="true"] {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+}
+
+/* ── 10. Table — header background + sticky header (inspector option) ────── */
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-header-bg] th,
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-header-bg] thead td {
+  background: var(--table-header-bg, transparent);
+}
+:is(.doc-content, .preview-content, .tiptap-canvas) table[data-table-sticky="true"] thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
