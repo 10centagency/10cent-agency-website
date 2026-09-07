@@ -1,5 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import type { BlogPost, CategoryRow, ContentBlock } from '@/lib/database.types';
+import { plainTextFromDoc } from '@/components/editor';
 
 export interface HomeBlogPost {
   slug: string;
@@ -19,7 +20,7 @@ export async function getLatestBlogPosts(limit = 3): Promise<HomeBlogPost[]> {
     const [postsRes, categoriesRes] = await Promise.all([
       supabase
         .from('blog_posts')
-        .select('slug, title, category_id, excerpt, meta_description, featured_image_url, thumbnail_gradient_from, thumbnail_gradient_to, created_at, sort_order, status, content_blocks')
+        .select('slug, title, category_id, excerpt, meta_description, featured_image_url, thumbnail_gradient_from, thumbnail_gradient_to, created_at, sort_order, status, content, content_blocks')
         .eq('status', 'published')
         .order('sort_order', { ascending: true })
         .order('created_at', { ascending: false })
@@ -45,8 +46,8 @@ export async function getLatestBlogPosts(limit = 3): Promise<HomeBlogPost[]> {
     }
 
     return postsRes.data.map((post) => {
-      let rawContent = '';
-      if (Array.isArray(post.content_blocks)) {
+      let rawContent = plainTextFromDoc((post as any).content);
+      if (!rawContent && Array.isArray(post.content_blocks)) {
         rawContent = post.content_blocks
           .filter((b: any) => b && (b.type === 'text' || b.content))
           .map((b: any) => (b.heading ? `${b.heading} ` : '') + (b.content || ''))
@@ -82,6 +83,29 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
       .maybeSingle();
 
     if (error || !data) {
+      if (slug === 'test-post') {
+        const { demoDoc } = await import('@/components/editor/demoContent');
+        return {
+          id: '00000000-0000-0000-0000-000000000001',
+          slug: 'test-post',
+          title: 'Test Post: Modern Tiptap Architecture & Blocks',
+          category_id: 'a8090aac-1a88-4a38-ad04-c8c00c51d6f5',
+          excerpt: 'Live demonstration of heading, image, CTA banner, columns, and gallery blocks.',
+          meta_description: 'Live demonstration of heading, image, CTA banner, columns, and gallery blocks.',
+          featured_image_url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&auto=format&fit=crop&q=80',
+          featured_image_link: null,
+          thumbnail_gradient_from: '#00346D',
+          thumbnail_gradient_to: '#2F85F3',
+          content: demoDoc as any,
+          content_blocks: [],
+          tags: ['Tiptap', 'WebEngineering', 'Architecture'],
+          is_featured: false,
+          sort_order: 1,
+          status: 'published',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as BlogPost;
+      }
       if (error) console.error(`Error fetching blog post "${slug}":`, error);
       return null;
     }
@@ -242,6 +266,7 @@ export function truncateDescription(text: string, maxLen = 155): string {
 export function getBlogPostDescription(post: {
   meta_description?: string | null;
   excerpt?: string | null;
+  content?: unknown;
   content_blocks?: ContentBlock[] | null;
 }): string {
   if (post.meta_description && post.meta_description.trim()) {
@@ -250,7 +275,8 @@ export function getBlogPostDescription(post: {
   if (post.excerpt && post.excerpt.trim()) {
     return post.excerpt.trim();
   }
-  const plain = extractPlainTextFromBlocks(post.content_blocks);
+  const plain =
+    plainTextFromDoc(post.content) || extractPlainTextFromBlocks(post.content_blocks);
   if (plain) {
     return truncateDescription(plain, 155);
   }

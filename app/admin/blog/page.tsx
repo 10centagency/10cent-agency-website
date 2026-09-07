@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { BlogPost, CategoryRow } from '@/lib/database.types'
-import { Plus, Trash2, CreditCard as Edit2, Search, Loader } from 'lucide-react'
+import { Plus, Trash2, Pencil, Search, Loader } from 'lucide-react'
 
 export default function BlogListPage() {
   const [posts, setPosts] = useState<BlogPost[]>([])
@@ -37,7 +37,7 @@ export default function BlogListPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure?')) return
+    if (!confirm('Are you sure you want to delete this post?')) return
 
     setDeleting(id)
     const { error } = await supabase.from('blog_posts').delete().eq('id', id)
@@ -65,50 +65,49 @@ export default function BlogListPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader className="w-8 h-8 text-brand-blue animate-spin" />
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-2 border-brand-blue border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-brand-textDark">Blog Posts</h1>
-          <p className="text-brand-textMid text-sm mt-1">
-            {filteredPosts.length} post{filteredPosts.length !== 1 ? 's' : ''}
+          <p className="text-sm text-brand-textMid">
+            {posts.length} total post{posts.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <Link href="/admin/blog/new">
-          <button className="px-6 py-2 bg-brand-blue text-white rounded-lg hover:bg-brand-blue/90 flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            New Post
-          </button>
+        <Link
+          href="/admin/blog/new"
+          className="inline-flex items-center gap-2 bg-brand-navy text-white text-sm font-semibold rounded-lg px-4 py-2.5 hover:bg-brand-blue transition-colors self-start"
+        >
+          <Plus className="w-4 h-4" />
+          Add New Post
         </Link>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl p-4 shadow-sm border border-brand-border space-y-4">
-        <div className="flex items-center gap-2">
-          <Search className="w-4 h-4 text-brand-textMid" />
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-textMid" />
           <input
             type="text"
             placeholder="Search by title or excerpt..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 px-3 py-2 border border-brand-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-brand-border bg-white text-sm text-brand-textDark placeholder:text-brand-textMid/50 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue transition-colors"
           />
         </div>
-
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-1.5 flex-wrap">
           <button
             onClick={() => setSelectedCategory(null)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
               selectedCategory === null
                 ? 'bg-brand-blue text-white'
-                : 'bg-gray-100 text-brand-textDark hover:bg-gray-200'
+                : 'bg-white border border-brand-border text-brand-textMid hover:text-brand-textDark'
             }`}
           >
             All
@@ -117,10 +116,10 @@ export default function BlogListPage() {
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                 selectedCategory === cat.id
                   ? 'bg-brand-blue text-white'
-                  : 'bg-gray-100 text-brand-textDark hover:bg-gray-200'
+                  : 'bg-white border border-brand-border text-brand-textMid hover:text-brand-textDark'
               }`}
             >
               {cat.name}
@@ -130,77 +129,86 @@ export default function BlogListPage() {
       </div>
 
       {/* Posts Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-brand-border overflow-hidden">
-        {filteredPosts.length === 0 ? (
-          <div className="p-12 text-center">
-            <p className="text-brand-textMid text-sm mb-4">No posts found</p>
-            <Link href="/admin/blog/new">
-              <button className="px-4 py-2 bg-brand-blue text-white rounded-lg hover:bg-brand-blue/90 text-sm">
-                Create First Post
-              </button>
-            </Link>
-          </div>
-        ) : (
+      {filteredPosts.length === 0 ? (
+        <div className="bg-white rounded-xl border border-brand-border p-12 text-center">
+          <p className="text-sm text-brand-textMid">
+            {posts.length === 0
+              ? 'No blog posts yet. Create your first one!'
+              : 'No posts match your search.'}
+          </p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl border border-brand-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-brand-border bg-gray-50">
-                  <th className="px-6 py-3 text-left font-semibold text-brand-textDark">
+                <tr className="border-b border-brand-border bg-brand-bgAlt/50">
+                  <th className="text-left px-5 py-3 font-medium text-brand-textMid">
                     Title
                   </th>
-                  <th className="px-6 py-3 text-left font-semibold text-brand-textDark">
+                  <th className="text-left px-5 py-3 font-medium text-brand-textMid hidden sm:table-cell">
                     Category
                   </th>
-                  <th className="px-6 py-3 text-left font-semibold text-brand-textDark">
+                  <th className="text-left px-5 py-3 font-medium text-brand-textMid hidden md:table-cell">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left font-semibold text-brand-textDark">
+                  <th className="text-left px-5 py-3 font-medium text-brand-textMid hidden lg:table-cell">
                     Date
                   </th>
-                  <th className="px-6 py-3 text-right font-semibold text-brand-textDark">
+                  <th className="text-right px-5 py-3 font-medium text-brand-textMid">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-brand-border">
                 {filteredPosts.map((post) => (
-                  <tr key={post.id} className="border-b border-brand-border hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-brand-textDark truncate">
+                  <tr
+                    key={post.id}
+                    className="hover:bg-brand-bgAlt/30 transition-colors"
+                  >
+                    <td className="px-5 py-3">
+                      <span className="font-medium text-brand-textDark truncate max-w-[240px] block">
                         {post.title}
-                      </div>
-                      <div className="text-xs text-brand-textMid truncate">
-                        {post.excerpt}
-                      </div>
+                      </span>
+                      {post.excerpt && (
+                        <span className="text-xs text-brand-textMid truncate max-w-[240px] block">
+                          {post.excerpt}
+                        </span>
+                      )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-brand-textMid">
-                      {getCategoryName(post.category_id)}
+                    <td className="px-5 py-3 hidden sm:table-cell">
+                      <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-bgAlt text-brand-textMid">
+                        {getCategoryName(post.category_id)}
+                      </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-3 hidden md:table-cell">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           post.status === 'published'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-yellow-100 text-yellow-700'
+                            ? 'bg-emerald-50 text-emerald-600'
+                            : 'bg-amber-50 text-amber-600'
                         }`}
                       >
                         {post.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-brand-textMid">
+                    <td className="px-5 py-3 text-brand-textMid whitespace-nowrap hidden lg:table-cell">
                       {new Date(post.created_at).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link href={`/admin/blog/${post.id}`}>
-                          <button className="p-2 text-brand-blue hover:bg-blue-50 rounded-lg transition-colors">
-                            <Edit2 className="w-4 h-4" />
-                          </button>
+                    <td className="px-5 py-3 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Link
+                          href={`/admin/blog/${post.id}`}
+                          className="p-1.5 text-brand-textMid hover:text-brand-blue hover:bg-brand-bgAlt rounded-lg transition-colors"
+                          title="Edit post"
+                        >
+                          <Pencil className="w-4 h-4" />
                         </Link>
                         <button
                           onClick={() => handleDelete(post.id)}
                           disabled={deleting === post.id}
-                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                          className="p-1.5 text-brand-textMid hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                          title="Delete post"
                         >
                           {deleting === post.id ? (
                             <Loader className="w-4 h-4 animate-spin" />
@@ -215,8 +223,8 @@ export default function BlogListPage() {
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

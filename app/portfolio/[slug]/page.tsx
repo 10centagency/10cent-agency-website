@@ -8,6 +8,7 @@ import SectionLabel from '@/components/ui/SectionLabel';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import CTABanner from '@/components/home/CTABanner';
 import ProjectContent from './ProjectContent';
+import { renderDocToHtml } from '@/components/editor';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,6 +88,8 @@ export default async function ProjectPage({ params }: Props) {
   if (!item) {
     notFound();
   }
+
+  const contentHtml = renderDocToHtml(item.content);
 
   const pageUrl = `https://www.10centagency.com/portfolio/${item.slug}`;
   const pageDescription =
@@ -327,6 +330,7 @@ export default async function ProjectPage({ params }: Props) {
       {/* Content Blocks */}
       <ProjectContent
         contentBlocks={item.content_blocks as import('@/lib/database.types').ContentBlock[]}
+        contentHtml={contentHtml}
       />
 
       {/* Back link */}

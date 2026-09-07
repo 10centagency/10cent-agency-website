@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
+  serverExternalPackages: ['@tiptap/react'],
   eslint: {
     ignoreDuringBuilds: false,
   },

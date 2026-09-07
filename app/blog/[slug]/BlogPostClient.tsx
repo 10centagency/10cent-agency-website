@@ -21,12 +21,14 @@ interface BlogPostClientProps {
   post: BlogPost;
   category: CategoryRow | null;
   relatedPosts: BlogPost[];
+  contentHtml?: string;
 }
 
 export default function BlogPostClient({
   post,
   category,
   relatedPosts,
+  contentHtml,
 }: BlogPostClientProps) {
   const [copied, setCopied] = useState(false);
 
@@ -119,21 +121,19 @@ export default function BlogPostClient({
         )}
 
         {/* Content */}
-        <div
-          className="mb-12 prose prose-sm max-w-none text-brand-textMid [&_img]:my-0
-          prose-ul:list-disc prose-ul:pl-5 prose-ul:space-y-1
-          prose-ol:list-decimal prose-ol:pl-5 prose-ol:space-y-1
-          prose-li:text-brand-textMid prose-li:marker:text-brand-textMid
-          prose-strong:text-brand-textDark prose-strong:font-semibold
-          prose-em:italic prose-u:underline
-          prose-a:text-brand-blue prose-a:underline prose-a:hover:text-brand-blue/70 prose-a:transition-colors
-          prose-blockquote:border-l-4 prose-blockquote:border-brand-blue/40 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-brand-textMid
-          prose-h1:text-brand-textDark prose-h1:font-bold
-          prose-h2:text-brand-textDark prose-h2:font-bold
-          prose-h3:text-brand-textDark prose-h3:font-semibold"
-        >
-          <ContentBlockRenderer blocks={post.content_blocks ?? []} />
-        </div>
+        {contentHtml ? (
+          /* NEW editor output — every node already carries its own Tailwind classes,
+             so we must NOT add `prose` here or styles will double up. */
+          <div
+            className="doc-content mb-12"
+            dangerouslySetInnerHTML={{ __html: contentHtml }}
+          />
+        ) : (
+          /* FALLBACK: old posts that have not been migrated yet */
+          <div className="mb-12 prose prose-sm max-w-none text-brand-textMid [&_img]:my-0 prose-ul:list-disc prose-ul:pl-5 prose-ul:space-y-1 prose-ol:list-decimal prose-ol:pl-5 prose-ol:space-y-1 prose-li:text-brand-textMid prose-li:marker:text-brand-textMid prose-strong:text-brand-textDark prose-strong:font-semibold prose-em:italic prose-u:underline prose-a:text-brand-blue prose-a:underline prose-blockquote:border-l-4 prose-blockquote:border-brand-blue/40 prose-blockquote:pl-4 prose-blockquote:italic">
+            <ContentBlockRenderer blocks={post.content_blocks ?? []} />
+          </div>
+        )}
 
         {/* Social Share */}
         <div className="bg-gray-50 rounded-xl p-8 mb-12 border border-brand-border">

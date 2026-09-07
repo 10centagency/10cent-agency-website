@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { plainTextFromDoc } from '@/components/editor';
 
 export const revalidate = 3600;
 
@@ -14,6 +15,7 @@ function escapeXml(str: string): string {
 function getExcerpt(post: {
   excerpt?: string | null;
   meta_description?: string | null;
+  content?: unknown;
   content_blocks?: any;
 }): string {
   if (post.excerpt && post.excerpt.trim()) {
@@ -22,6 +24,12 @@ function getExcerpt(post: {
   if (post.meta_description && post.meta_description.trim()) {
     return post.meta_description.trim();
   }
+
+  const fromNew = plainTextFromDoc(post.content);
+  if (fromNew) {
+    return fromNew.length > 280 ? `${fromNew.slice(0, 277)}...` : fromNew;
+  }
+
   if (Array.isArray(post.content_blocks)) {
     const text = post.content_blocks
       .filter((b: any) => b && (b.type === 'text' || b.content))
@@ -45,7 +53,7 @@ export async function GET() {
     const supabase = createServerSupabaseClient();
     const { data: posts, error } = await supabase
       .from('blog_posts')
-      .select('slug, title, excerpt, meta_description, content_blocks, created_at, updated_at, sort_order, status')
+      .select('slug, title, excerpt, meta_description, content, content_blocks, created_at, updated_at, sort_order, status')
       .eq('status', 'published')
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false })
