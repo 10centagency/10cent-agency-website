@@ -10,16 +10,18 @@ import UniqueID from '@tiptap/extension-unique-id'
 import FileHandler from '@tiptap/extension-file-handler'
 import {
   Plus, Undo2, Redo2, Eye, Pencil, Braces, Copy, Check, RotateCcw, Sparkles,
-  PanelRightClose, PanelRightOpen,
+  PanelRightOpen, PanelRightClose, PanelLeftOpen, PanelLeftClose,
 } from 'lucide-react'
 
-import { customNodeNames, extensionsFromRegistry, insertBlock, tidyAfterInsert } from './registry'
+import { customNodeNames, extensionsFromRegistry, insertBlock, insertBlockAt, tidyAfterInsert } from './registry'
 import { SlashCommand } from './extensions/slashCommand'
 import { TextStyles } from './extensions/textStyles'
+import BlockLibrary, { BLOCK_DRAG_MIME } from './surfaces/BlockLibrary'
 import BlockPicker from './surfaces/BlockPicker'
 import BlockHandle from './surfaces/BlockHandle'
 import FormatToolbar from './surfaces/FormatToolbar'
 import Inspector from './surfaces/Inspector'
+import ResizeHandle from './surfaces/ResizeHandle'
 import TableToolbar from './surfaces/TableToolbar'
 import { activeBlock } from './commands'
 import { renderDocToHtml } from './render'
@@ -99,9 +101,14 @@ export interface BlockEditorProps {
 
 export default function BlockEditor({ value, onChange, upload, demo = false }: BlockEditorProps) {
   const [mode, setMode] = useState<Mode>('edit')
-  const [inspectorOpen, setInspectorOpen] = useState(true)
+  const [libraryOpen, setLibraryOpen] = useState(true)
+  const [inspectorOpen, setInspectorOpen] = useState(false)
+  const [libraryWidth, setLibraryWidth] = useState(260)
+  const [inspectorWidth, setInspectorWidth] = useState(300)
   const [pickerOpen, setPickerOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+
+  const canvasRef = useRef<HTMLDivElement>(null)
 
   const lastEmitted = useRef<JSONContent | null>(null)
   const onChangeRef = useRef(onChange)
@@ -155,6 +162,31 @@ export default function BlockEditor({ value, onChange, upload, demo = false }: B
     }
   }, [mode, editor, state?.blocks])
 
+  const onCanvasDragOver = (e: React.DragEvent) => {
+    if (!e.dataTransfer.types.includes(BLOCK_DRAG_MIME)) return
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'copy'
+  }
+
+  const onCanvasDrop = (e: React.DragEvent) => {
+    const raw = e.dataTransfer.getData(BLOCK_DRAG_MIME)
+    if (!raw || !editor) return
+    e.preventDefault()
+    e.stopPropagation()
+    let payload: { blockName?: string; attrs?: Record<string, unknown> }
+    try { payload = JSON.parse(raw) } catch { return }
+    if (!payload.blockName) return
+    const pos = (() => {
+      try {
+        return editor.view.posAtCoords({ left: e.clientX, top: e.clientY })?.pos
+          ?? editor.state.selection.from
+      } catch {
+        return editor.state.selection.from
+      }
+    })()
+    insertBlockAt(editor, payload.blockName, pos, payload.attrs)
+  }
+
   if (!editor) return <div className="p-6 text-sm text-slate-400">Loading editor…</div>
 
   const onPick = (item: InserterItem) => {
@@ -176,6 +208,22 @@ export default function BlockEditor({ value, onChange, upload, demo = false }: B
             <span className="mr-1 text-sm font-bold text-slate-800">Block Editor</span>
             <span className="h-6 w-px bg-slate-200" />
           </>
+        )}
+
+        {mode === 'edit' && (
+          <button
+            type="button"
+            onClick={() => setLibraryOpen((v) => !v)}
+            title={libraryOpen ? 'Hide blocks' : 'Show blocks'}
+            className={cx(
+              'rounded p-1.5 transition-colors',
+              libraryOpen
+                ? 'text-slate-500 hover:bg-slate-100'
+                : 'bg-brand-blue/10 text-brand-blue hover:bg-brand-blue/20',
+            )}
+          >
+            {libraryOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
+          </button>
         )}
 
         <button
@@ -223,21 +271,18 @@ export default function BlockEditor({ value, onChange, upload, demo = false }: B
           <span className="hidden text-xs text-slate-400 sm:inline">
             {state?.blocks ?? 0} blocks · {state?.words ?? 0} words
           </span>
-
-          {/* Inspector show/hide */}
           <button
             type="button"
             onClick={() => setInspectorOpen((v) => !v)}
-            title={inspectorOpen ? 'Hide inspector' : 'Show inspector'}
+            title={inspectorOpen ? 'Hide panel' : 'Show panel'}
             className={cx(
-              'flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors',
+              'rounded p-1.5 transition-colors',
               inspectorOpen
-                ? 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                : 'border-brand-blue bg-brand-blue/10 text-brand-blue',
+                ? 'text-slate-500 hover:bg-slate-100'
+                : 'bg-brand-blue/10 text-brand-blue hover:bg-brand-blue/20',
             )}
           >
             {inspectorOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
-            <span className="hidden sm:inline">{inspectorOpen ? 'Hide panel' : 'Show panel'}</span>
           </button>
 
           {demo && (
@@ -297,7 +342,18 @@ export default function BlockEditor({ value, onChange, upload, demo = false }: B
 
       {/* ══ Body ═════════════════════════════════════════════════════════ */}
       <div className={cx('flex min-h-0 flex-1', !demo && 'max-h-[75vh]')}>
-        <main className="flex-1 overflow-y-auto bg-slate-50">
+        {mode === 'edit' && libraryOpen && (
+          <>
+            <BlockLibrary onPick={onPick} width={libraryWidth} />
+            <ResizeHandle side="left" min={150} max={380} onResize={setLibraryWidth} />
+          </>
+        )}
+        <main
+          ref={canvasRef}
+          onDragOver={onCanvasDragOver}
+          onDrop={onCanvasDrop}
+          className="flex-1 overflow-y-auto bg-slate-50"
+        >
           <div className={cx('mx-auto px-6 py-8', demo ? 'max-w-3xl' : 'max-w-none')}>
             {mode === 'edit' && (
               <div className="rounded-2xl border border-slate-200 bg-white px-8 py-8 shadow-sm">
@@ -328,7 +384,15 @@ export default function BlockEditor({ value, onChange, upload, demo = false }: B
         </main>
 
         {inspectorOpen && (
-          <Inspector editor={editor} active={state?.active ?? null} upload={upload} />
+          <>
+            <ResizeHandle side="right" min={240} max={440} onResize={setInspectorWidth} />
+            <Inspector
+              editor={editor}
+              active={state?.active ?? null}
+              upload={upload}
+              width={inspectorWidth}
+            />
+          </>
         )}
       </div>
     </div>

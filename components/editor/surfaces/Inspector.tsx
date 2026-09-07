@@ -11,9 +11,10 @@ interface InspectorProps {
   editor: Editor
   active: ActiveBlock | null
   upload?: UploadFn
+  width?: number
 }
 
-export default function Inspector({ editor, active, upload }: InspectorProps) {
+export default function Inspector({ editor, active, upload, width = 300 }: InspectorProps) {
   const [tab, setTab] = useState<'block' | 'document'>('block')
   const def = active ? getBlock(active.name) : undefined
 
@@ -33,7 +34,7 @@ export default function Inspector({ editor, active, upload }: InspectorProps) {
   const updateList = (key: string, next: Record<string, unknown>[]) => update(key, next)
 
   return (
-    <aside className="flex w-[300px] shrink-0 flex-col border-l border-slate-200 bg-white">
+    <aside style={{ width }} className="flex shrink-0 flex-col border-l border-slate-200 bg-white">
       {/* Tabs */}
       <div className="flex border-b border-slate-200">
         {(

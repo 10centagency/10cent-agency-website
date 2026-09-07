@@ -129,6 +129,38 @@ export function insertCore(
 }
 
 /**
+ * Insert a block at an explicit document position — used by drag-and-drop from
+ * the Blocks library. Core/text blocks act on the current selection via toggle
+ * commands, so we drop an empty paragraph at the drop point, select it, then
+ * run the block's normal insert. Custom node blocks insert directly.
+ */
+export function insertBlockAt(
+  editor: Editor,
+  blockName: string,
+  pos: number,
+  attrs?: Record<string, unknown>,
+): void {
+  const def = getBlock(blockName)
+  if (!def || !editor) return
+  const finalAttrs = { ...(def.defaults ?? {}), ...(attrs ?? {}) }
+
+  if (def.node) {
+    editor.chain().focus()
+      .insertContentAt(pos, { type: blockName, attrs: finalAttrs })
+      .run()
+    tidyAfterInsert(editor)
+    return
+  }
+
+  editor.chain().focus()
+    .insertContentAt(pos, { type: 'paragraph' })
+    .setTextSelection(pos + 1)
+    .run()
+  if (def.insert) def.insert({ editor, attrs: finalAttrs })
+  tidyAfterInsert(editor)
+}
+
+/**
  * After inserting a block via the slash menu / "Add Block", the paragraph that
  * held the "/" (or the empty paragraph the block was inserted next to) is left
  * behind as a dangling empty paragraph. Remove those empty top-level paragraphs
