@@ -13,7 +13,7 @@ import {
   PanelRightClose, PanelRightOpen,
 } from 'lucide-react'
 
-import { customNodeNames, extensionsFromRegistry, insertBlock } from './registry'
+import { customNodeNames, extensionsFromRegistry, insertBlock, tidyAfterInsert } from './registry'
 import { SlashCommand } from './extensions/slashCommand'
 import { TextStyles } from './extensions/textStyles'
 import BlockPicker from './surfaces/BlockPicker'
@@ -43,7 +43,9 @@ export function editorExtensions(upload?: UploadFn) {
     StarterKit.configure({
       heading: { levels: [1, 2, 3, 4] },
       link: { openOnClick: false, autolink: true },
-      trailingNode: {}, // always keep a trailing paragraph
+      // No forced trailing paragraph: it is un-deletable and an extra empty
+      // paragraph used to appear under every inserted block (heading, table…).
+      trailingNode: false,
     }),
     TextAlign.configure({ types: ['heading', 'paragraph', 'tableCell', 'tableHeader'] }),
     Placeholder.configure({
@@ -159,6 +161,7 @@ export default function BlockEditor({ value, onChange, upload, demo = false }: B
     setPickerOpen(false)
     if (!editor.isFocused) editor.chain().focus('end').run()
     insertBlock(editor, item.blockName, item.attrs)
+    tidyAfterInsert(editor)
   }
 
   return (

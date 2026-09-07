@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { renderDocToHtml } from '@/components/editor'
 import '@/components/editor/editor.css'
+import { readPreview, clearPreview } from '@/components/admin/previewStore'
 import { X, ExternalLink } from 'lucide-react'
 import type { JSONContent } from '@tiptap/core'
 
@@ -17,7 +18,6 @@ interface BlogPreviewData {
   content?: JSONContent | null
   tags?: string[]
   categoryName?: string
-  savedAt?: string
 }
 
 export default function BlogPreviewPage() {
@@ -25,13 +25,10 @@ export default function BlogPreviewPage() {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem('blog-preview')
-      if (raw) {
-        setData(JSON.parse(raw))
-      }
-    } catch (e) {
-      console.error('Failed to parse preview data from sessionStorage:', e)
+    const parsed = readPreview<BlogPreviewData>('blog-preview')
+    if (parsed) {
+      setData(parsed)
+      clearPreview('blog-preview')
     }
     setMounted(true)
   }, [])

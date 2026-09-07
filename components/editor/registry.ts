@@ -128,3 +128,32 @@ export function insertCore(
   if (def?.insert) def.insert({ editor, attrs: { ...(def.defaults ?? {}), ...(attrs ?? {}) } })
 }
 
+/**
+ * After inserting a block via the slash menu / "Add Block", the paragraph that
+ * held the "/" (or the empty paragraph the block was inserted next to) is left
+ * behind as a dangling empty paragraph. Remove those empty top-level paragraphs
+ * so a new block (heading, table, CTA…) does not come with a stray paragraph
+ * stuck before/after it. Only removes EMPTY paragraphs (never typed text).
+ */
+export function tidyAfterInsert(editor: Editor): void {
+  const { doc } = editor.state
+  const tr = editor.state.tr
+  const empties: { from: number; to: number }[] = []
+  doc.forEach((node, offset) => {
+    if (node.type.name === 'paragraph' && node.content.size === 0) {
+      empties.push({ from: offset, to: offset + node.nodeSize })
+    }
+  })
+  // Delete from the end so positions stay valid.
+  for (let i = empties.length - 1; i >= 0; i--) {
+    const { from, to } = empties[i]
+    // Never leave the document with zero nodes — keep at least one node.
+    if (tr.doc.childCount - (empties.length - 1 - i) <= 1) continue
+    tr.delete(from, to)
+  }
+  if (tr.docChanged) {
+    tr.setMeta('addToHistory', true)
+    editor.view.dispatch(tr)
+  }
+}
+

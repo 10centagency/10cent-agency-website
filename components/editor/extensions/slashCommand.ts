@@ -2,7 +2,7 @@ import { Extension } from '@tiptap/core'
 import Suggestion from '@tiptap/suggestion'
 import { ReactRenderer } from '@tiptap/react'
 import SlashList, { type SlashListHandle } from '../surfaces/SlashList'
-import { insertBlock, searchBlocks } from '../registry'
+import { insertBlock, searchBlocks, tidyAfterInsert } from '../registry'
 import type { InserterItem } from '../types'
 
 /**
@@ -25,6 +25,7 @@ export const SlashCommand = Extension.create({
         command: ({ editor, range, props }) => {
           editor.chain().focus().deleteRange(range).run()
           insertBlock(editor, props.blockName, props.attrs)
+          tidyAfterInsert(editor)
         },
 
         render: () => {

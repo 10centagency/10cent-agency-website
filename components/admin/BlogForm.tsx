@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { getAuthenticatedClient } from '@/lib/auth-helpers'
 import { CategoryRow } from '@/lib/database.types'
 import { registerAllBlocks, BlockEditor, convertLegacyBlocks, isDocEmpty } from '@/components/editor'
+import { savePreview } from './previewStore'
 import type { JSONContent } from '@tiptap/core'
 import {
   Loader,
@@ -160,27 +161,22 @@ export default function BlogForm({ postId }: BlogFormProps) {
   }
 
   const handlePreview = () => {
-    if (typeof window === 'undefined') return
     const categoryObj = categories.find((c) => c.id === categoryId)
-    sessionStorage.setItem(
-      'blog-preview',
-      JSON.stringify({
-        title: title || 'Untitled post',
-        slug: slug || generateSlug(title),
-        excerpt: excerpt || '',
-        metaDescription: metaDescription || '',
-        featuredImageUrl: featuredImageUrl || '',
-        featuredImageLink: featuredImageLink || '',
-        featuredImageAlt: featuredImageAlt || '',
-        content: content ?? null,
-        tags: tags
-          .split(',')
-          .map((t) => t.trim())
-          .filter(Boolean),
-        categoryName: categoryObj?.name || '',
-        savedAt: new Date().toISOString(),
-      })
-    )
+    savePreview('blog-preview', {
+      title: title || 'Untitled post',
+      slug: slug || generateSlug(title),
+      excerpt: excerpt || '',
+      metaDescription: metaDescription || '',
+      featuredImageUrl: featuredImageUrl || '',
+      featuredImageLink: featuredImageLink || '',
+      featuredImageAlt: featuredImageAlt || '',
+      content: content ?? null,
+      tags: tags
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean),
+      categoryName: categoryObj?.name || '',
+    })
     window.open('/admin/blog/preview', '_blank', 'noopener,noreferrer')
   }
 

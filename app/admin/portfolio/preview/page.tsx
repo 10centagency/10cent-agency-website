@@ -1,11 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { renderDocToHtml, convertLegacyBlocks } from '@/components/editor'
+import { renderDocToHtml } from '@/components/editor'
 import '@/components/editor/editor.css'
+import { readPreview, clearPreview } from '@/components/admin/previewStore'
 import { X, ExternalLink } from 'lucide-react'
 import type { JSONContent } from '@tiptap/core'
-import type { ContentBlock } from '@/lib/database.types'
 
 interface PortfolioPreviewData {
   title: string
@@ -20,9 +20,7 @@ interface PortfolioPreviewData {
   featuredImageLink?: string
   featuredImageAlt?: string
   content?: JSONContent | null
-  contentBlocks?: ContentBlock[]
   tags?: string[]
-  savedAt?: string
 }
 
 export default function PortfolioPreviewPage() {
@@ -30,13 +28,10 @@ export default function PortfolioPreviewPage() {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem('portfolio-preview')
-      if (raw) {
-        setData(JSON.parse(raw))
-      }
-    } catch (e) {
-      console.error('Failed to parse portfolio preview data from sessionStorage:', e)
+    const parsed = readPreview<PortfolioPreviewData>('portfolio-preview')
+    if (parsed) {
+      setData(parsed)
+      clearPreview('portfolio-preview')
     }
     setMounted(true)
   }, [])
@@ -74,9 +69,7 @@ export default function PortfolioPreviewPage() {
     )
   }
 
-  // If content was not passed directly, attempt to convert from contentBlocks
-  const docContent = data.content ?? (data.contentBlocks ? convertLegacyBlocks(data.contentBlocks) : null)
-  const contentHtml = docContent ? renderDocToHtml(docContent) : ''
+  const contentHtml = data.content ? renderDocToHtml(data.content) : ''
 
   const categoryColors: Record<string, string> = {
     Meta: 'bg-blue-100 text-blue-700',

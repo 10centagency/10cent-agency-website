@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react'
 import type { Editor } from '@tiptap/core'
-import { Plus, Trash2, ChevronUp, ChevronDown, Settings2, FileText, ChevronRight, Upload, Loader2 } from 'lucide-react'
+import { Plus, Trash2, ChevronUp, ChevronDown, Settings2, FileText, ChevronRight, Upload, Loader2, ListTree } from 'lucide-react'
 import type { OptionField, UploadFn } from '../types'
 import { getBlock } from '../registry'
+import { deleteBlock } from '../commands'
 import { cx } from '../blocks/helpers'
 import type { ActiveBlock } from '../types.runtime'
 
@@ -38,7 +39,7 @@ export default function Inspector({ editor, active, upload }: InspectorProps) {
         {(
           [
             { id: 'block', label: 'Block', icon: Settings2 },
-            { id: 'document', label: 'Document', icon: FileText },
+            { id: 'document', label: 'Structure', icon: ListTree },
           ] as const
         ).map((t) => (
           <button
@@ -433,6 +434,20 @@ function IconBtn({
   )
 }
 
+/** Delete a top-level block by its absolute node-start position, never leaving the doc empty. */
+function deleteBlockAt(editor: Editor, pos: number) {
+  const { doc } = editor.state
+  const node = doc.resolve(pos).nodeAfter
+  if (!node) return
+  if (doc.childCount === 1) {
+    // Sole block → replace with an empty paragraph so the editor stays usable.
+    editor.chain().focus().insertContentAt({ from: pos, to: pos + node.nodeSize }, { type: 'paragraph' }).run()
+    return
+  }
+  deleteBlock(editor, pos)
+  editor.commands.scrollIntoView()
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
  * Document tab — outline + stats
  * ═════════════════════════════════════════════════════════════════════════*/
@@ -461,19 +476,32 @@ function DocumentPanel({ editor }: { editor: Editor }) {
           const def = getBlock(b.name)
           const Icon = def?.icon ?? FileText
           return (
-            <button
+            <div
               key={`${b.pos}-${b.index}`}
-              type="button"
-              onClick={() => editor.chain().focus().setTextSelection(b.pos + 1).scrollIntoView().run()}
-              className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-slate-50"
+              className="group flex w-full items-center gap-1 rounded-lg pl-2 pr-1 py-1 transition-colors hover:bg-slate-50"
             >
-              <Icon className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-xs font-medium text-slate-700">{def?.title ?? b.name}</span>
-                {b.text && <span className="block truncate text-[10px] text-slate-400">{b.text}</span>}
-              </span>
-              <ChevronRight className="h-3 w-3 shrink-0 text-slate-300" />
-            </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().setTextSelection(b.pos + 1).scrollIntoView().run()}
+                className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                title="Jump to block"
+              >
+                <Icon className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-xs font-medium text-slate-700">{def?.title ?? b.name}</span>
+                  {b.text && <span className="block truncate text-[10px] text-slate-400">{b.text}</span>}
+                </span>
+                <ChevronRight className="h-3 w-3 shrink-0 text-slate-300" />
+              </button>
+              <button
+                type="button"
+                onClick={() => deleteBlockAt(editor, b.pos)}
+                title={`Delete ${def?.title ?? b.name}`}
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-slate-300 opacity-0 transition-opacity hover:bg-rose-50 hover:text-rose-500 group-hover:opacity-100"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
           )
         })}
       </div>

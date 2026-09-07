@@ -6,6 +6,7 @@ import NextLink from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { getAuthenticatedClient } from '@/lib/auth-helpers';
 import { registerAllBlocks, BlockEditor, convertLegacyBlocks, isDocEmpty } from '@/components/editor';
+import { savePreview } from '@/components/admin/previewStore';
 import type { JSONContent } from '@tiptap/core';
 import {
   Loader,
@@ -117,26 +118,21 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
   };
 
   const handlePreview = () => {
-    if (typeof window === 'undefined') return;
-    sessionStorage.setItem(
-      'portfolio-preview',
-      JSON.stringify({
-        title: title || 'Untitled Project',
-        slug: slug || generateSlug(title),
-        category,
-        industry,
-        clientName,
-        resultHighlight,
-        excerpt: excerpt || '',
-        metaDescription: metaDescription || '',
-        featuredImageUrl: featuredImageUrl || '',
-        featuredImageLink: featuredImageLink || '',
-        featuredImageAlt: featuredImageAlt || '',
-        content: content ?? null,
-        tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
-        savedAt: new Date().toISOString(),
-      })
-    );
+    savePreview('portfolio-preview', {
+      title: title || 'Untitled Project',
+      slug: slug || generateSlug(title),
+      category,
+      industry,
+      clientName,
+      resultHighlight,
+      excerpt: excerpt || '',
+      metaDescription: metaDescription || '',
+      featuredImageUrl: featuredImageUrl || '',
+      featuredImageLink: featuredImageLink || '',
+      featuredImageAlt: featuredImageAlt || '',
+      content: content ?? null,
+      tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
+    });
     window.open('/admin/portfolio/preview', '_blank', 'noopener,noreferrer');
   };
 
@@ -208,7 +204,7 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* Back link */}
       <NextLink
         href="/admin/portfolio"
