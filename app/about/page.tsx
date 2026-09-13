@@ -71,7 +71,7 @@ export default function AboutPage() {
         logo: 'https://www.10centagency.com/Logo.webp',
         image: 'https://www.10centagency.com/og-image.png',
         description:
-          'Affordable digital marketing agency in Bangladesh helping small businesses grow online with Facebook ads, websites & AI automation.',
+          'Digital marketing agency in BD helping small businesses grow online with modern websites, Meta & Google ads, SEO and AI automation, managed professionally.',
         telephone: '+880 1615-144114',
         email: 'hello@10centagency.com',
         address: {
@@ -110,7 +110,7 @@ export default function AboutPage() {
         '@id': 'https://www.10centagency.com/#website',
         url: 'https://www.10centagency.com',
         name: '10 Cent Agency',
-        description: 'Best Digital Marketing Agency in BD',
+        description: 'Digital marketing agency in BD helping small businesses grow online with modern websites, Meta & Google ads, SEO and AI automation, managed professionally.',
         inLanguage: 'en-BD',
         publisher: {
           '@id': 'https://www.10centagency.com/#organization',

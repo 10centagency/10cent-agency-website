@@ -818,7 +818,7 @@ export function getServicesSchemaGraph() {
         telephone: '+8801615144114',
         email: 'hello@10centagency.com',
         description:
-          'Affordable digital marketing agency in Bangladesh helping small businesses grow online with Facebook & Meta ads, Google ads, website development, AI automation, SEO, and graphic design.',
+          'Digital marketing agency in BD helping small businesses grow online with modern websites, Meta & Google ads, SEO and AI automation, managed professionally.',
         address: {
           '@type': 'PostalAddress',
           streetAddress: 'East Monipur, Mirpur',
@@ -855,7 +855,7 @@ export function getServicesSchemaGraph() {
         '@id': 'https://www.10centagency.com/#website',
         url: 'https://www.10centagency.com',
         name: '10 Cent Agency',
-        description: 'Best Digital Marketing Agency in BD',
+        description: 'Digital marketing agency in BD helping small businesses grow online with modern websites, Meta & Google ads, SEO and AI automation, managed professionally.',
         inLanguage: 'en-BD',
         publisher: {
           '@id': 'https://www.10centagency.com/#organization',
