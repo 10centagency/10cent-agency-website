@@ -11,7 +11,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Best Digital Marketing Agency in Bangladesh | 10 Cent Agency",
   description:
-    "Affordable digital marketing agency in BD helping small businesses grow online with Facebook ads, websites & AI automation. Get a free consultation today!",
+    "Digital marketing agency in BD helping small businesses grow online with modern websites, Meta & Google ads, SEO and AI automation, managed professionally.",
   keywords: [
     "digital marketing agency in bd",
     "best digital marketing agency in bd",
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     siteName: '10 Cent Agency',
     title: 'Best Digital Marketing Agency in Bangladesh | 10 Cent Agency',
     description:
-      'Affordable digital marketing agency in BD helping small businesses grow online with Facebook ads, websites & AI automation. Get a free consultation today!',
+      'Digital marketing agency in BD helping small businesses grow online with modern websites, Meta & Google ads, SEO and AI automation, managed professionally.',
     images: [
       {
         url: 'https://www.10centagency.com/og-image.png',
@@ -75,7 +75,7 @@ export default async function Home() {
         logo: 'https://www.10centagency.com/Logo.webp',
         image: 'https://www.10centagency.com/og-image.png',
         description:
-          'Affordable digital marketing agency in Bangladesh helping small businesses grow online with Facebook ads, websites & AI automation.',
+          'Digital marketing agency in BD helping small businesses grow online with modern websites, Meta & Google ads, SEO and AI automation, managed professionally.',
         telephone: '+880 1615-144114',
         email: 'hello@10centagency.com',
         address: {
@@ -114,7 +114,7 @@ export default async function Home() {
         '@id': 'https://www.10centagency.com/#website',
         url: 'https://www.10centagency.com/',
         name: '10 Cent Agency',
-        description: 'Best Digital Marketing Agency in BD',
+        description: 'Digital marketing agency in BD helping small businesses grow online with modern websites, Meta & Google ads, SEO and AI automation, managed professionally.',
         inLanguage: 'en-BD',
         publisher: {
           '@id': 'https://www.10centagency.com/#organization',
@@ -126,7 +126,7 @@ export default async function Home() {
         url: 'https://www.10centagency.com/',
         name: 'Best Digital Marketing Agency in Bangladesh | 10 Cent Agency',
         description:
-          'Affordable digital marketing agency in BD helping small businesses grow online with Facebook ads, websites & AI automation. Get a free consultation today!',
+          'Digital marketing agency in BD helping small businesses grow online with modern websites, Meta & Google ads, SEO and AI automation, managed professionally.',
         inLanguage: 'en-BD',
         isPartOf: {
           '@id': 'https://www.10centagency.com/#website',

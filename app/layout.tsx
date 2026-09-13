@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://www.10centagency.com'),
   title: "Best Digital Marketing Agency in Bangladesh | 10 Cent Agency",
   description:
-    "Affordable digital marketing agency in BD helping small businesses grow online with Facebook ads, websites & AI automation. Get a free consultation today!",
+    "Digital marketing agency in BD helping small businesses grow online with modern websites, Meta & Google ads, SEO and AI automation, managed professionally.",
   keywords: [
     "digital marketing agency in bd",
     "best digital marketing agency in bd",
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     siteName: "10 Cent Agency",
     title: "Best Digital Marketing Agency in Bangladesh | 10 Cent Agency",
     description:
-      "Affordable digital marketing agency in BD helping small businesses grow online with Facebook ads, websites & AI automation. Get a free consultation today!",
+      "Digital marketing agency in BD helping small businesses grow online with modern websites, Meta & Google ads, SEO and AI automation, managed professionally.",
     images: [
       {
         url: "https://www.10centagency.com/og-image.png",
@@ -71,7 +71,7 @@ export const metadata: Metadata = {
     site: "@10centagency",
     title: "Best Digital Marketing Agency in Bangladesh | 10 Cent Agency",
     description:
-      "Affordable digital marketing agency in BD helping small businesses grow online with Facebook ads, websites & AI automation. Get a free consultation today!",
+      "Digital marketing agency in BD helping small businesses grow online with modern websites, Meta & Google ads, SEO and AI automation, managed professionally.",
     images: [
       {
         url: "https://www.10centagency.com/og-image.png",
