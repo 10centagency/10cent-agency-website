@@ -2,6 +2,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import CTABanner from '@/components/home/CTABanner';
+import JsonLd from '@/components/seo/JsonLd';
 import styles from './ServicesHub.module.css';
 
 // Client Components
@@ -83,13 +84,7 @@ export default function ServicesPage() {
 
   return (
     <>
-      {/* ===================== JSON-LD STRUCTURED DATA (6 Connected Nodes) ===================== */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(schemaGraph).replace(/</g, '\\u003c'),
-        }}
-      />
+      <JsonLd data={schemaGraph} />
 
       <div className={styles.pageRoot}>
         {/* ===================== 1. HERO — CENTERED EDITORIAL + ICON NAV STRIP ===================== */}

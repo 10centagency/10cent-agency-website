@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getPublishedBlogPosts, getBlogCategories } from '@/lib/blog';
 import BlogContent from './BlogContent';
+import JsonLd from '@/components/seo/JsonLd';
 
 export const revalidate = 3600;
 
@@ -167,12 +168,7 @@ export default async function BlogPage() {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(schemaGraph).replace(/</g, '\\u003c'),
-        }}
-      />
+      <JsonLd data={schemaGraph} />
       <BlogContent
         initialPosts={initialPosts}
         initialCategories={initialCategories}

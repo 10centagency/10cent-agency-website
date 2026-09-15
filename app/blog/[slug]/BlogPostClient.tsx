@@ -16,6 +16,7 @@ import type { BlogPost, CategoryRow } from '@/lib/database.types';
 import CTABanner from '@/components/home/CTABanner';
 import ContentBlockRenderer from '@/components/portfolio/ContentBlockRenderer';
 import { formatDateUTC } from '@/lib/format-date';
+import { sanitizeUrl } from '@/lib/url-safety';
 
 interface BlogPostClientProps {
   post: BlogPost;
@@ -58,9 +59,9 @@ export default function BlogPostClient({
         {/* Featured Image */}
         {post.featured_image_url && (
           <div className="mb-8">
-            {post.featured_image_link ? (
+            {post.featured_image_link && sanitizeUrl(post.featured_image_link) ? (
               <a
-                href={post.featured_image_link}
+                href={sanitizeUrl(post.featured_image_link)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block relative group"

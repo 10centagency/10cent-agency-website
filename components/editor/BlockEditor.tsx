@@ -160,7 +160,7 @@ export default function BlockEditor({ value, onChange, upload, demo = false }: B
     } catch (err) {
       return `<pre style="color:red">${String(err)}</pre>`
     }
-  }, [mode, editor, state?.blocks])
+  }, [mode, editor])
 
   const onCanvasDragOver = (e: React.DragEvent) => {
     if (!e.dataTransfer.types.includes(BLOCK_DRAG_MIME)) return

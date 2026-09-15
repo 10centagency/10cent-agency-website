@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 declare global {
   interface Window {
@@ -24,7 +24,7 @@ declare global {
 
 interface TurnstileProps {
   onSuccess: (token: string) => void;
-  onError?: () => void;
+  onError?: (error?: string) => void;
   onExpire?: () => void;
   nonce?: string;
   theme?: 'light' | 'dark' | 'auto';
@@ -41,13 +41,23 @@ export default function Turnstile({
 }: TurnstileProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
+  const [configError, setConfigError] = useState<string | null>(null);
 
+  // Canonical public site key variable
   const siteKey = process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY;
 
   useEffect(() => {
-    // If no site key configured or in dev bypass mode
+    // Automated test execution only
+    if (process.env.NODE_ENV === 'test') {
+      onSuccess('test-mock-token');
+      return;
+    }
+
+    // Outside automated test mode, missing site key must fail closed with recoverable UI message
     if (!siteKey) {
-      onSuccess('dev-bypass-token');
+      const msg = 'Security verification is temporarily unavailable. Please reload or contact support.';
+      setConfigError(msg);
+      if (onError) onError(msg);
       return;
     }
 
@@ -64,7 +74,7 @@ export default function Turnstile({
             if (isMounted) onSuccess(token);
           },
           'error-callback': () => {
-            if (isMounted && onError) onError();
+            if (isMounted && onError) onError('Security challenge failed. Please retry.');
           },
           'expired-callback': () => {
             if (isMounted && onExpire) onExpire();
@@ -80,7 +90,7 @@ export default function Turnstile({
     if (window.turnstile) {
       renderWidget();
     } else {
-      // Load script if not already present
+      // Load Turnstile script if not already present
       const SCRIPT_ID = 'cf-turnstile-script';
       let script = document.getElementById(SCRIPT_ID) as HTMLScriptElement | null;
       if (!script) {
@@ -88,12 +98,14 @@ export default function Turnstile({
         script.id = SCRIPT_ID;
         script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
         script.async = true;
+
         const effectiveNonce =
           nonce ||
           (typeof document !== 'undefined'
             ? document.querySelector('meta[name="csp-nonce"]')?.getAttribute('content') ||
               (document.querySelector('script[nonce]') as HTMLScriptElement)?.nonce
             : undefined);
+
         if (effectiveNonce) {
           script.nonce = effectiveNonce;
         }
@@ -139,7 +151,15 @@ export default function Turnstile({
     };
   }, [siteKey, onSuccess, onError, onExpire, nonce, theme]);
 
-  if (!siteKey) {
+  if (configError) {
+    return (
+      <div className={`turnstile-error text-xs text-rose-600 p-2 border border-rose-200 bg-rose-50 rounded-lg ${className}`}>
+        {configError}
+      </div>
+    );
+  }
+
+  if (!siteKey && process.env.NODE_ENV !== 'test') {
     return null;
   }
 

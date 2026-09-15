@@ -10,7 +10,9 @@ import AnimatedSection from '@/components/ui/AnimatedSection';
 import CTABanner from '@/components/home/CTABanner';
 import ProjectContent from './ProjectContent';
 import { renderDocToHtml } from '@/components/editor';
-import { safeJsonLd, sanitizeContentHtml } from '@/lib/sanitize';
+import { sanitizeContentHtml } from '@/lib/sanitize';
+import { sanitizeUrl, isSafeMediaUrl } from '@/lib/url-safety';
+import JsonLd from '@/components/seo/JsonLd';
 
 export const dynamic = 'force-dynamic';
 
@@ -233,13 +235,7 @@ export default async function ProjectPage({ params }: Props) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        nonce={nonce}
-        dangerouslySetInnerHTML={{
-          __html: safeJsonLd(schemaGraph),
-        }}
-      />
+      <JsonLd data={schemaGraph} nonce={nonce} />
       {/* Hero */}
       <section className="bg-brand-bgAlt pt-32 pb-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -300,9 +296,9 @@ export default async function ProjectPage({ params }: Props) {
         <section className="bg-white py-8">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
-              {item.featured_image_link ? (
+              {item.featured_image_link && sanitizeUrl(item.featured_image_link) ? (
                 <a
-                  href={item.featured_image_link}
+                  href={sanitizeUrl(item.featured_image_link)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block relative group"

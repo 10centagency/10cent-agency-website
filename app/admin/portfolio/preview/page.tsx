@@ -6,6 +6,8 @@ import '@/components/editor/editor.css'
 import { readPreview, clearPreview } from '@/components/admin/previewStore'
 import { X, ExternalLink } from 'lucide-react'
 import type { JSONContent } from '@tiptap/core'
+import { sanitizeUrl, isSafeMediaUrl } from '@/lib/url-safety'
+import { sanitizeContentHtml } from '@/lib/sanitize-content'
 
 interface PortfolioPreviewData {
   title: string
@@ -141,12 +143,12 @@ export default function PortfolioPreviewPage() {
       </section>
 
       {/* Featured Image matching public portfolio page */}
-      {data.featuredImageUrl && (
+      {data.featuredImageUrl && isSafeMediaUrl(data.featuredImageUrl) && (
         <section className="bg-white py-8">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            {data.featuredImageLink ? (
+            {data.featuredImageLink && sanitizeUrl(data.featuredImageLink) ? (
               <a
-                href={data.featuredImageLink}
+                href={sanitizeUrl(data.featuredImageLink)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block relative group"
@@ -178,7 +180,7 @@ export default function PortfolioPreviewPage() {
           {contentHtml ? (
             <div
               className="doc-content mb-12"
-              dangerouslySetInnerHTML={{ __html: contentHtml }}
+              dangerouslySetInnerHTML={{ __html: sanitizeContentHtml(contentHtml) }}
             />
           ) : (
             <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 py-12 text-center text-sm text-brand-textMid italic mb-12">

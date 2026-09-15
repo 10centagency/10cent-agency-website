@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdmin } from '@/lib/supabase-admin';
+import { verifySameOrigin } from '@/lib/csrf';
+import { blogPostUpdateSchema } from '@/lib/admin-schemas';
+import { z } from 'zod';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
+
+const idSchema = z.string().uuid('Invalid blog post ID');
 
 export async function GET(req: NextRequest, context: RouteContext) {
   const auth = await verifyAdmin(req);
@@ -12,8 +17,12 @@ export async function GET(req: NextRequest, context: RouteContext) {
   }
 
   const { id } = await context.params;
-  const { supabaseAdmin } = auth;
+  const idParsed = idSchema.safeParse(id);
+  if (!idParsed.success) {
+    return NextResponse.json({ error: idParsed.error.issues[0]?.message }, { status: 400 });
+  }
 
+  const { supabaseAdmin } = auth;
   const { data, error } = await supabaseAdmin
     .from('blog_posts')
     .select('*')
@@ -28,39 +37,43 @@ export async function GET(req: NextRequest, context: RouteContext) {
 }
 
 export async function PUT(req: NextRequest, context: RouteContext) {
+  // 1. Same-origin CSRF verification
+  const csrf = verifySameOrigin(req);
+  if (!csrf.allowed) {
+    return csrf.response!;
+  }
+
+  // 2. Admin authorization
   const auth = await verifyAdmin(req);
   if (!auth.authorized) {
     return auth.response;
   }
 
   const { id } = await context.params;
-  const { supabaseAdmin } = auth;
+  const idParsed = idSchema.safeParse(id);
+  if (!idParsed.success) {
+    return NextResponse.json({ error: idParsed.error.issues[0]?.message }, { status: 400 });
+  }
 
-  let body: any;
+  // 3. Body parse & schema validation
+  let body: unknown;
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const payload: Record<string, any> = {};
-  if (body.title !== undefined) payload.title = String(body.title).trim();
-  if (body.slug !== undefined) payload.slug = String(body.slug).trim().toLowerCase();
-  if (body.category_id !== undefined) payload.category_id = String(body.category_id);
-  if (body.excerpt !== undefined) payload.excerpt = body.excerpt ? String(body.excerpt).trim() : null;
-  if (body.meta_description !== undefined) payload.meta_description = body.meta_description ? String(body.meta_description).trim() : null;
-  if (body.featured_image_url !== undefined) payload.featured_image_url = body.featured_image_url ? String(body.featured_image_url) : null;
-  if (body.featured_image_link !== undefined) payload.featured_image_link = body.featured_image_link ? String(body.featured_image_link) : null;
-  if (body.thumbnail_gradient_from !== undefined) payload.thumbnail_gradient_from = body.thumbnail_gradient_from;
-  if (body.thumbnail_gradient_to !== undefined) payload.thumbnail_gradient_to = body.thumbnail_gradient_to;
-  if (body.content !== undefined) payload.content = body.content;
-  if (body.content_blocks !== undefined) payload.content_blocks = Array.isArray(body.content_blocks) ? body.content_blocks : [];
-  if (body.tags !== undefined) payload.tags = Array.isArray(body.tags) ? body.tags.map(String) : [];
-  if (body.is_featured !== undefined) payload.is_featured = Boolean(body.is_featured);
-  if (body.sort_order !== undefined) payload.sort_order = typeof body.sort_order === 'number' ? body.sort_order : 0;
-  if (body.status !== undefined) payload.status = body.status === 'published' ? 'published' : 'draft';
-  payload.updated_at = new Date().toISOString();
+  const parsed = blogPostUpdateSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Validation failed' }, { status: 400 });
+  }
 
+  const payload: Record<string, any> = {
+    ...parsed.data,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { supabaseAdmin } = auth;
   const { data, error } = await (supabaseAdmin.from('blog_posts') as any)
     .update(payload)
     .eq('id', id)
@@ -68,28 +81,44 @@ export async function PUT(req: NextRequest, context: RouteContext) {
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('[Admin Blog API] update error:', error);
+    if (error.code === '23505') {
+      return NextResponse.json({ error: 'A post with this slug already exists' }, { status: 409 });
+    }
+    return NextResponse.json({ error: 'Failed to update blog post' }, { status: 500 });
   }
 
   return NextResponse.json({ post: data });
 }
 
 export async function DELETE(req: NextRequest, context: RouteContext) {
+  // 1. Same-origin CSRF verification
+  const csrf = verifySameOrigin(req);
+  if (!csrf.allowed) {
+    return csrf.response!;
+  }
+
+  // 2. Admin authorization
   const auth = await verifyAdmin(req);
   if (!auth.authorized) {
     return auth.response;
   }
 
   const { id } = await context.params;
-  const { supabaseAdmin } = auth;
+  const idParsed = idSchema.safeParse(id);
+  if (!idParsed.success) {
+    return NextResponse.json({ error: idParsed.error.issues[0]?.message }, { status: 400 });
+  }
 
+  const { supabaseAdmin } = auth;
   const { error } = await supabaseAdmin
     .from('blog_posts')
     .delete()
     .eq('id', id);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('[Admin Blog API] delete error:', error);
+    return NextResponse.json({ error: 'Failed to delete blog post' }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });

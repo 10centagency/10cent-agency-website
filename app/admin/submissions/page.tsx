@@ -50,13 +50,31 @@ export default function SubmissionsPage() {
       setSelected({ ...selected, status: newStatus });
     }
     try {
-      await fetch('/api/admin/submissions', {
+      const res = await fetch('/api/admin/submissions', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status: newStatus }),
       });
+      if (!res.ok) {
+        // Revert optimistic update
+        setSubmissions((prev) =>
+          prev.map((s) => (s.id === id ? { ...s, status: currentStatus as any } : s))
+        );
+        if (selected?.id === id) {
+          setSelected({ ...selected, status: currentStatus as any });
+        }
+        const err = await res.json().catch(() => ({ error: `Failed to update (status ${res.status})` }));
+        alert(err.error || 'Failed to update submission status');
+      }
     } catch (err) {
       console.error('[SubmissionsPage] update status error:', err);
+      // Revert optimistic update
+      setSubmissions((prev) =>
+        prev.map((s) => (s.id === id ? { ...s, status: currentStatus as any } : s))
+      );
+      if (selected?.id === id) {
+        setSelected({ ...selected, status: currentStatus as any });
+      }
     }
   };
 
@@ -64,13 +82,19 @@ export default function SubmissionsPage() {
     if (!confirm('Delete this submission?')) return;
     setDeleting(id);
     try {
-      await fetch(`/api/admin/submissions?id=${encodeURIComponent(id)}`, {
+      const res = await fetch(`/api/admin/submissions?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
       });
-      setSubmissions((prev) => prev.filter((s) => s.id !== id));
-      if (selected?.id === id) setSelected(null);
+      if (res.ok) {
+        setSubmissions((prev) => prev.filter((s) => s.id !== id));
+        if (selected?.id === id) setSelected(null);
+      } else {
+        const err = await res.json().catch(() => ({ error: `Delete failed (status ${res.status})` }));
+        alert(err.error || 'Failed to delete submission');
+      }
     } catch (err) {
       console.error('[SubmissionsPage] delete error:', err);
+      alert('Network error while deleting submission');
     } finally {
       setDeleting(null);
     }

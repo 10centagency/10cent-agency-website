@@ -43,9 +43,13 @@ export default function PortfolioListPage() {
       const res = await fetch(`/api/admin/portfolio/${id}`, { method: 'DELETE' });
       if (res.ok) {
         setItems((prev) => prev.filter((i) => i.id !== id));
+      } else {
+        const err = await res.json().catch(() => ({ error: `Delete failed (status ${res.status})` }));
+        alert(err.error || 'Failed to delete item');
       }
     } catch (err) {
       console.error('[Portfolio] delete error:', err);
+      alert('Network error while deleting item');
     } finally {
       setDeleting(null);
     }

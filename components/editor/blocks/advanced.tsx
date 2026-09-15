@@ -5,6 +5,7 @@ import { TableStyles } from '../extensions/tableStyles'
 import { Table2, Code, ListTree } from 'lucide-react'
 import type { BlockDefinition } from '../types'
 import { cx, jsonAttr, mergeAttributes, suppress } from './helpers'
+import { sanitizeUrl } from '@/lib/url-safety'
 
 /* ══════════════════════════════════════════════════════════════════════════
  * TABLE  (Tiptap official TableKit — fully editable)
@@ -131,7 +132,7 @@ const TocView = ({ node, selected }: { node: any; selected: boolean }) => {
         <ol className={cx(numbered ? 'list-decimal space-y-1 pl-5' : 'space-y-1', Number(columns) === 2 && 'grid gap-1 sm:grid-cols-2')}>
           {(links as { label: string; url: string }[]).map((l, i) => (
             <li key={i}>
-              <a href={l.url || '#'} className="text-sm text-blue-600 hover:underline">
+              <a href={sanitizeUrl(l.url, '#')} className="text-sm text-blue-600 hover:underline">
                 {l.label || `Section ${i + 1}`}
               </a>
             </li>

@@ -116,15 +116,19 @@ export default function BlogForm({ postId }: BlogFormProps) {
           body: formData,
         });
         if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
+          if (res.status === 401 || res.status === 403) {
+            setError('Your session has expired or you lack admin privileges. Please log in again.');
+            return null;
+          }
+          const err = await res.json().catch(() => ({ error: `Upload failed (status ${res.status})` }));
           setError(err.error || 'Image upload failed');
           return null;
         }
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         return data.url || null;
       } catch (err) {
         console.error('[BlogForm] upload error:', err);
-        setError('Image upload failed');
+        setError('Network error during image upload');
         return null;
       }
     },
@@ -230,7 +234,12 @@ export default function BlogForm({ postId }: BlogFormProps) {
       });
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
+        if (res.status === 401 || res.status === 403) {
+          setError('Your session has expired or you lack admin privileges. Please log in again.');
+          setSaving(false);
+          return;
+        }
+        const err = await res.json().catch(() => ({ error: `Server error (${res.status})` }));
         setError(`Update failed: ${err.error || 'Unknown error'}`);
         setSaving(false);
         return;
@@ -243,7 +252,12 @@ export default function BlogForm({ postId }: BlogFormProps) {
       });
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
+        if (res.status === 401 || res.status === 403) {
+          setError('Your session has expired or you lack admin privileges. Please log in again.');
+          setSaving(false);
+          return;
+        }
+        const err = await res.json().catch(() => ({ error: `Server error (${res.status})` }));
         setError(`Create failed: ${err.error || 'Unknown error'}`);
         setSaving(false);
         return;

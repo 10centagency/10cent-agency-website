@@ -11,7 +11,8 @@ import {
 } from '@/lib/blog';
 import BlogPostClient from './BlogPostClient';
 import { renderDocToHtml } from '@/components/editor';
-import { safeJsonLd, sanitizeContentHtml } from '@/lib/sanitize';
+import { sanitizeContentHtml } from '@/lib/sanitize';
+import JsonLd from '@/components/seo/JsonLd';
 
 export const dynamic = 'force-dynamic';
 
@@ -132,13 +133,7 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        nonce={nonce}
-        dangerouslySetInnerHTML={{
-          __html: safeJsonLd(jsonLd),
-        }}
-      />
+      <JsonLd data={jsonLd} nonce={nonce} />
       <BlogPostClient
         post={post}
         category={category}

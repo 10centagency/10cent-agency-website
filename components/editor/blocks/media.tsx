@@ -3,6 +3,7 @@ import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react'
 import { Image as ImageIcon, Images, Columns2, Maximize2, Play, Code2 } from 'lucide-react'
 import type { BlockDefinition } from '../types'
 import { cx, EmptyImageBox, jsonAttr, mergeAttributes, suppress } from './helpers'
+import { sanitizeUrl, isSafeMediaUrl, isSafeEmbedUrl } from '@/lib/url-safety'
 
 /* Image aspect ratios — driven by inspector options */
 const IMG_ASPECT: Record<string, string> = {
@@ -13,7 +14,8 @@ const IMG_ASPECT: Record<string, string> = {
   '3/2': 'aspect-[3/2]',
 }
 const imgLinkAttrs = (src: string, linkUrl: string, newTab: boolean, openFull: boolean) => {
-  const href = linkUrl || (openFull && src ? src : '')
+  const rawHref = linkUrl || (openFull && src ? src : '')
+  const href = sanitizeUrl(rawHref)
   if (!href) return null
   return newTab ? { href, target: '_blank', rel: 'noopener noreferrer' } : { href }
 }
@@ -175,8 +177,8 @@ const GalleryView = ({ node, selected }: { node: any; selected: boolean }) => {
     hoverZoom && 'transition-transform duration-300 hover:scale-105')
   const cell = (img: { src: string; alt: string }, i: number) =>
     img?.src ? (
-      openFull ? (
-        <a key={i} href={img.src} target="_blank" rel="noopener noreferrer">
+      openFull && sanitizeUrl(img.src) ? (
+        <a key={i} href={sanitizeUrl(img.src)} target="_blank" rel="noopener noreferrer">
           <img src={img.src} alt={img.alt || ''} className={cls} />
         </a>
       ) : (
@@ -453,8 +455,8 @@ const FullImageView = ({ node, selected }: { node: any; selected: boolean }) => 
     <NodeViewWrapper data-block="full-image" className={cx('my-2', selected && 'ring-2 ring-brand-blue ring-offset-2 rounded-lg')} data-drag-handle>
       <figure className="w-full">
         <div className="relative w-full">
-          {linkUrl ? (
-            <a href={linkUrl} target="_blank" rel="noopener noreferrer">{img}</a>
+          {linkUrl && sanitizeUrl(linkUrl) ? (
+            <a href={sanitizeUrl(linkUrl)} target="_blank" rel="noopener noreferrer">{img}</a>
           ) : img}
           {overlay && (
             <div
@@ -609,16 +611,16 @@ const ImageTextView = ({ node, selected }: { node: any; selected: boolean }) => 
         style={{ gridTemplateColumns: '1fr 1fr', gap: `${gap ?? 24}px`, padding: `${padding ?? 0}px` }}
       >
         <div className={cx(imagePosition === 'right' ? 'sm:order-2' : 'sm:order-1', !reverseOnMobile && 'order-2')}>
-          {linkUrl && imageUrl ? (
-            <a href={linkUrl} target="_blank" rel="noopener noreferrer">{imgEl}</a>
+          {linkUrl && imageUrl && sanitizeUrl(linkUrl) ? (
+            <a href={sanitizeUrl(linkUrl)} target="_blank" rel="noopener noreferrer">{imgEl}</a>
           ) : imgEl}
         </div>
         <div className={cx(imagePosition === 'right' ? 'sm:order-1' : 'sm:order-2', !reverseOnMobile && 'order-1')}>
           {heading && <h3 className="mb-2 text-xl font-bold text-slate-900">{heading}</h3>}
           {body && <div className="text-sm leading-relaxed text-slate-600" dangerouslySetInnerHTML={{ __html: body }} />}
-          {buttonLabel && buttonUrl && (
+          {buttonLabel && buttonUrl && sanitizeUrl(buttonUrl) && (
             <a
-              href={buttonUrl}
+              href={sanitizeUrl(buttonUrl)}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-4 inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"

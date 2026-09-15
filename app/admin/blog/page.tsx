@@ -52,9 +52,13 @@ export default function BlogListPage() {
       const res = await fetch(`/api/admin/blog/${id}`, { method: 'DELETE' });
       if (res.ok) {
         setPosts(posts.filter((p) => p.id !== id));
+      } else {
+        const err = await res.json().catch(() => ({ error: `Delete failed (status ${res.status})` }));
+        alert(err.error || 'Failed to delete post');
       }
     } catch (err) {
       console.error('[BlogListPage] delete error:', err);
+      alert('Network error while deleting post');
     } finally {
       setDeleting(null);
     }

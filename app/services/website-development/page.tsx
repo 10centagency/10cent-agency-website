@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { JetBrains_Mono } from 'next/font/google';
 import CTABanner from '@/components/home/CTABanner';
+import JsonLd from '@/components/seo/JsonLd';
 import styles from './WebsiteDevelopment.module.css';
 
 // Client Components
@@ -181,13 +182,7 @@ export default function WebsiteDevelopmentPage() {
 
   return (
     <>
-      {/* Single Connected Server-Rendered JSON-LD Schema @graph */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: jsonLdString,
-        }}
-      />
+      <JsonLd data={schemaGraph} />
 
       {/* Page-scoped overview progress bar animation */}
       <WebsiteOverviewMotion />

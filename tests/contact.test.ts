@@ -3,18 +3,67 @@ import { NextRequest } from 'next/server';
 import { POST } from '@/app/api/contact/route';
 import { checkRateLimit } from '@/lib/rate-limit';
 
-describe('POST /api/contact API Validation & Anti-Abuse', () => {
+describe('POST /api/contact API Validation, CSRF & Anti-Abuse', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it('rejects foreign origin with 403 Forbidden', async () => {
+    const req = new NextRequest('http://localhost:3000/api/contact', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        origin: 'https://evil-attacker.com',
+      },
+      body: JSON.stringify({
+        fullName: 'Attacker',
+        businessName: 'Evil Inc',
+        email: 'attacker@evil.com',
+        whatsapp: '+1234567890',
+        service: 'Website Development',
+        message: 'CSRF attack payload',
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(403);
+    const data = await res.json();
+    expect(data.error).toContain('Forbidden');
+  });
+
+  it('rejects missing origin and referer with 403 Forbidden', async () => {
+    const req = new NextRequest('http://localhost:3000/api/contact', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        fullName: 'Bot',
+        businessName: 'Bot Inc',
+        email: 'bot@example.com',
+        whatsapp: '+1234567890',
+        service: 'Website Development',
+        message: 'No origin header',
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(403);
   });
 
   it('rejects submissions with missing required fields with 400', async () => {
     const req = new NextRequest('http://localhost:3000/api/contact', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        origin: 'http://localhost:3000',
+      },
       body: JSON.stringify({
-        full_name: '', // missing
+        fullName: '', // missing
+        businessName: '',
         email: 'invalid-email',
+        whatsapp: '',
+        service: 'Invalid Service',
         message: '',
       }),
     });
@@ -28,11 +77,17 @@ describe('POST /api/contact API Validation & Anti-Abuse', () => {
   it('silently absorbs honeypot bot submissions without writing to database', async () => {
     const req = new NextRequest('http://localhost:3000/api/contact', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        origin: 'http://localhost:3000',
+      },
       body: JSON.stringify({
-        full_name: 'Spam Bot',
+        fullName: 'Spam Bot',
+        businessName: 'Spam Co',
         email: 'spammer@spam.com',
-        message: 'Buy cheap watches',
+        whatsapp: '+1234567890',
+        service: 'Website Development',
+        message: 'Buy cheap watches from our website',
         hp_field: 'I am a bot trapped by honeypot', // Honeypot trap filled
       }),
     });
@@ -47,11 +102,16 @@ describe('POST /api/contact API Validation & Anti-Abuse', () => {
   it('validates email format correctly', async () => {
     const req = new NextRequest('http://localhost:3000/api/contact', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        origin: 'http://localhost:3000',
+      },
       body: JSON.stringify({
-        full_name: 'John Doe',
-        business_name: 'Acme Corp',
+        fullName: 'John Doe',
+        businessName: 'Acme Corp',
         email: 'not-an-email',
+        whatsapp: '+1234567890',
+        service: 'Website Development',
         message: 'Legitimate message about SEO service',
       }),
     });
@@ -59,7 +119,22 @@ describe('POST /api/contact API Validation & Anti-Abuse', () => {
     const res = await POST(req);
     expect(res.status).toBe(400);
     const data = await res.json();
-    expect(data.error.toLowerCase()).toContain('valid email address');
+    expect(data.error.toLowerCase()).toContain('email');
+  });
+
+  it('rejects payload that exceeds maximum content-length', async () => {
+    const req = new NextRequest('http://localhost:3000/api/contact', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        origin: 'http://localhost:3000',
+        'content-length': '100000', // > 64KB
+      },
+      body: JSON.stringify({ message: 'too large' }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(413);
   });
 
   it('enforces in-memory/distributed rate limiting', async () => {

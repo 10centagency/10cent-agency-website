@@ -25,10 +25,22 @@ function checkMemoryRateLimit(key: string, limit: number, windowSeconds: number)
   return { allowed: true, remaining: limit - entry.count, resetTime: entry.resetAt };
 }
 
+// Atomic Lua script for Upstash Redis: INCR and set EXPIRE only on the first increment
+const UPSTASH_ATOMIC_LUA = `
+local current = redis.call('INCR', KEYS[1])
+if current == 1 then
+  redis.call('EXPIRE', KEYS[1], ARGV[1])
+end
+local ttl = redis.call('TTL', KEYS[1])
+return {current, ttl}
+`;
+
 /**
  * Distributed rate limiter.
- * Supports Upstash Redis REST if configured, with an automatic database-backed fallback
- * and memory store fallback for test/offline resilience.
+ * Tier 1: Upstash Redis REST using atomic Lua script.
+ * Tier 2: Supabase RPC check_rate_limit using atomic row locking upsert.
+ * Tier 3 (Test/Dev only): In-memory fallback.
+ * Production fails closed if both Tier 1 and Tier 2 are unavailable.
  */
 export async function checkRateLimit(
   identifier: string,
@@ -37,6 +49,7 @@ export async function checkRateLimit(
 ): Promise<RateLimitResult> {
   const key = `ratelimit:contact:${identifier}`;
 
+  // In test environments, use isolated in-memory limiter
   if (process.env.NODE_ENV === 'test') {
     return checkMemoryRateLimit(key, limit, windowSeconds);
   }
@@ -44,97 +57,77 @@ export async function checkRateLimit(
   const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
   const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
-  // 1. Try Upstash Redis if configured
+  // 1. Tier 1: Atomic Upstash Redis EVAL if configured
   if (upstashUrl && upstashToken) {
     try {
-      const res = await fetch(`${upstashUrl}/pipeline`, {
+      const res = await fetch(`${upstashUrl}/eval`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${upstashToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify([
-          ['INCR', key],
-          ['TTL', key],
-        ]),
+        body: JSON.stringify({
+          script: UPSTASH_ATOMIC_LUA,
+          keys: [key],
+          args: [String(windowSeconds)],
+        }),
       });
 
       if (res.ok) {
         const data = await res.json();
-        const count = data[0]?.result ?? 1;
-        let ttl = data[1]?.result ?? -1;
+        if (Array.isArray(data.result) && data.result.length === 2) {
+          const count = Number(data.result[0]) || 1;
+          const ttl = Number(data.result[1]) > 0 ? Number(data.result[1]) : windowSeconds;
 
-        if (ttl === -1) {
-          // Set expiry on first increment
-          await fetch(`${upstashUrl}/expire/${key}/${windowSeconds}`, {
-            headers: { Authorization: `Bearer ${upstashToken}` },
-          });
-          ttl = windowSeconds;
+          const allowed = count <= limit;
+          return {
+            allowed,
+            remaining: Math.max(0, limit - count),
+            resetTime: Date.now() + ttl * 1000,
+          };
         }
-
-        const allowed = count <= limit;
-        return {
-          allowed,
-          remaining: Math.max(0, limit - count),
-          resetTime: Date.now() + ttl * 1000,
-        };
       }
     } catch (err) {
-      console.warn('[RateLimit] Upstash Redis check failed, falling back to database:', err);
+      console.warn('[RateLimit] Upstash Redis EVAL check failed, falling back to database:', err);
     }
   }
 
-  // 2. Database-backed fallback rate limiter
+  // 2. Tier 2: Atomic Supabase Database RPC fallback
   try {
     const admin = getSupabaseAdmin();
-    const dbKey = `contact:${identifier}`;
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + windowSeconds * 1000);
+    const { data, error } = await (admin as any).rpc('check_rate_limit', {
+      p_key: key,
+      p_limit: limit,
+      p_window_seconds: windowSeconds,
+    });
 
-    // Call database rate check/upsert
-    const { data, error } = await admin
-      .from('rate_limits' as any)
-      .select('count, reset_at')
-      .eq('key', dbKey)
-      .maybeSingle();
-
-    if (error && error.code !== 'PGRST116') {
-      console.warn('[RateLimit] Database rate limit query error:', error.message);
-      return checkMemoryRateLimit(key, limit, windowSeconds);
-    }
-
-    const record = data as { count: number; reset_at: string } | null;
-
-    if (!record || new Date(record.reset_at) < now) {
-      // Create new window
-      await (admin as any).from('rate_limits').upsert({
-        key: dbKey,
-        count: 1,
-        reset_at: expiresAt.toISOString(),
-      });
-      return { allowed: true, remaining: limit - 1, resetTime: expiresAt.getTime() };
-    }
-
-    if (record.count >= limit) {
+    if (!error && Array.isArray(data) && data.length > 0) {
+      const row = data[0] as { allowed?: boolean; remaining?: number; reset_at?: string };
       return {
-        allowed: false,
-        remaining: 0,
-        resetTime: new Date(record.reset_at).getTime(),
+        allowed: Boolean(row.allowed),
+        remaining: typeof row.remaining === 'number' ? row.remaining : 0,
+        resetTime: row.reset_at ? new Date(row.reset_at).getTime() : Date.now() + windowSeconds * 1000,
       };
     }
 
-    // Increment count
-    await (admin as any).from('rate_limits').update({
-      count: record.count + 1,
-    }).eq('key', dbKey);
-
-    return {
-      allowed: true,
-      remaining: Math.max(0, limit - (record.count + 1)),
-      resetTime: new Date(record.reset_at).getTime(),
-    };
+    if (error) {
+      console.error('[RateLimit] Supabase check_rate_limit RPC error:', error.message);
+    }
   } catch (err) {
-    console.warn('[RateLimit] Fallback rate limiter error:', err);
+    console.error('[RateLimit] Fallback database rate limiter error:', err);
+  }
+
+  // 3. Fallback policy
+  if (process.env.NODE_ENV === 'development') {
+    // Local development allows memory store
     return checkMemoryRateLimit(key, limit, windowSeconds);
   }
+
+  // Production: Fail closed with high priority operational error log
+  console.error('[RateLimit CRITICAL] All distributed rate limit backends failed in production. Failing closed.');
+  return {
+    allowed: false,
+    remaining: 0,
+    resetTime: Date.now() + 60 * 1000,
+  };
 }

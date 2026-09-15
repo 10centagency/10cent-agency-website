@@ -1,5 +1,6 @@
 import { ContentBlock } from '@/lib/database.types';
 import { sanitizeContentHtml } from '@/lib/sanitize';
+import { sanitizeUrl, isSafeMediaUrl } from '@/lib/url-safety';
 
 const widthClass = (width?: string) => {
   switch (width) {
@@ -59,19 +60,23 @@ export default function ContentBlockRenderer({ blocks }: { blocks: ContentBlock[
             case 'image': {
               const wClass = widthClass((block as any).width);
               const aClass = aspectClass((block as any).aspect_ratio);
+              const safeSrc = isSafeMediaUrl(block.image_url) ? block.image_url : '';
+              const safeLink = sanitizeUrl(block.link_url);
               const img = (
                 <div className={`${wClass} overflow-hidden rounded-xl`}>
-                  <img
-                    src={block.image_url}
-                    alt={block.caption || ''}
-                    className={`w-full object-cover rounded-xl ${aClass}`}
-                  />
+                  {safeSrc && (
+                    <img
+                      src={safeSrc}
+                      alt={block.caption || ''}
+                      className={`w-full object-cover rounded-xl ${aClass}`}
+                    />
+                  )}
                 </div>
               );
               return (
                 <figure key={block.id} className="space-y-2">
-                  {block.link_url ? (
-                    <a href={block.link_url} target="_blank" rel="noopener noreferrer">{img}</a>
+                  {safeLink ? (
+                    <a href={safeLink} target="_blank" rel="noopener noreferrer">{img}</a>
                   ) : img}
                   {block.caption && (
                     <figcaption className="text-xs text-brand-textMid text-center">{block.caption}</figcaption>
@@ -82,13 +87,15 @@ export default function ContentBlockRenderer({ blocks }: { blocks: ContentBlock[
 
             case 'full-image': {
               const b = block as Extract<ContentBlock, { type: 'full-image' }>;
-              const img = (
-                <img src={b.image_url} alt={b.caption || ''} className="w-full rounded-xl object-cover" />
-              );
+              const safeSrc = isSafeMediaUrl(b.image_url) ? b.image_url : '';
+              const safeLink = sanitizeUrl(b.link_url);
+              const img = safeSrc ? (
+                <img src={safeSrc} alt={b.caption || ''} className="w-full rounded-xl object-cover" />
+              ) : null;
               return (
                 <figure key={b.id} className="space-y-2">
-                  {b.link_url ? (
-                    <a href={b.link_url} target="_blank" rel="noopener noreferrer">{img}</a>
+                  {safeLink && img ? (
+                    <a href={safeLink} target="_blank" rel="noopener noreferrer">{img}</a>
                   ) : img}
                   {b.caption && (
                     <figcaption className="text-xs text-brand-textMid text-center">{b.caption}</figcaption>
@@ -103,8 +110,8 @@ export default function ContentBlockRenderer({ blocks }: { blocks: ContentBlock[
                 <figure key={b.id} className="space-y-3">
                   <div className="grid grid-cols-2 gap-3 sm:gap-4">
                     {[
-                      { url: b.left_image_url,  label: b.left_label  || 'Before' },
-                      { url: b.right_image_url, label: b.right_label || 'After'  },
+                      { url: isSafeMediaUrl(b.left_image_url) ? b.left_image_url : '',  label: b.left_label  || 'Before' },
+                      { url: isSafeMediaUrl(b.right_image_url) ? b.right_image_url : '', label: b.right_label || 'After'  },
                     ].map(({ url, label }, i) => (
                       <div key={i} className="space-y-2">
                         {url && (
@@ -129,7 +136,7 @@ export default function ContentBlockRenderer({ blocks }: { blocks: ContentBlock[
                                   'grid-cols-2 sm:grid-cols-4';
               return (
                 <div key={b.id} className={`grid ${colClass} gap-3`}>
-                  {b.images.filter((img) => img.url).map((img, i) => (
+                  {b.images.filter((img) => img.url && isSafeMediaUrl(img.url)).map((img, i) => (
                     <figure key={i} className="space-y-1">
                       <img src={img.url} alt={img.caption || ''} className="w-full aspect-square object-cover rounded-xl" />
                       {img.caption && (
@@ -150,9 +157,11 @@ export default function ContentBlockRenderer({ blocks }: { blocks: ContentBlock[
                  b.aspect_ratio === '16/9' ? 'aspect-video' :
                  b.aspect_ratio === '4/3'  ? 'aspect-[4/3]' :
                  b.aspect_ratio === '3/4'  ? 'aspect-[3/4]' : 'aspect-square';
-               const imgEl = b.image_url ? (
+               const safeImgUrl = isSafeMediaUrl(b.image_url) ? b.image_url : null;
+               const safeLink = sanitizeUrl(b.link_url);
+               const imgEl = safeImgUrl ? (
                  <div className={`overflow-hidden rounded-xl ${aClass}`}>
-                   <img src={b.image_url} alt={b.heading || ''} className="w-full h-full object-cover" />
+                   <img src={safeImgUrl} alt={b.heading || ''} className="w-full h-full object-cover" />
                  </div>
                ) : null;
                return (
@@ -161,8 +170,8 @@ export default function ContentBlockRenderer({ blocks }: { blocks: ContentBlock[
                    style={{ gridTemplateColumns: colStyle }}
                  >
                    <div className={`order-2 ${b.image_position === 'right' ? 'sm:order-2' : 'sm:order-1'}`}>
-                     {b.link_url && b.image_url ? (
-                       <a href={b.link_url} target="_blank" rel="noopener noreferrer">{imgEl}</a>
+                     {safeLink && imgEl ? (
+                       <a href={safeLink} target="_blank" rel="noopener noreferrer">{imgEl}</a>
                      ) : imgEl}
                    </div>
                    <div className={`space-y-3 order-1 ${b.image_position === 'right' ? 'sm:order-1' : 'sm:order-2'}`}>

@@ -1,64 +1,85 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { checkRateLimit } from '@/lib/rate-limit';
-
-const ALLOWED_SERVICES = [
-  'Facebook & Meta Marketing',
-  'Google Ads',
-  'Website Development',
-  'AI Automation & Chatbot',
-  'Social Media Management',
-  'SEO, AEO & GEO',
-  'Graphic Design',
-  'Multiple Services',
-  'Not Sure Yet',
-  'Other',
-];
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_REGEX = /^[+0-9\s\-().]{6,30}$/;
+import { verifySameOrigin } from '@/lib/csrf';
+import { contactSubmissionSchema } from '@/lib/admin-schemas';
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Rate Limiting by client IP
-    const forwardedFor = req.headers.get('x-forwarded-for');
-    const clientIp = forwardedFor ? forwardedFor.split(',')[0].trim() : req.headers.get('x-real-ip') || '127.0.0.1';
+    // 1. Same-origin CSRF protection
+    const csrf = verifySameOrigin(req);
+    if (!csrf.allowed) {
+      return csrf.response!;
+    }
 
-    const rateLimit = await checkRateLimit(clientIp, 5, 600); // 5 submissions per 10 mins
+    // 2. Bound raw request body size before parsing (max 64KB)
+    const contentLength = req.headers.get('content-length');
+    if (contentLength && parseInt(contentLength, 10) > 65536) {
+      return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
+    }
+
+    // 3. Trusted client IP extraction
+    // Prefer x-real-ip or cf-connecting-ip over caller-spoofable x-forwarded-for
+    const clientIp =
+      req.headers.get('x-real-ip') ||
+      req.headers.get('cf-connecting-ip') ||
+      (req.headers.get('x-forwarded-for')?.split(',')[0].trim()) ||
+      '127.0.0.1';
+
+    // 4. Atomic Rate Limiting by client IP (5 submissions per 10 mins)
+    const rateLimit = await checkRateLimit(clientIp, 5, 600);
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { error: 'Too many submissions from this network. Please wait a few minutes before trying again.' },
         {
           status: 429,
           headers: {
-            'Retry-After': String(Math.ceil((rateLimit.resetTime - Date.now()) / 1000)),
+            'Retry-After': String(Math.max(1, Math.ceil((rateLimit.resetTime - Date.now()) / 1000))),
           },
         }
       );
     }
 
-    // 2. Parse Body
-    let body: any;
+    // 5. Parse JSON Body
+    let rawBody: unknown;
     try {
-      body = await req.json();
+      rawBody = await req.json();
     } catch {
       return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
     }
 
-    // 3. Honeypot check (hidden input for bot detection)
-    if (body.hp_field && String(body.hp_field).trim().length > 0) {
+    // 6. Strict Schema Validation
+    const parseResult = contactSubmissionSchema.safeParse(rawBody);
+    if (!parseResult.success) {
+      const firstIssue = parseResult.error.issues[0]?.message || 'Invalid form submission data';
+      return NextResponse.json({ error: firstIssue }, { status: 400 });
+    }
+
+    const body = parseResult.data;
+
+    // 7. Honeypot check (hidden input for bot detection)
+    if (body.hp_field && body.hp_field.trim().length > 0) {
       // Return 200 without saving so bots don't learn
       return NextResponse.json({ success: true, message: 'Message submitted successfully' });
     }
 
-    // 4. Cloudflare Turnstile Verification
+    // 8. Cloudflare Turnstile Verification
     const turnstileToken = body.turnstileToken;
     const turnstileSecret = process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY;
-    const isTestOrBypass =
-      process.env.TURNSTILE_BYPASS === 'true' ||
-      (process.env.NODE_ENV === 'test' && !turnstileSecret);
+    const isTest = process.env.NODE_ENV === 'test';
 
-    if (!isTestOrBypass) {
+    // In production and Preview, TURNSTILE_BYPASS=true must fail closed/reject submissions
+    if (process.env.TURNSTILE_BYPASS === 'true' && !isTest) {
+      console.error('[Contact API] TURNSTILE_BYPASS is not permitted in production or preview environments.');
+      return NextResponse.json(
+        { error: 'Security verification failed. Invalid bypass configuration.' },
+        { status: 403 }
+      );
+    }
+
+    if (isTest && (turnstileToken === 'test-mock-token' || !turnstileSecret)) {
+      // Allowed only in automated test execution
+    } else {
       if (!turnstileToken) {
         return NextResponse.json(
           { error: 'Security verification (Turnstile) is required.' },
@@ -67,7 +88,7 @@ export async function POST(req: NextRequest) {
       }
 
       if (!turnstileSecret) {
-        console.error('[Contact API] CLOUDFLARE_TURNSTILE_SECRET_KEY is missing in production environment');
+        console.error('[Contact API] CLOUDFLARE_TURNSTILE_SECRET_KEY is missing in server environment');
         return NextResponse.json(
           { error: 'Server security configuration error. Please contact support.' },
           { status: 500 }
@@ -90,8 +111,44 @@ export async function POST(req: NextRequest) {
         const turnstileData = await turnstileRes.json();
 
         if (!turnstileData.success) {
+          console.warn('[Contact API] Turnstile challenge failed:', turnstileData['error-codes']);
           return NextResponse.json(
             { error: 'Security verification failed. Please refresh and try again.' },
+            { status: 400 }
+          );
+        }
+
+        // Hostname validation
+        const siteUrl = process.env.SITE_URL;
+        const vercelUrl = process.env.VERCEL_URL;
+        const allowedHostnames = [
+          'www.10centagency.com',
+          '10centagency.com',
+          'localhost',
+          '127.0.0.1',
+        ];
+        if (siteUrl) {
+          try {
+            allowedHostnames.push(new URL(siteUrl).hostname.toLowerCase());
+          } catch {}
+        }
+        if (vercelUrl) {
+          try {
+            const vHost = vercelUrl.replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
+            allowedHostnames.push(vHost);
+          } catch {}
+        }
+
+        const responseHostname = turnstileData.hostname ? turnstileData.hostname.toLowerCase() : '';
+        const isValidHostname =
+          !responseHostname ||
+          allowedHostnames.includes(responseHostname) ||
+          responseHostname.endsWith('.vercel.app');
+
+        if (!isValidHostname) {
+          console.error('[Contact API] Turnstile hostname mismatch:', responseHostname);
+          return NextResponse.json(
+            { error: 'Security verification failed: Hostname mismatch.' },
             { status: 400 }
           );
         }
@@ -104,61 +161,18 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 5. Strict Schema Validation & Sanitization
-    const fullName = String(body.fullName || body.full_name || '').trim();
-    const businessName = String(body.businessName || body.business_name || '').trim();
-    const email = String(body.email || '').trim().toLowerCase();
-    const whatsapp = String(body.whatsapp || body.phone || '').trim();
-    const service = String(body.service || body.service_interested || '').trim();
-    const budget = body.budget || body.budget_range ? String(body.budget || body.budget_range).trim() : null;
-    const message = String(body.message || '').trim();
-
-    if (!fullName || fullName.length > 100) {
-      return NextResponse.json({ error: 'Full name is required (max 100 characters).' }, { status: 400 });
-    }
-
-    if (!businessName || businessName.length > 100) {
-      return NextResponse.json({ error: 'Business name is required (max 100 characters).' }, { status: 400 });
-    }
-
-    if (!email || email.length > 254 || !EMAIL_REGEX.test(email)) {
-      return NextResponse.json({ error: 'A valid email address is required.' }, { status: 400 });
-    }
-
-    if (!whatsapp || whatsapp.length > 30 || !PHONE_REGEX.test(whatsapp)) {
-      return NextResponse.json({ error: 'A valid phone/WhatsApp number is required.' }, { status: 400 });
-    }
-
-    if (!service || !ALLOWED_SERVICES.includes(service)) {
-      return NextResponse.json(
-        { error: `Service must be one of: ${ALLOWED_SERVICES.join(', ')}` },
-        { status: 400 }
-      );
-    }
-
-    if (budget && budget.length > 50) {
-      return NextResponse.json({ error: 'Budget text is too long (max 50 characters).' }, { status: 400 });
-    }
-
-    if (!message || message.length < 5 || message.length > 5000) {
-      return NextResponse.json(
-        { error: 'Message is required and must be between 5 and 5,000 characters.' },
-        { status: 400 }
-      );
-    }
-
-    // 6. Secure Database Insertion via service-role client
+    // 9. Secure Database Insertion via service-role client
     const admin = getSupabaseAdmin();
     const { error: insertError } = await admin
       .from('contact_submissions')
       .insert({
-        full_name: fullName,
-        business_name: businessName,
-        email,
-        whatsapp,
-        service_interested: service,
-        budget_range: budget || 'Not specified',
-        message,
+        full_name: body.fullName,
+        business_name: body.businessName,
+        email: body.email,
+        whatsapp: body.whatsapp,
+        service_interested: body.service,
+        budget_range: body.budget || 'Not specified',
+        message: body.message,
         status: 'unread',
       } as any);
 
