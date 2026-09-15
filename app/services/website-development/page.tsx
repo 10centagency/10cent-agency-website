@@ -253,7 +253,7 @@ export default function WebsiteDevelopmentPage() {
               </div>
               <pre className={styles.codeContent}>
                 <code>
-                  <span className={styles.tokComment}>// Quick Answer Engine</span>{'\n'}
+                  <span className={styles.tokComment}>{'// Quick Answer Engine'}</span>{'\n'}
                   <span className={styles.tokPunct}>{'{'}</span>{'\n'}
                   {'  '}<span className={styles.tokKey}>&quot;question&quot;</span><span className={styles.tokPunct}>:</span> <span className={styles.tokString}>&quot;What is Website Development?&quot;</span><span className={styles.tokPunct}>,</span>{'\n'}
                   {'  '}<span className={styles.tokKey}>&quot;answer&quot;</span><span className={styles.tokPunct}>:</span> <span className={styles.tokString}>&quot;Website Development is the process of designing,{'\n'}  building, and launching a functional online presence —{'\n'}  optimized for speed, mobile devices, and search engines.{'\n'}  10 Cent Agency builds custom WordPress + Elementor websites{'\n'}  and custom Next.js/React web apps for businesses in Bangladesh.&quot;</span><span className={styles.tokPunct}>,</span>{'\n'}

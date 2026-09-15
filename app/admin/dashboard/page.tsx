@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
 import { FolderOpen, Mail, Eye, Clock, Plus, ExternalLink, FileText, EyeOff } from 'lucide-react';
 
 interface Stats {
@@ -39,67 +38,30 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const verifyAuth = async () => {
-      const { data: { session } } =
-        await supabase.auth.getSession()
-
-      if (!session) {
-        window.location.replace('/auth')
-        return
-      }
-
-      fetchDashboard()
-    }
-    verifyAuth()
+    fetchDashboard();
   }, []);
 
   async function fetchDashboard() {
-    const [portfolioRes, blogRes, submissionsRes, blogCountRes, publishedBlogCountRes] = await Promise.all([
-      supabase
-        .from('portfolio_items')
-        .select('id, title, status, updated_at')
-        .order('updated_at', { ascending: false })
-        .limit(5),
-      supabase
-        .from('blog_posts')
-        .select('id, title, slug, status, created_at, featured_image_url')
-        .order('created_at', { ascending: false })
-        .limit(5),
-      supabase
-        .from('contact_submissions')
-        .select('id, full_name, service_interested, created_at, status')
-        .order('created_at', { ascending: false })
-        .limit(5),
-      supabase
-        .from('blog_posts')
-        .select('*', { count: 'exact', head: true }),
-      supabase
-        .from('blog_posts')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'published'),
-    ]);
-
-    const allPortfolio = portfolioRes.data || [];
-    const allBlog = blogRes.data || [];
-    const allSubmissions = submissionsRes.data || [];
-    const totalBlogCount = blogCountRes.count || 0;
-    const publishedBlogCount = publishedBlogCountRes.count || 0;
-
-    setStats({
-      totalPortfolio: allPortfolio.length,
-      publishedPortfolio: allPortfolio.filter((p) => p.status === 'published').length,
-      draftPortfolio: allPortfolio.filter((p) => p.status === 'draft').length,
-      totalBlog: totalBlogCount,
-      publishedBlog: publishedBlogCount,
-      draftBlog: totalBlogCount - publishedBlogCount,
-      totalSubmissions: allSubmissions.length,
-      unreadSubmissions: allSubmissions.filter((s) => s.status === 'unread').length,
-    });
-
-    setRecentPortfolio(allPortfolio);
-    setRecentBlog(allBlog);
-    setRecentSubmissions(allSubmissions);
-    setLoading(false);
+    try {
+      const res = await fetch('/api/admin/dashboard');
+      if (res.status === 401) {
+        window.location.replace('/auth');
+        return;
+      }
+      if (!res.ok) {
+        setLoading(false);
+        return;
+      }
+      const data = await res.json();
+      if (data.stats) setStats(data.stats);
+      setRecentPortfolio(data.recentPortfolio || []);
+      setRecentBlog(data.recentBlog || []);
+      setRecentSubmissions(data.recentSubmissions || []);
+    } catch (err) {
+      console.error('[Dashboard] fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (loading) {

@@ -52,8 +52,10 @@ export const tableBlock: BlockDefinition = {
   ],
 }
 
+import { sanitizeContentHtml } from '@/lib/sanitize'
+
 /* ══════════════════════════════════════════════════════════════════════════
- * RAW HTML
+ * RAW HTML (Disabled for new content, strictly sanitized if legacy content exists)
  * ═════════════════════════════════════════════════════════════════════════*/
 const HtmlView = ({ node, selected }: { node: any; selected: boolean }) => {
   const { code } = node.attrs
@@ -64,10 +66,10 @@ const HtmlView = ({ node, selected }: { node: any; selected: boolean }) => {
       data-drag-handle
     >
       {code ? (
-        <div className="raw-html" dangerouslySetInnerHTML={{ __html: code }} />
+        <div className="raw-html" dangerouslySetInnerHTML={{ __html: sanitizeContentHtml(code) }} />
       ) : (
         <div className="rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center text-xs text-slate-400">
-          Raw HTML — paste your code in the inspector →
+          Raw HTML disabled — legacy code rendered safely
         </div>
       )}
     </NodeViewWrapper>
@@ -225,5 +227,5 @@ export const tocBlock: BlockDefinition = {
   ],
 }
 
-export const advancedBlocks: BlockDefinition[] = [tableBlock, htmlBlock, tocBlock]
+export const advancedBlocks: BlockDefinition[] = [tableBlock, tocBlock]
 

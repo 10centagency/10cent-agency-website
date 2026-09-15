@@ -1,4 +1,5 @@
 import { ContentBlock } from '@/lib/database.types';
+import { sanitizeContentHtml } from '@/lib/sanitize';
 
 const widthClass = (width?: string) => {
   switch (width) {
@@ -49,7 +50,7 @@ export default function ContentBlockRenderer({ blocks }: { blocks: ContentBlock[
                         prose-h1:text-brand-textDark prose-h1:font-bold
                         prose-h2:text-brand-textDark prose-h2:font-bold
                         prose-h3:text-brand-textDark prose-h3:font-semibold"
-                      dangerouslySetInnerHTML={{ __html: block.content }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeContentHtml(block.content) }}
                     />
                   )}
                 </div>
@@ -180,7 +181,7 @@ export default function ContentBlockRenderer({ blocks }: { blocks: ContentBlock[
                         prose-h1:text-brand-textDark prose-h1:font-bold
                         prose-h2:text-brand-textDark prose-h2:font-bold
                         prose-h3:text-brand-textDark prose-h3:font-semibold"
-                        dangerouslySetInnerHTML={{ __html: b.content }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeContentHtml(b.content) }}
                       />
                     )}
                   </div>

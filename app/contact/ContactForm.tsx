@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { CircleCheck as CheckCircle2, Loader as Loader2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import Turnstile from '@/components/Turnstile';
 import { trackContact } from '@/lib/pixel';
 
 interface FormData {
@@ -31,6 +31,8 @@ const initialData: FormData = {
 
 export default function ContactForm() {
   const [formData, setFormData] = useState<FormData>(initialData);
+  const [hpField, setHpField] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -59,44 +61,62 @@ export default function ContactForm() {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
+    setErrors({});
 
-    const { error } = await supabase.from('contact_submissions').insert({
-      full_name: formData.fullName,
-      business_name: formData.businessName,
-      email: formData.email,
-      whatsapp: formData.whatsapp,
-      service_interested: formData.service,
-      budget_range: formData.budget,
-      message: formData.message,
-    });
-
-    setLoading(false);
-
-    if (error) {
-      setErrors({ submit: 'Something went wrong. Please try again.' });
-      return;
-    }
-
-    setSubmitted(true);
-
-    // Browser Pixel tracking
-    if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
-      const eventId = crypto.randomUUID();
-      window.fbq('track', 'Lead', {
-        content_name: 'Contact Form Submit',
-      }, { eventID: eventId });
-
-      // CAPI tracking
-      fetch('/api/track', {
+    try {
+      const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          eventName: 'Lead',
-          eventId: eventId,
-          eventSourceUrl: window.location.href,
-          contentName: 'Contact Form Submit',
+          fullName: formData.fullName,
+          businessName: formData.businessName,
+          email: formData.email,
+          whatsapp: formData.whatsapp,
+          service: formData.service,
+          budget: formData.budget,
+          message: formData.message,
+          hp_field: hpField,
+          turnstileToken,
         }),
       });
+
+      const data = await res.json();
+      setLoading(false);
+
+      if (!res.ok) {
+        setErrors({ submit: data.error || 'Something went wrong. Please try again.' });
+        return;
+      }
+
+      setSubmitted(true);
+
+      // Browser Pixel tracking
+      if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+        const eventId = crypto.randomUUID();
+        window.fbq(
+          'track',
+          'Lead',
+          {
+            content_name: 'Contact Form Submit',
+          },
+          { eventID: eventId }
+        );
+
+        // CAPI tracking
+        fetch('/api/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventName: 'Lead',
+            eventId: eventId,
+            eventSourceUrl: window.location.href,
+            contentName: 'Contact Form Submit',
+          }),
+        }).catch(() => {});
+      }
+    } catch {
+      setLoading(false);
+      setErrors({ submit: 'Network error. Please check your connection and try again.' });
     }
   };
 
@@ -107,7 +127,10 @@ export default function ContactForm() {
 
   if (submitted) {
     return (
-      <div className="bg-brand-bgAlt rounded-2xl border border-brand-border p-12 flex flex-col items-center justify-center text-center min-h-[400px]">
+      <div
+        className="bg-brand-bgAlt rounded-2xl border border-brand-border p-12 flex flex-col items-center justify-center text-center min-h-[400px]"
+        aria-live="polite"
+      >
         <CheckCircle2 className="w-16 h-16 text-brand-blue mb-6" />
         <h3 className="text-2xl font-bold text-brand-textDark mb-3">Message Sent!</h3>
         <p className="text-brand-textMid leading-relaxed max-w-sm">
@@ -125,11 +148,27 @@ export default function ContactForm() {
     >
       <h3 className="text-xl font-bold text-brand-textDark mb-2">Send Us a Message</h3>
 
-      {errors.submit && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
-          {errors.submit}
-        </div>
-      )}
+      {/* Invisible Honeypot */}
+      <div className="hidden" aria-hidden="true">
+        <label htmlFor="contact_hp">Leave this empty</label>
+        <input
+          id="contact_hp"
+          type="text"
+          name="hp_field"
+          value={hpField}
+          onChange={(e) => setHpField(e.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
+
+      <div aria-live="polite">
+        {errors.submit && (
+          <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 mb-4" role="alert">
+            {errors.submit}
+          </div>
+        )}
+      </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
         {/* Full Name */}
@@ -141,6 +180,8 @@ export default function ContactForm() {
             id="fullName"
             name="fullName"
             type="text"
+            required
+            autoComplete="name"
             value={formData.fullName}
             onChange={handleChange}
             placeholder="Your full name"
@@ -158,6 +199,8 @@ export default function ContactForm() {
             id="businessName"
             name="businessName"
             type="text"
+            required
+            autoComplete="organization"
             value={formData.businessName}
             onChange={handleChange}
             placeholder="Your business name"
@@ -177,6 +220,8 @@ export default function ContactForm() {
             id="email"
             name="email"
             type="email"
+            required
+            autoComplete="email"
             value={formData.email}
             onChange={handleChange}
             placeholder="you@example.com"
@@ -194,6 +239,8 @@ export default function ContactForm() {
             id="whatsapp"
             name="whatsapp"
             type="tel"
+            required
+            autoComplete="tel"
             value={formData.whatsapp}
             onChange={handleChange}
             placeholder="+880 1XXXXXXXXX"
@@ -211,20 +258,21 @@ export default function ContactForm() {
         <select
           id="service"
           name="service"
+          required
           value={formData.service}
           onChange={handleChange}
           className={inputClass('service')}
         >
           <option value="">Select a service...</option>
-          <option>Facebook & Meta Marketing</option>
-          <option>Google Ads</option>
-          <option>Website Development</option>
-          <option>AI Automation & Chatbot</option>
-          <option>Social Media Management</option>
-          <option>SEO, AEO & GEO</option>
-          <option>Graphic Design</option>
-          <option>Multiple Services</option>
-          <option>Not Sure Yet</option>
+          <option value="Facebook & Meta Marketing">Facebook &amp; Meta Marketing</option>
+          <option value="Google Ads">Google Ads</option>
+          <option value="Website Development">Website Development</option>
+          <option value="AI Automation & Chatbot">AI Automation &amp; Chatbot</option>
+          <option value="Social Media Management">Social Media Management</option>
+          <option value="SEO, AEO & GEO">SEO, AEO &amp; GEO</option>
+          <option value="Graphic Design">Graphic Design</option>
+          <option value="Multiple Services">Multiple Services</option>
+          <option value="Not Sure Yet">Not Sure Yet</option>
         </select>
         {errors.service && <p className="mt-1 text-xs text-red-500">{errors.service}</p>}
       </div>
@@ -237,15 +285,16 @@ export default function ContactForm() {
         <select
           id="budget"
           name="budget"
+          required
           value={formData.budget}
           onChange={handleChange}
           className={inputClass('budget')}
         >
           <option value="">Select your budget...</option>
-          <option>Under 5,000 BDT</option>
-          <option>5,000–15,000 BDT</option>
-          <option>15,000–30,000 BDT</option>
-          <option>30,000 BDT and above</option>
+          <option value="Under 5,000 BDT">Under 5,000 BDT</option>
+          <option value="5,000–15,000 BDT">5,000–15,000 BDT</option>
+          <option value="15,000–30,000 BDT">15,000–30,000 BDT</option>
+          <option value="30,000 BDT and above">30,000 BDT and above</option>
         </select>
         {errors.budget && <p className="mt-1 text-xs text-red-500">{errors.budget}</p>}
       </div>
@@ -259,6 +308,7 @@ export default function ContactForm() {
           id="message"
           name="message"
           rows={5}
+          required
           value={formData.message}
           onChange={handleChange}
           placeholder="Tell us about your business, your goals, and what you are looking for..."
@@ -266,6 +316,9 @@ export default function ContactForm() {
         />
         {errors.message && <p className="mt-1 text-xs text-red-500">{errors.message}</p>}
       </div>
+
+      {/* Cloudflare Turnstile Verification */}
+      <Turnstile onSuccess={(token) => setTurnstileToken(token)} />
 
       {/* Submit */}
       <button

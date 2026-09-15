@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { headers } from 'next/headers';
 import Link from 'next/link';
 import { ChevronRight, ArrowLeft, ExternalLink } from 'lucide-react';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
@@ -9,6 +10,7 @@ import AnimatedSection from '@/components/ui/AnimatedSection';
 import CTABanner from '@/components/home/CTABanner';
 import ProjectContent from './ProjectContent';
 import { renderDocToHtml } from '@/components/editor';
+import { safeJsonLd, sanitizeContentHtml } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,7 +91,8 @@ export default async function ProjectPage({ params }: Props) {
     notFound();
   }
 
-  const contentHtml = renderDocToHtml(item.content);
+  const nonce = (await headers()).get('x-nonce') || undefined;
+  const contentHtml = sanitizeContentHtml(renderDocToHtml(item.content));
 
   const pageUrl = `https://www.10centagency.com/portfolio/${item.slug}`;
   const pageDescription =
@@ -232,8 +235,9 @@ export default async function ProjectPage({ params }: Props) {
     <>
       <script
         type="application/ld+json"
+        nonce={nonce}
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(schemaGraph),
+          __html: safeJsonLd(schemaGraph),
         }}
       />
       {/* Hero */}

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { headers } from 'next/headers';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import {
   getBlogPost,
@@ -10,6 +11,7 @@ import {
 } from '@/lib/blog';
 import BlogPostClient from './BlogPostClient';
 import { renderDocToHtml } from '@/components/editor';
+import { safeJsonLd, sanitizeContentHtml } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
 
@@ -94,7 +96,8 @@ export default async function BlogPostPage({ params }: Props) {
     notFound();
   }
 
-  const contentHtml = renderDocToHtml(post.content);
+  const nonce = (await headers()).get('x-nonce') || undefined;
+  const contentHtml = sanitizeContentHtml(renderDocToHtml(post.content));
 
   const [category, relatedPosts] = await Promise.all([
     post.category_id ? getCategoryById(post.category_id) : Promise.resolve(null),
@@ -131,8 +134,9 @@ export default async function BlogPostPage({ params }: Props) {
     <>
       <script
         type="application/ld+json"
+        nonce={nonce}
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLd),
+          __html: safeJsonLd(jsonLd),
         }}
       />
       <BlogPostClient

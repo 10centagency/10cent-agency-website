@@ -35,7 +35,11 @@ function generateEventId(): string {
   });
 }
 
-export default function GoogleTagManager() {
+interface GoogleTagManagerProps {
+  nonce?: string;
+}
+
+export default function GoogleTagManager({ nonce }: GoogleTagManagerProps = {}) {
   const pathname = usePathname();
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -71,6 +75,9 @@ export default function GoogleTagManager() {
       // Inject GTM script
       const script = document.createElement('script');
       script.async = true;
+      if (nonce) {
+        script.nonce = nonce;
+      }
       script.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-5M652RR4';
       document.head.appendChild(script);
 
@@ -102,7 +109,7 @@ export default function GoogleTagManager() {
     }
 
     return cleanup;
-  }, [pathname, isLoaded]);
+  }, [pathname, isLoaded, nonce]);
 
   // SPA PageView Tracking: push route-change & initial-load event to dataLayer
   useEffect(() => {

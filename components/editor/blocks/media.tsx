@@ -887,14 +887,38 @@ export const videoBlock: BlockDefinition = {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
- * 7. EMBED  (generic iframe — map, social post, airtable…)
+ * 7. EMBED  (trusted iframes only — YouTube, Vimeo, Calendly, Google Maps)
  * ═════════════════════════════════════════════════════════════════════════*/
+const TRUSTED_EMBED_HOSTS = [
+  'www.youtube.com',
+  'youtube.com',
+  'www.youtube-nocookie.com',
+  'youtube-nocookie.com',
+  'player.vimeo.com',
+  'calendly.com',
+  'www.google.com',
+  'google.com',
+  'maps.google.com',
+]
+
+export function isTrustedEmbedUrl(rawUrl: string): boolean {
+  if (!rawUrl) return false
+  try {
+    const parsed = new URL(rawUrl)
+    return parsed.protocol === 'https:' && TRUSTED_EMBED_HOSTS.includes(parsed.hostname.toLowerCase())
+  } catch {
+    return false
+  }
+}
+
 const EmbedView = ({ node, selected }: { node: any; selected: boolean }) => {
   const { url, title, height, maxWidth, rounded, border } = node.attrs
+  const isTrusted = isTrustedEmbedUrl(url)
+
   return (
     <NodeViewWrapper data-block="embed" className={cx('my-2', selected && 'ring-2 ring-brand-blue ring-offset-2 rounded-lg')} data-drag-handle>
       <div style={{ maxWidth: `${maxWidth ?? 100}%`, marginLeft: 'auto', marginRight: 'auto' }}>
-        {url ? (
+        {isTrusted ? (
           <iframe
             src={url}
             title={title || 'Embedded content'}
@@ -902,8 +926,12 @@ const EmbedView = ({ node, selected }: { node: any; selected: boolean }) => {
             className={cx('w-full', rounded && 'rounded-xl', border && 'border border-slate-200')}
             loading="lazy"
           />
+        ) : url ? (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-center text-xs text-amber-700">
+            Untrusted embed URL. Only YouTube, Vimeo, Calendly, and Google Maps are allowed.
+          </div>
         ) : (
-          <EmptyImageBox label="embed URL" className="w-full" />
+          <EmptyImageBox label="embed URL (trusted hosts only)" className="w-full" />
         )}
       </div>
     </NodeViewWrapper>
@@ -927,6 +955,8 @@ const EmbedNode = Node.create({
   parseHTML() { return [{ tag: 'div[data-block="embed"]' }] },
   renderHTML({ node, HTMLAttributes }) {
     const { url, title, height, maxWidth, rounded, border } = node.attrs
+    const isTrusted = isTrustedEmbedUrl(url)
+
     return [
       'div',
       mergeAttributes(HTMLAttributes, {
@@ -934,9 +964,9 @@ const EmbedNode = Node.create({
         class: 'my-6',
         style: `max-width:${maxWidth ?? 100}%;margin-left:auto;margin-right:auto`,
       }),
-      url
+      isTrusted
         ? ['iframe', { src: url, title, loading: 'lazy', style: `height:${height}px`, class: cx('w-full', rounded && 'rounded-xl', border && 'border border-slate-200') }]
-        : ['div', { class: 'w-full' }],
+        : ['div', { class: 'hidden' }],
     ]
   },
   addNodeView() { return ReactNodeViewRenderer(EmbedView) },

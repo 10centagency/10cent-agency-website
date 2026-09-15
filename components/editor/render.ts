@@ -6,6 +6,7 @@ import { extensionsFromRegistry, allBlocks } from './registry'
 import { TextStyles } from './extensions/textStyles'
 import { isDocEmpty } from './plainText'
 import { registerAllBlocks } from './blocks'
+import { sanitizeContentHtml } from '@/lib/sanitize'
 
 /**
  * SERVER-SAFE extension list — nodes and marks only.
@@ -24,8 +25,6 @@ import { registerAllBlocks } from './blocks'
  */
 function ensureBlocksRegistered() {
   if (allBlocks().length === 0) {
-    // lazy require → avoids a circular import
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     registerAllBlocks()
   }
 }
@@ -85,7 +84,7 @@ export function renderDocToHtml(doc: JSONContent | null | undefined): string {
     }
   })
 
-  return html
+  return sanitizeContentHtml(html)
 }
 
 /** Legacy HTML string → Tiptap nodes (old block.content was HTML) */

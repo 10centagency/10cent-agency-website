@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { headers } from "next/headers";
 import { Outfit, Anek_Bangla } from 'next/font/google'
 import { LazyMotion, domAnimation } from "framer-motion";
 import "./globals.css";
@@ -100,14 +101,18 @@ export const viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const headersList = await headers();
+  const nonce = headersList.get('x-nonce') || undefined;
+
   return (
     <html lang="en-BD" className={`${outfit.variable} ${anekBangla.variable}`}>
       <head>
+        {nonce && <meta name="csp-nonce" content={nonce} />}
         {/* Preload critical above-the-fold image */}
         <link
           rel="preload"
@@ -123,7 +128,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
       </head>
       <body>
-        <GoogleTagManager />
+        <GoogleTagManager nonce={nonce} />
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-black focus:rounded focus:shadow-lg"
