@@ -15,6 +15,7 @@ declare global {
         container: HTMLElement,
         options: {
           sitekey: string;
+          action?: string;
           callback?: (token: string) => void;
           'error-callback'?: () => void;
           'expired-callback'?: () => void;
@@ -38,6 +39,7 @@ interface TurnstileProps {
   onExpire?: () => void;
   nonce?: string;
   theme?: 'light' | 'dark' | 'auto';
+  action?: string;
   className?: string;
 }
 
@@ -48,6 +50,7 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(function Turnstile(
     onExpire,
     nonce,
     theme = 'light',
+    action,
     className = '',
   },
   ref
@@ -97,6 +100,7 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(function Turnstile(
       try {
         const id = window.turnstile.render(containerRef.current, {
           sitekey: siteKey,
+          action,
           callback: (token: string) => {
             if (isMounted) onSuccess(token);
           },
@@ -176,7 +180,7 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(function Turnstile(
         }
       }
     };
-  }, [siteKey, onSuccess, onError, onExpire, nonce, theme]);
+  }, [siteKey, onSuccess, onError, onExpire, nonce, theme, action]);
 
   if (configError) {
     return (

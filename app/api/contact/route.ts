@@ -28,6 +28,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 3. Content-Type verification (JSON only)
+    const contentType = req.headers.get('content-type');
+    if (!contentType || !contentType.toLowerCase().includes('application/json')) {
+      return NextResponse.json(
+        { ok: false, error: 'Unsupported Media Type. Content-Type must be application/json.' },
+        { status: 415 }
+      );
+    }
+
     // 3. Trusted client IP extraction
     const clientIp = getClientIp(req);
 
@@ -187,15 +196,27 @@ export async function POST(req: NextRequest) {
         }
 
         const responseHostname = turnstileData.hostname ? turnstileData.hostname.toLowerCase() : '';
-        const isValidHostname =
-          !responseHostname ||
-          allowedHostnames.includes(responseHostname) ||
-          responseHostname.endsWith('.vercel.app');
+        const isValidHostname = isProd
+          ? responseHostname &&
+            (allowedHostnames.includes(responseHostname) || responseHostname.endsWith('.vercel.app'))
+          : !responseHostname ||
+            allowedHostnames.includes(responseHostname) ||
+            responseHostname.endsWith('.vercel.app');
 
         if (!isValidHostname) {
           console.error('[Contact API] Turnstile hostname mismatch:', responseHostname);
           return NextResponse.json(
             { ok: false, error: 'Security verification failed: Hostname mismatch.' },
+            { status: 403 }
+          );
+        }
+
+        // Action validation: if action was passed, verify against allowed form actions
+        const allowedActions = ['contact_form', 'cta_form', 'contact'];
+        if (turnstileData.action && !allowedActions.includes(turnstileData.action)) {
+          console.error('[Contact API] Turnstile action mismatch:', turnstileData.action);
+          return NextResponse.json(
+            { ok: false, error: 'Security verification failed: Action mismatch.' },
             { status: 403 }
           );
         }

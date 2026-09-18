@@ -96,6 +96,10 @@ export default function ConsentBanner() {
     updateGoogleConsent(pref);
     setShowBanner(false);
     setShowModal(false);
+
+    if (triggerElementRef.current) {
+      triggerElementRef.current.focus();
+    }
   }, []);
 
   const handleRejectNonEssential = useCallback(() => {
@@ -112,6 +116,10 @@ export default function ConsentBanner() {
     updateGoogleConsent(pref);
     setShowBanner(false);
     setShowModal(false);
+
+    if (triggerElementRef.current) {
+      triggerElementRef.current.focus();
+    }
   }, []);
 
   const handleSaveCustom = useCallback(() => {

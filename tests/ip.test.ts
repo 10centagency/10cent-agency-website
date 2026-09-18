@@ -16,7 +16,7 @@ describe('IP Extraction and Proxy Trust Model (lib/ip.ts)', () => {
     expect(isValidIp('2001:db8::1')).toBe(true);
   });
 
-  it('rejects invalid or malformed IP addresses', () => {
+  it('rejects invalid, malformed, or injected IP strings', () => {
     expect(isValidIp('')).toBe(false);
     expect(isValidIp('999.999.999.999')).toBe(false);
     expect(isValidIp('not-an-ip')).toBe(false);
@@ -36,26 +36,17 @@ describe('IP Extraction and Proxy Trust Model (lib/ip.ts)', () => {
     expect(getClientIp(req)).toBe('203.0.113.195');
   });
 
-  it('uses x-vercel-ip if cf-connecting-ip is absent', () => {
-    const req = new NextRequest('http://localhost:3000/api/contact', {
-      headers: {
-        'x-vercel-ip': '198.51.100.42',
-        'x-real-ip': '198.51.100.1',
-      },
-    });
-    expect(getClientIp(req)).toBe('198.51.100.42');
-  });
-
-  it('uses x-real-ip if cf and vercel headers are absent', () => {
+  it('uses x-real-ip if cf-connecting-ip is absent', () => {
     const req = new NextRequest('http://localhost:3000/api/contact', {
       headers: {
         'x-real-ip': '198.51.100.10',
+        'x-forwarded-for': '192.0.2.1',
       },
     });
     expect(getClientIp(req)).toBe('198.51.100.10');
   });
 
-  it('extracts leftmost valid IP from x-forwarded-for safely', () => {
+  it('extracts leftmost valid IP from x-forwarded-for when direct proxy headers are absent', () => {
     const req = new NextRequest('http://localhost:3000/api/contact', {
       headers: {
         'x-forwarded-for': '203.0.113.50, 70.42.1.1, 10.0.0.1',
@@ -64,7 +55,7 @@ describe('IP Extraction and Proxy Trust Model (lib/ip.ts)', () => {
     expect(getClientIp(req)).toBe('203.0.113.50');
   });
 
-  it('ignores spoofed or malicious x-forwarded-for headers and falls back', () => {
+  it('ignores spoofed or malicious x-forwarded-for headers and falls back safely', () => {
     const req = new NextRequest('http://localhost:3000/api/contact', {
       headers: {
         'x-forwarded-for': 'malicious-injected-string, 192.168.1.1',
@@ -73,8 +64,19 @@ describe('IP Extraction and Proxy Trust Model (lib/ip.ts)', () => {
     expect(getClientIp(req)).toBe('127.0.0.1');
   });
 
-  it('falls back safely when no headers are provided', () => {
+  it('falls back to 127.0.0.1 in local/test environment when no trusted headers exist', () => {
     const req = new NextRequest('http://localhost:3000/api/contact');
     expect(getClientIp(req)).toBe('127.0.0.1');
+  });
+
+  it('falls back to unknown in production environment when no trusted headers exist', () => {
+    const prevNodeEnv = process.env.NODE_ENV;
+    try {
+      (process.env as any).NODE_ENV = 'production';
+      const req = new NextRequest('https://www.10centagency.com/api/contact');
+      expect(getClientIp(req)).toBe('unknown');
+    } finally {
+      (process.env as any).NODE_ENV = prevNodeEnv;
+    }
   });
 });

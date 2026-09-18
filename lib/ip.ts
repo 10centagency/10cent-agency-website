@@ -22,43 +22,36 @@ export function isValidIp(candidate: string | null | undefined): boolean {
 }
 
 /**
- * Extracts and sanitizes client IP according to a documented proxy trust model:
+ * Extracts and sanitizes client IP according to a verified deployment proxy trust model:
  *
  * 1. Cloudflare edge header (`cf-connecting-ip`):
- *    Authoritative when traffic is proxied by Cloudflare CDN/WAF.
- * 2. Vercel edge header (`x-vercel-ip`):
- *    Authoritative when hosted on Vercel edge infrastructure.
- * 3. Standard reverse proxy header (`x-real-ip`):
- *    Set by upstream reverse proxies (e.g. Nginx).
- * 4. Forwarded hops (`x-forwarded-for`):
- *    Only the leftmost entry is inspected and must pass strict IPv4/IPv6 validation.
- *    Any spoofed, malformed, or injected strings are rejected.
- * 5. Fallback:
+ *    Authoritative when traffic is proxied through Cloudflare CDN/WAF.
+ * 2. Standard reverse proxy header (`x-real-ip`):
+ *    Set by trusted ingress proxies (e.g. Nginx or internal gateways).
+ * 3. Forwarded hops (`x-forwarded-for`):
+ *    On Vercel edge/serverless runtimes, Vercel reverse proxies sanitize and append
+ *    the connecting client IP. The leftmost entry is parsed and MUST pass strict
+ *    IPv4 or IPv6 validation. Any spoofed, malformed, or injected strings are rejected.
+ * 4. Fallback:
  *    Returns '127.0.0.1' for development/test, or 'unknown' for production when
- *    no trusted, valid IP can be extracted.
+ *    no trusted, valid IP can be extracted. Never logs or uses raw unvalidated strings.
  */
 export function getClientIp(req: NextRequest): string {
   const headers = req.headers;
 
-  // 1. Cloudflare edge proxy
+  // 1. Cloudflare edge proxy header
   const cfIp = headers.get('cf-connecting-ip')?.trim();
   if (cfIp && isValidIp(cfIp)) {
     return cfIp;
   }
 
-  // 2. Vercel trusted IP
-  const vercelIp = headers.get('x-vercel-ip')?.trim();
-  if (vercelIp && isValidIp(vercelIp)) {
-    return vercelIp;
-  }
-
-  // 3. Trusted reverse proxy x-real-ip
+  // 2. Trusted reverse proxy x-real-ip
   const realIp = headers.get('x-real-ip')?.trim();
   if (realIp && isValidIp(realIp)) {
     return realIp;
   }
 
-  // 4. x-forwarded-for (parse leftmost hop only)
+  // 3. x-forwarded-for (parse leftmost hop only with strict validation)
   const forwarded = headers.get('x-forwarded-for');
   if (forwarded) {
     const leftmost = forwarded.split(',')[0]?.trim();
@@ -67,6 +60,6 @@ export function getClientIp(req: NextRequest): string {
     }
   }
 
-  // 5. Fallback
+  // 4. Fallback: conservative key for rate limiter / logging
   return process.env.NODE_ENV === 'production' ? 'unknown' : '127.0.0.1';
 }

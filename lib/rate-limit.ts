@@ -25,6 +25,13 @@ function checkMemoryRateLimit(key: string, limit: number, windowSeconds: number)
   return { allowed: true, remaining: limit - entry.count, resetTime: entry.resetAt };
 }
 
+/**
+ * Reset memory store between test executions.
+ */
+export function clearMemoryRateLimitStore(): void {
+  memoryStore.clear();
+}
+
 // Atomic Lua script for Upstash Redis: INCR and set EXPIRE only on the first increment
 const UPSTASH_ATOMIC_LUA = `
 local current = redis.call('INCR', KEYS[1])

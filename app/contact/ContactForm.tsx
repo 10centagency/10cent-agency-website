@@ -420,7 +420,7 @@ export default function ContactForm() {
       </div>
 
       {/* Cloudflare Turnstile Verification */}
-      <Turnstile ref={turnstileRef} onSuccess={(token) => setTurnstileToken(token)} />
+      <Turnstile ref={turnstileRef} action="contact_form" onSuccess={(token) => setTurnstileToken(token)} />
 
       {/* Submit Button */}
       <button

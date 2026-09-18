@@ -560,7 +560,7 @@ export default function CTABannerInteractive() {
                 </label>
 
                 <div className="my-2">
-                  <Turnstile onSuccess={(token) => setTurnstileToken(token)} />
+                  <Turnstile action="cta_form" onSuccess={(token) => setTurnstileToken(token)} />
                 </div>
 
                 <div className={styles.formActions}>
