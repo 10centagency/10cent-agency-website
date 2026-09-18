@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'node:crypto';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { verifySameOrigin } from '@/lib/csrf';
-import { contactSubmissionSchema } from '@/lib/admin-schemas';
+import { normalizeContactInput } from '@/lib/admin-schemas';
+import { getClientIp } from '@/lib/ip';
+
+/**
+ * Maximum allowed JSON payload size (16 KB)
+ */
+const MAX_PAYLOAD_BYTES = 16384;
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,85 +19,123 @@ export async function POST(req: NextRequest) {
       return csrf.response!;
     }
 
-    // 2. Bound raw request body size before parsing (max 64KB)
+    // 2. Request body size guard before JSON parsing or expensive processing
     const contentLength = req.headers.get('content-length');
-    if (contentLength && parseInt(contentLength, 10) > 65536) {
-      return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
+    if (contentLength && parseInt(contentLength, 10) > MAX_PAYLOAD_BYTES) {
+      return NextResponse.json(
+        { ok: false, error: 'Payload too large' },
+        { status: 413 }
+      );
     }
 
     // 3. Trusted client IP extraction
-    // Prefer x-real-ip or cf-connecting-ip over caller-spoofable x-forwarded-for
-    const clientIp =
-      req.headers.get('x-real-ip') ||
-      req.headers.get('cf-connecting-ip') ||
-      (req.headers.get('x-forwarded-for')?.split(',')[0].trim()) ||
-      '127.0.0.1';
+    const clientIp = getClientIp(req);
 
-    // 4. Atomic Rate Limiting by client IP (5 submissions per 10 mins)
-    const rateLimit = await checkRateLimit(clientIp, 5, 600);
-    if (!rateLimit.allowed) {
+    // 4. Rate Limiting by client IP (5 submissions per 10 mins)
+    // Executes before Turnstile verification, DB inserts, or email sends
+    const ipRateLimit = await checkRateLimit(clientIp, 5, 600);
+    if (!ipRateLimit.allowed) {
+      const retryAfter = Math.max(1, Math.ceil((ipRateLimit.resetTime - Date.now()) / 1000));
       return NextResponse.json(
-        { error: 'Too many submissions from this network. Please wait a few minutes before trying again.' },
+        {
+          ok: false,
+          error: 'Too many submissions from this network. Please wait a few minutes before trying again.',
+        },
         {
           status: 429,
           headers: {
-            'Retry-After': String(Math.max(1, Math.ceil((rateLimit.resetTime - Date.now()) / 1000))),
+            'Retry-After': String(retryAfter),
           },
         }
       );
     }
 
-    // 5. Parse JSON Body
+    // 5. Parse JSON Body with body length safety
     let rawBody: unknown;
     try {
       rawBody = await req.json();
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
-    }
-
-    // 6. Strict Schema Validation
-    const parseResult = contactSubmissionSchema.safeParse(rawBody);
-    if (!parseResult.success) {
-      const firstIssue = parseResult.error.issues[0]?.message || 'Invalid form submission data';
-      return NextResponse.json({ error: firstIssue }, { status: 400 });
-    }
-
-    const body = parseResult.data;
-
-    // 7. Honeypot check (hidden input for bot detection)
-    if (body.hp_field && body.hp_field.trim().length > 0) {
-      // Return 200 without saving so bots don't learn
-      return NextResponse.json({ success: true, message: 'Message submitted successfully' });
-    }
-
-    // 8. Cloudflare Turnstile Verification
-    const turnstileToken = body.turnstileToken;
-    const turnstileSecret = process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY;
-    const isTest = process.env.NODE_ENV === 'test';
-
-    // In production and Preview, TURNSTILE_BYPASS=true must fail closed/reject submissions
-    if (process.env.TURNSTILE_BYPASS === 'true' && !isTest) {
-      console.error('[Contact API] TURNSTILE_BYPASS is not permitted in production or preview environments.');
       return NextResponse.json(
-        { error: 'Security verification failed. Invalid bypass configuration.' },
+        { ok: false, error: 'Invalid JSON payload' },
+        { status: 400 }
+      );
+    }
+
+    // 6. Safe Schema Normalization (resolves aliases and rejects conflicting duplicate pairs)
+    const normResult = normalizeContactInput(rawBody);
+    if (!normResult.success || !normResult.data) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: normResult.error || 'Invalid form submission data',
+          fieldErrors: normResult.fieldErrors,
+        },
+        { status: 400 }
+      );
+    }
+
+    const body = normResult.data;
+
+    // 7. Honeypot check (reject submission if filled)
+    if (body.honeypot && body.honeypot.trim().length > 0) {
+      return NextResponse.json(
+        { ok: false, error: 'Invalid form submission' },
+        { status: 400 }
+      );
+    }
+
+    // 8. Secondary Rate Limiting by hashed email (prevents distributed IP flood using same email)
+    const emailHash = crypto.createHash('sha256').update(body.email).digest('hex').slice(0, 16);
+    const emailRateLimit = await checkRateLimit(`email:${emailHash}`, 3, 600);
+    if (!emailRateLimit.allowed) {
+      const retryAfter = Math.max(1, Math.ceil((emailRateLimit.resetTime - Date.now()) / 1000));
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'Too many submissions for this email address. Please try again later.',
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(retryAfter),
+          },
+        }
+      );
+    }
+
+    // 9. Cloudflare Turnstile Verification
+    const turnstileToken = body.turnstileToken;
+    const turnstileSecret =
+      process.env.TURNSTILE_SECRET_KEY || process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY;
+    const isTest = process.env.NODE_ENV === 'test';
+    const isProd = process.env.NODE_ENV === 'production';
+    const isBypass =
+      process.env.TURNSTILE_BYPASS_FOR_TESTS === 'true' || process.env.TURNSTILE_BYPASS === 'true';
+
+    // In production, bypass flags must never be active and must fail closed
+    if (isBypass && isProd) {
+      console.error('[Contact API] Turnstile test bypass is strictly forbidden in production.');
+      return NextResponse.json(
+        { ok: false, error: 'Security verification failed. Invalid configuration.' },
         { status: 403 }
       );
     }
 
-    if (isTest && (turnstileToken === 'test-mock-token' || !turnstileSecret)) {
-      // Allowed only in automated test execution
+    // Allowed bypass only in automated test environment
+    if (isTest && (turnstileToken === 'test-mock-token' || isBypass || !turnstileSecret)) {
+      // Allowed in automated test execution
     } else {
       if (!turnstileToken) {
         return NextResponse.json(
-          { error: 'Security verification (Turnstile) is required.' },
+          { ok: false, error: 'Security verification (Turnstile) is required.' },
           { status: 400 }
         );
       }
 
       if (!turnstileSecret) {
-        console.error('[Contact API] CLOUDFLARE_TURNSTILE_SECRET_KEY is missing in server environment');
+        console.error('[Contact API] TURNSTILE_SECRET_KEY is missing in server environment');
         return NextResponse.json(
-          { error: 'Server security configuration error. Please contact support.' },
+          { ok: false, error: 'Server security configuration error. Please contact support.' },
           { status: 500 }
         );
       }
@@ -98,7 +143,9 @@ export async function POST(req: NextRequest) {
       const verifyFormData = new URLSearchParams();
       verifyFormData.append('secret', turnstileSecret);
       verifyFormData.append('response', turnstileToken);
-      verifyFormData.append('remoteip', clientIp);
+      if (clientIp && clientIp !== 'unknown') {
+        verifyFormData.append('remoteip', clientIp);
+      }
 
       try {
         const turnstileRes = await fetch(
@@ -113,13 +160,13 @@ export async function POST(req: NextRequest) {
         if (!turnstileData.success) {
           console.warn('[Contact API] Turnstile challenge failed:', turnstileData['error-codes']);
           return NextResponse.json(
-            { error: 'Security verification failed. Please refresh and try again.' },
-            { status: 400 }
+            { ok: false, error: 'Security verification failed. Please refresh and try again.' },
+            { status: 403 }
           );
         }
 
         // Hostname validation
-        const siteUrl = process.env.SITE_URL;
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;
         const vercelUrl = process.env.VERCEL_URL;
         const allowedHostnames = [
           'www.10centagency.com',
@@ -148,20 +195,20 @@ export async function POST(req: NextRequest) {
         if (!isValidHostname) {
           console.error('[Contact API] Turnstile hostname mismatch:', responseHostname);
           return NextResponse.json(
-            { error: 'Security verification failed: Hostname mismatch.' },
-            { status: 400 }
+            { ok: false, error: 'Security verification failed: Hostname mismatch.' },
+            { status: 403 }
           );
         }
       } catch (err) {
         console.error('[Contact API] Turnstile verify error:', err);
         return NextResponse.json(
-          { error: 'Failed to verify security challenge' },
+          { ok: false, error: 'Failed to verify security challenge' },
           { status: 500 }
         );
       }
     }
 
-    // 9. Secure Database Insertion via service-role client
+    // 10. Secure Database Insertion via service-role client
     const admin = getSupabaseAdmin();
     const { error: insertError } = await admin
       .from('contact_submissions')
@@ -179,17 +226,41 @@ export async function POST(req: NextRequest) {
     if (insertError) {
       console.error('[Contact API] Insertion error:', insertError);
       return NextResponse.json(
-        { error: 'Failed to record your submission. Please try again.' },
+        { ok: false, error: 'Failed to record your submission. Please try again.' },
         { status: 500 }
       );
     }
 
     return NextResponse.json(
-      { success: true, message: 'Thank you! Your message has been received.' },
+      { ok: true, success: true, message: 'Thank you! Your message has been received.' },
       { status: 201 }
     );
   } catch (err: any) {
     console.error('[Contact API] Unexpected error:', err);
-    return NextResponse.json({ error: 'An unexpected server error occurred.' }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: 'An unexpected server error occurred.' },
+      { status: 500 }
+    );
   }
+}
+
+export async function GET() {
+  return NextResponse.json(
+    { ok: false, error: 'Method Not Allowed' },
+    { status: 405, headers: { Allow: 'POST' } }
+  );
+}
+
+export async function PUT() {
+  return NextResponse.json(
+    { ok: false, error: 'Method Not Allowed' },
+    { status: 405, headers: { Allow: 'POST' } }
+  );
+}
+
+export async function DELETE() {
+  return NextResponse.json(
+    { ok: false, error: 'Method Not Allowed' },
+    { status: 405, headers: { Allow: 'POST' } }
+  );
 }

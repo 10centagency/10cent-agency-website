@@ -161,22 +161,22 @@ export const ALLOWED_SERVICES = [
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const PHONE_REGEX = /^[+0-9\s\-().]{6,30}$/;
 
-export const contactSubmissionSchema = z
+export const canonicalContactSubmissionSchema = z
   .object({
-    fullName: z.string().trim().min(1, 'Full name is required').max(100),
-    businessName: z.string().trim().min(1, 'Business name is required').max(100),
+    fullName: z.string().trim().min(1, 'Full name is required').max(100, 'Full name must be at most 100 characters'),
+    businessName: z.string().trim().min(1, 'Business name is required').max(100, 'Business name must be at most 100 characters'),
     email: z
       .string()
       .trim()
       .toLowerCase()
       .min(1, 'Email is required')
-      .max(254)
+      .max(254, 'Email is too long')
       .regex(EMAIL_REGEX, 'Valid email address is required'),
     whatsapp: z
       .string()
       .trim()
       .min(6, 'Valid phone/WhatsApp number is required')
-      .max(30)
+      .max(30, 'Phone/WhatsApp number is too long')
       .regex(PHONE_REGEX, 'Valid phone/WhatsApp number is required'),
     service: z.string().trim().refine((s) => (ALLOWED_SERVICES as readonly string[]).includes(s), {
       message: `Service must be one of: ${ALLOWED_SERVICES.join(', ')}`,
@@ -186,10 +186,123 @@ export const contactSubmissionSchema = z
       .string()
       .trim()
       .min(5, 'Message must be between 5 and 5,000 characters')
-      .max(5000),
-    hp_field: z.string().max(100).optional().default(''),
+      .max(5000, 'Message must be at most 5,000 characters'),
+    honeypot: z.string().max(100).optional().default(''),
     turnstileToken: z.string().max(4096).optional().default(''),
   })
   .strict();
 
-export type ContactSubmissionInput = z.infer<typeof contactSubmissionSchema>;
+export type CanonicalContactSubmission = z.infer<typeof canonicalContactSubmissionSchema>;
+
+export interface ContactNormalizationResult {
+  success: boolean;
+  data?: CanonicalContactSubmission;
+  error?: string;
+  fieldErrors?: Record<string, string>;
+}
+
+/**
+ * Normalizes input with alias resolution (e.g. name -> fullName, phone -> whatsapp, website -> honeypot).
+ * Rejects with validation error if conflicting non-empty values are supplied for any alias pair.
+ */
+export function normalizeContactInput(raw: unknown): ContactNormalizationResult {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return {
+      success: false,
+      error: 'Invalid request body format',
+      fieldErrors: { form: 'Invalid request body format' },
+    };
+  }
+
+  const obj = raw as Record<string, unknown>;
+
+  // Helper to extract string safely
+  const str = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
+
+  // 1. Alias: fullName vs name
+  const rawFullName = str(obj.fullName);
+  const rawName = str(obj.name);
+  if (rawFullName && rawName && rawFullName !== rawName) {
+    return {
+      success: false,
+      error: 'Conflicting values provided for name fields',
+      fieldErrors: { fullName: 'Conflicting name values provided' },
+    };
+  }
+  const resolvedFullName = rawFullName || rawName;
+
+  // 2. Alias: businessName vs company
+  const rawBusiness = str(obj.businessName);
+  const rawCompany = str(obj.company);
+  if (rawBusiness && rawCompany && rawBusiness !== rawCompany) {
+    return {
+      success: false,
+      error: 'Conflicting values provided for business fields',
+      fieldErrors: { businessName: 'Conflicting business name values provided' },
+    };
+  }
+  const resolvedBusinessName = rawBusiness || rawCompany;
+
+  // 3. Alias: whatsapp vs phone
+  const rawWhatsapp = str(obj.whatsapp);
+  const rawPhone = str(obj.phone);
+  if (rawWhatsapp && rawPhone && rawWhatsapp !== rawPhone) {
+    return {
+      success: false,
+      error: 'Conflicting values provided for phone fields',
+      fieldErrors: { whatsapp: 'Conflicting phone values provided' },
+    };
+  }
+  const resolvedWhatsapp = rawWhatsapp || rawPhone;
+
+  // 4. Honeypot: website vs hp_field
+  const rawWebsite = str(obj.website);
+  const rawHp = str(obj.hp_field);
+  if (rawWebsite && rawHp && rawWebsite !== rawHp) {
+    return {
+      success: false,
+      error: 'Conflicting honeypot submission',
+      fieldErrors: { website: 'Conflicting honeypot values' },
+    };
+  }
+  const resolvedHoneypot = rawWebsite || rawHp;
+
+  // 5. Parse canonical schema
+  const candidate = {
+    fullName: resolvedFullName,
+    businessName: resolvedBusinessName,
+    email: str(obj.email).toLowerCase(),
+    whatsapp: resolvedWhatsapp,
+    service: str(obj.service),
+    budget: obj.budget !== undefined && obj.budget !== null ? str(obj.budget) : undefined,
+    message: str(obj.message),
+    honeypot: resolvedHoneypot,
+    turnstileToken: str(obj.turnstileToken),
+  };
+
+  const parsed = canonicalContactSubmissionSchema.safeParse(candidate);
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {};
+    for (const issue of parsed.error.issues) {
+      const path = issue.path[0] ? String(issue.path[0]) : 'form';
+      if (!fieldErrors[path]) {
+        fieldErrors[path] = issue.message;
+      }
+    }
+    const firstError = parsed.error.issues[0]?.message || 'Invalid form submission data';
+    return {
+      success: false,
+      error: firstError,
+      fieldErrors,
+    };
+  }
+
+  return {
+    success: true,
+    data: parsed.data,
+  };
+}
+
+// Keep legacy export for backwards compatibility
+export const contactSubmissionSchema = canonicalContactSubmissionSchema;
+export type ContactSubmissionInput = CanonicalContactSubmission;

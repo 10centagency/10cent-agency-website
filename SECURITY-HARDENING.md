@@ -325,12 +325,21 @@ The test suite validates security contracts via Vitest:
 | `tests/csrf.test.ts` | Allowed origin matching, Vercel preview wildcards, foreign origin 403 rejection, missing origin rejection |
 | `tests/url-safety.test.ts` | Navigation URLs, media CDN URLs, embed hosts, CSS background URLs, JSON-LD escaping |
 | `tests/sanitizer.test.ts` | Rich text HTML sanitization, script stripping, event handler stripping, iframe filtering |
-| `tests/contact.test.ts` | Same-origin guard, rate limiting, honeypot absorption, email validation, payload size bounding |
+| `tests/contact.test.ts` | Same-origin guard, rate limiting, honeypot rejection (400), conflicting aliases (400), payload size bounding (16KB) |
+| `tests/ip.test.ts` | Client IP extraction, proxy trust hierarchy (Cloudflare, Vercel, x-real-ip), IPv4/IPv6 sanitization |
 | `tests/admin-api.test.ts` | Unauthenticated 401, non-admin 403, strict schema rejection, UUID validation, database error suppression |
 | `tests/upload.test.ts` | Same-origin, admin auth, bucket allowlist, SVG/HTML/executable rejection, decompression bomb defense, Sharp re-encoding |
 | `tests/middleware-auth.test.ts` | Nonce forwarding, GTM frame-src, session cookie preservation on `/admin`, redirect cookie forwarding |
+| `tests/contact-form-a11y.test.tsx` | Accessible field names, keyboard navigation, tabIndex=-1 honeypot, double-submission prevention, error/success states |
+| `tests/consent-banner.test.tsx` | Google Consent Mode v2, versioned storage (`tc_consent_v1`), keyboard controls, modal focus trap & escape close |
+| `tests/e2e/smoke.spec.ts` | Playwright E2E smoke tests: page loads, navigation reachability, fresh-context consent, mocked form submission |
 
-Run all tests:
+Run unit and component tests:
 ```bash
 npm test
+```
+
+Run Playwright smoke tests:
+```bash
+npm run test:e2e
 ```

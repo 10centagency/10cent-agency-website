@@ -1,6 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 
 declare global {
   interface Window {
@@ -22,6 +28,10 @@ declare global {
   }
 }
 
+export interface TurnstileRef {
+  reset: () => void;
+}
+
 interface TurnstileProps {
   onSuccess: (token: string) => void;
   onError?: (error?: string) => void;
@@ -31,20 +41,37 @@ interface TurnstileProps {
   className?: string;
 }
 
-export default function Turnstile({
-  onSuccess,
-  onError,
-  onExpire,
-  nonce,
-  theme = 'light',
-  className = '',
-}: TurnstileProps) {
+const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(function Turnstile(
+  {
+    onSuccess,
+    onError,
+    onExpire,
+    nonce,
+    theme = 'light',
+    className = '',
+  },
+  ref
+) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
   const [configError, setConfigError] = useState<string | null>(null);
 
-  // Canonical public site key variable
-  const siteKey = process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY;
+  // Canonical public site key with backwards compatibility fallback
+  const siteKey =
+    process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ||
+    process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY;
+
+  useImperativeHandle(ref, () => ({
+    reset: () => {
+      if (widgetIdRef.current && window.turnstile) {
+        try {
+          window.turnstile.reset(widgetIdRef.current);
+        } catch {
+          // ignore
+        }
+      }
+    },
+  }));
 
   useEffect(() => {
     // Automated test execution only
@@ -153,7 +180,9 @@ export default function Turnstile({
 
   if (configError) {
     return (
-      <div className={`turnstile-error text-xs text-rose-600 p-2 border border-rose-200 bg-rose-50 rounded-lg ${className}`}>
+      <div
+        className={`turnstile-error text-xs text-rose-600 p-2 border border-rose-200 bg-rose-50 rounded-lg ${className}`}
+      >
         {configError}
       </div>
     );
@@ -168,4 +197,6 @@ export default function Turnstile({
       <div ref={containerRef} />
     </div>
   );
-}
+});
+
+export default Turnstile;

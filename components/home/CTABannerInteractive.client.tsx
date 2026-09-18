@@ -249,6 +249,7 @@ export default function CTABannerInteractive() {
           service: formData.topic.trim(),
           budget: formData.budget.trim() || undefined,
           message: formData.message.trim(),
+          website: hpField,
           hp_field: hpField,
           turnstileToken,
         }),
@@ -424,14 +425,30 @@ export default function CTABannerInteractive() {
               </div>
 
               <form onSubmit={handleSubmit} noValidate>
-                {/* Invisible Honeypot */}
-                <div style={{ display: 'none' }} aria-hidden="true">
+                {/* Visually hidden honeypot */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    width: 1,
+                    height: 1,
+                    padding: 0,
+                    margin: -1,
+                    overflow: 'hidden',
+                    clip: 'rect(0, 0, 0, 0)',
+                    whiteSpace: 'nowrap',
+                    border: 0,
+                  }}
+                  aria-hidden="true"
+                >
+                  <label htmlFor="cta_website">Do not fill this field</label>
                   <input
+                    id="cta_website"
                     type="text"
-                    name="hp_field"
+                    name="website"
                     value={hpField}
                     onChange={(e) => setHpField(e.target.value)}
                     tabIndex={-1}
+                    aria-hidden="true"
                     autoComplete="off"
                   />
                 </div>

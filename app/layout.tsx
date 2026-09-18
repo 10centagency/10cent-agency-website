@@ -10,6 +10,8 @@ import WhatsAppButton from "@/components/ui/WhatsAppButton";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import CustomCursor from "@/components/ui/CustomCursor";
 import GoogleTagManager from "@/components/GoogleTagManager";
+import ConsentModeScript from "@/components/consent/ConsentModeScript";
+import ConsentBanner from "@/components/consent/ConsentBanner";
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -113,6 +115,7 @@ export default async function RootLayout({
     <html lang="en-BD" className={`${outfit.variable} ${anekBangla.variable}`}>
       <head>
         {nonce && <meta name="csp-nonce" content={nonce} />}
+        <ConsentModeScript nonce={nonce} />
         {/* Preload critical above-the-fold image */}
         <link
           rel="preload"
@@ -128,6 +131,7 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
       </head>
       <body>
+        <ConsentBanner />
         <GoogleTagManager nonce={nonce} />
         <a
           href="#main-content"

@@ -17,11 +17,6 @@ declare global {
  * This ID is pushed into the dataLayer as `metaEventId` and is read by BOTH:
  *   1. the "Meta Pixel-PageView" tag  (browser pixel)
  *   2. the "CAPI-PageView" tag        (server-side Conversions API)
- *
- * Using ONE shared id is what lets Meta de-duplicate the browser event and the
- * server event. Do NOT generate the id separately inside each GTM tag —
- * GTM Custom JavaScript variables are re-evaluated on every reference, so each
- * tag would end up with a different id and de-duplication would silently fail.
  */
 function generateEventId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -43,8 +38,16 @@ export default function GoogleTagManager({ nonce }: GoogleTagManagerProps = {}) 
   const pathname = usePathname();
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // GTM script injection after idle or user interaction (excluded on /admin)
+  // Read environment variable strictly. Zero hardcoded tracking IDs.
+  const gtmId = process.env.NEXT_PUBLIC_GOOGLE_TAG_MANAGER_ID;
+
+  // GTM script injection after idle or user interaction (excluded on /admin or when env var is missing)
   useEffect(() => {
+    // If no GTM ID is provided in environment variables, do not load GTM
+    if (!gtmId) {
+      return;
+    }
+
     // Never load GTM on admin routes
     if (pathname?.startsWith('/admin')) {
       return;
@@ -78,7 +81,7 @@ export default function GoogleTagManager({ nonce }: GoogleTagManagerProps = {}) 
       if (nonce) {
         script.nonce = nonce;
       }
-      script.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-5M652RR4';
+      script.src = `https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(gtmId)}`;
       document.head.appendChild(script);
 
       setIsLoaded(true);
@@ -109,12 +112,11 @@ export default function GoogleTagManager({ nonce }: GoogleTagManagerProps = {}) 
     }
 
     return cleanup;
-  }, [pathname, isLoaded, nonce]);
+  }, [pathname, isLoaded, nonce, gtmId]);
 
   // SPA PageView Tracking: push route-change & initial-load event to dataLayer
   useEffect(() => {
-    // Skip on admin routes or before GTM is loaded
-    if (!isLoaded || !pathname || pathname.startsWith('/admin')) return;
+    if (!gtmId || !isLoaded || !pathname || pathname.startsWith('/admin')) return;
 
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
@@ -122,21 +124,19 @@ export default function GoogleTagManager({ nonce }: GoogleTagManagerProps = {}) 
       pagePath: pathname,
       pageLocation: window.location.href,
       pageTitle: document.title,
-      // ONE shared event id for this page view — consumed by both the
-      // Meta Pixel tag and the CAPI tag so Meta can de-duplicate them.
       metaEventId: generateEventId(),
     });
-  }, [pathname, isLoaded]);
+  }, [pathname, isLoaded, gtmId]);
 
-  // Don't render noscript on admin routes
-  if (pathname?.startsWith('/admin')) {
+  // If no GTM ID configured or on admin routes, do not render iframe or tag
+  if (!gtmId || pathname?.startsWith('/admin')) {
     return null;
   }
 
   return (
     <noscript>
       <iframe
-        src="https://www.googletagmanager.com/ns.html?id=GTM-5M652RR4"
+        src={`https://www.googletagmanager.com/ns.html?id=${encodeURIComponent(gtmId)}`}
         height="0"
         width="0"
         style={{ display: 'none', visibility: 'hidden' }}
