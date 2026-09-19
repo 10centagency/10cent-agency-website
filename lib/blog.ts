@@ -1,6 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import type { BlogPost, CategoryRow, ContentBlock } from '@/lib/database.types';
-import { plainTextFromDoc } from '@/components/editor';
+import { plainTextFromDoc } from '@/components/editor/plainText';
 
 export interface HomeBlogPost {
   slug: string;

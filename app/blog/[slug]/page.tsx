@@ -10,7 +10,7 @@ import {
   getBlogPostDescription,
 } from '@/lib/blog';
 import BlogPostClient from './BlogPostClient';
-import { renderDocToHtml } from '@/components/editor';
+import { renderDocToHtml } from '@/components/editor/render';
 import { sanitizeContentHtml } from '@/lib/sanitize';
 import JsonLd from '@/components/seo/JsonLd';
 

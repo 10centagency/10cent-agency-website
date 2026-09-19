@@ -5,15 +5,14 @@ import { useEffect, useRef, useState } from 'react';
 export default function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
-  const [isTouch, setIsTouch] = useState(false);
+  const [isEnabled, setIsEnabled] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (window.matchMedia('(pointer: coarse)').matches) {
-      setIsTouch(true);
-      return;
-    }
+    const isFinePointer = window.matchMedia('(pointer: fine) and (hover: hover)').matches;
+    if (!isFinePointer) return;
 
+    setIsEnabled(true);
     document.body.classList.add('custom-cursor-active');
 
     const move = (e: MouseEvent) => {
@@ -36,7 +35,7 @@ export default function CustomCursor() {
     };
   }, []);
 
-  if (isTouch) return null;
+  if (!isEnabled) return null;
 
   return (
     <>

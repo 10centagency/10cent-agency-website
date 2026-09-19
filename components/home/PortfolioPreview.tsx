@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { ExternalLink } from 'lucide-react';
 import SectionLabel from '@/components/ui/SectionLabel';
 import AnimatedSection from '@/components/ui/AnimatedSection';
@@ -101,7 +101,7 @@ export default function PortfolioPreview({ initialItems = [] }: PortfolioPreview
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
           <AnimatePresence mode="popLayout">
             {filtered.map((project) => (
-             <motion.div
+             <m.div
                  key={project.id}
                  layout
                  initial={{ opacity: 0 }}
@@ -159,7 +159,7 @@ export default function PortfolioPreview({ initialItems = [] }: PortfolioPreview
                     {project.result_highlight}
                   </p>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </AnimatePresence>
         </div>

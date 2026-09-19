@@ -9,7 +9,7 @@ import SectionLabel from '@/components/ui/SectionLabel';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import CTABanner from '@/components/home/CTABanner';
 import ProjectContent from './ProjectContent';
-import { renderDocToHtml } from '@/components/editor';
+import { renderDocToHtml } from '@/components/editor/render';
 import { sanitizeContentHtml } from '@/lib/sanitize';
 import { sanitizeUrl, isSafeMediaUrl } from '@/lib/url-safety';
 import JsonLd from '@/components/seo/JsonLd';

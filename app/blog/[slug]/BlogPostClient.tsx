@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   ArrowLeft,
   Facebook,
@@ -57,34 +58,50 @@ export default function BlogPostClient({
         </Link>
 
         {/* Featured Image */}
-        {post.featured_image_url && (
-          <div className="mb-8">
-            {post.featured_image_link && sanitizeUrl(post.featured_image_link) ? (
-              <a
-                href={sanitizeUrl(post.featured_image_link)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block relative group"
-              >
-                <img
-                  src={post.featured_image_url}
-                  alt={post.title}
-                  className="w-full rounded-2xl lg:h-[420px] lg:object-cover"
-                />
-                <div className="absolute inset-0 bg-brand-navy/70 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
-                  <ExternalLink className="w-5 h-5 text-white" />
-                  <span className="text-white font-medium">Visit</span>
-                </div>
-              </a>
-            ) : (
-              <img
-                src={post.featured_image_url}
-                alt={post.title}
-                className="w-full rounded-2xl lg:h-[420px] lg:object-cover"
-              />
-            )}
-          </div>
-        )}
+        {post.featured_image_url && (() => {
+          const isOptImage =
+            post.featured_image_url.startsWith('/') ||
+            post.featured_image_url.includes('rpgygdjptsxryewxaeys.supabase.co');
+
+          const imageElement = isOptImage ? (
+            <Image
+              src={post.featured_image_url}
+              alt={post.title}
+              width={1200}
+              height={630}
+              priority
+              sizes="(max-width: 1024px) 100vw, 1024px"
+              className="w-full h-auto rounded-2xl lg:h-[420px] lg:object-cover"
+            />
+          ) : (
+            <img
+              src={post.featured_image_url}
+              alt={post.title}
+              className="w-full rounded-2xl lg:h-[420px] lg:object-cover"
+            />
+          );
+
+          return (
+            <div className="mb-8">
+              {post.featured_image_link && sanitizeUrl(post.featured_image_link) ? (
+                <a
+                  href={sanitizeUrl(post.featured_image_link)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block relative group"
+                >
+                  {imageElement}
+                  <div className="absolute inset-0 bg-brand-navy/70 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+                    <ExternalLink className="w-5 h-5 text-white" />
+                    <span className="text-white font-medium">Visit</span>
+                  </div>
+                </a>
+              ) : (
+                imageElement
+              )}
+            </div>
+          );
+        })()}
 
         {/* Meta Row */}
         <div className="flex flex-wrap items-center gap-2 mb-6 pb-6 border-b border-brand-border">
@@ -222,11 +239,22 @@ export default function BlogPostClient({
                   <div className="group cursor-pointer h-full">
                     <div className="relative h-40 bg-gradient-to-br rounded-xl overflow-hidden mb-3">
                       {relatedPost.featured_image_url ? (
-                        <img
-                          src={relatedPost.featured_image_url}
-                          alt={relatedPost.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
+                        relatedPost.featured_image_url.startsWith('/') ||
+                        relatedPost.featured_image_url.includes('rpgygdjptsxryewxaeys.supabase.co') ? (
+                          <Image
+                            src={relatedPost.featured_image_url}
+                            alt={relatedPost.title}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 33vw"
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <img
+                            src={relatedPost.featured_image_url}
+                            alt={relatedPost.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        )
                       ) : (
                         <div
                           className="w-full h-full"

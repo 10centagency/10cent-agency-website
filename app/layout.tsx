@@ -8,7 +8,6 @@ import '@/components/editor/editor.css';
 import PublicLayoutWrapper from "@/components/layout/PublicLayoutWrapper";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
 import ScrollToTop from "@/components/ui/ScrollToTop";
-import CustomCursor from "@/components/ui/CustomCursor";
 import GoogleTagManager from "@/components/GoogleTagManager";
 import ConsentModeScript from "@/components/consent/ConsentModeScript";
 import ConsentBanner from "@/components/consent/ConsentBanner";
@@ -141,12 +140,9 @@ export default async function RootLayout({
         </a>
         <LazyMotion features={domAnimation}>
           <PublicLayoutWrapper>{children}</PublicLayoutWrapper>
+          <WhatsAppButton />
+          <ScrollToTop />
         </LazyMotion>
-        <WhatsAppButton />
-        <ScrollToTop />
-        <Suspense fallback={null}>
-          <CustomCursor />
-        </Suspense>
       </body>
     </html>
   );

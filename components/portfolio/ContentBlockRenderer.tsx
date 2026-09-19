@@ -68,6 +68,8 @@ export default function ContentBlockRenderer({ blocks }: { blocks: ContentBlock[
                     <img
                       src={safeSrc}
                       alt={block.caption || ''}
+                      loading="lazy"
+                      decoding="async"
                       className={`w-full object-cover rounded-xl ${aClass}`}
                     />
                   )}
@@ -90,7 +92,7 @@ export default function ContentBlockRenderer({ blocks }: { blocks: ContentBlock[
               const safeSrc = isSafeMediaUrl(b.image_url) ? b.image_url : '';
               const safeLink = sanitizeUrl(b.link_url);
               const img = safeSrc ? (
-                <img src={safeSrc} alt={b.caption || ''} className="w-full rounded-xl object-cover" />
+                <img src={safeSrc} alt={b.caption || ''} loading="lazy" decoding="async" className="w-full rounded-xl object-cover" />
               ) : null;
               return (
                 <figure key={b.id} className="space-y-2">
@@ -115,7 +117,7 @@ export default function ContentBlockRenderer({ blocks }: { blocks: ContentBlock[
                     ].map(({ url, label }, i) => (
                       <div key={i} className="space-y-2">
                         {url && (
-                          <img src={url} alt={label} className="w-full rounded-xl object-cover aspect-square sm:aspect-[4/3]" />
+                          <img src={url} alt={label} loading="lazy" decoding="async" className="w-full rounded-xl object-cover aspect-square sm:aspect-[4/3]" />
                         )}
                         <p className="text-xs font-semibold text-center text-brand-textMid uppercase tracking-wider">{label}</p>
                       </div>
@@ -138,7 +140,7 @@ export default function ContentBlockRenderer({ blocks }: { blocks: ContentBlock[
                 <div key={b.id} className={`grid ${colClass} gap-3`}>
                   {b.images.filter((img) => img.url && isSafeMediaUrl(img.url)).map((img, i) => (
                     <figure key={i} className="space-y-1">
-                      <img src={img.url} alt={img.caption || ''} className="w-full aspect-square object-cover rounded-xl" />
+                      <img src={img.url} alt={img.caption || ''} loading="lazy" decoding="async" className="w-full aspect-square object-cover rounded-xl" />
                       {img.caption && (
                         <figcaption className="text-xs text-brand-textMid text-center">{img.caption}</figcaption>
                       )}
@@ -161,7 +163,7 @@ export default function ContentBlockRenderer({ blocks }: { blocks: ContentBlock[
                const safeLink = sanitizeUrl(b.link_url);
                const imgEl = safeImgUrl ? (
                  <div className={`overflow-hidden rounded-xl ${aClass}`}>
-                   <img src={safeImgUrl} alt={b.heading || ''} className="w-full h-full object-cover" />
+                   <img src={safeImgUrl} alt={b.heading || ''} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                  </div>
                ) : null;
                return (
