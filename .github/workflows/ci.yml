@@ -28,7 +28,6 @@ jobs:
       SUPABASE_SERVICE_ROLE_KEY: example-service-role-key-placeholder
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
       TURNSTILE_SECRET_KEY: 1x0000000000000000000000000000000AA
-      TURNSTILE_BYPASS_FOR_TESTS: 'true'
       UPSTASH_REDIS_REST_URL: https://example-redis.upstash.io
       UPSTASH_REDIS_REST_TOKEN: example-token-placeholder
       TRUST_PROXY_HEADERS: 'true'
@@ -76,3 +75,4 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+          if-no-files-found: ignore

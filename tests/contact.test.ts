@@ -294,11 +294,13 @@ describe('POST /api/contact API Validation, CSRF & Anti-Abuse', () => {
     const prevNodeEnv = process.env.NODE_ENV;
     const prevSecret = process.env.TURNSTILE_SECRET_KEY;
     const prevCfSecret = process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY;
+    const prevBypass = process.env.TURNSTILE_BYPASS_FOR_TESTS;
 
     try {
       (process.env as any).NODE_ENV = 'production';
       delete process.env.TURNSTILE_SECRET_KEY;
       delete process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY;
+      delete process.env.TURNSTILE_BYPASS_FOR_TESTS;
 
       vi.spyOn(rateLimitModule, 'checkRateLimit').mockResolvedValue({
         allowed: true,
@@ -333,6 +335,11 @@ describe('POST /api/contact API Validation, CSRF & Anti-Abuse', () => {
       (process.env as any).NODE_ENV = prevNodeEnv;
       if (prevSecret) process.env.TURNSTILE_SECRET_KEY = prevSecret;
       if (prevCfSecret) process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY = prevCfSecret;
+      if (prevBypass !== undefined) {
+        process.env.TURNSTILE_BYPASS_FOR_TESTS = prevBypass;
+      } else {
+        delete process.env.TURNSTILE_BYPASS_FOR_TESTS;
+      }
     }
   });
 
@@ -482,7 +489,9 @@ describe('POST /api/contact API Validation, CSRF & Anti-Abuse', () => {
 
   it('rejects Turnstile response with unapproved hostname with 403', async () => {
     const prevSecret = process.env.TURNSTILE_SECRET_KEY;
+    const prevBypass = process.env.TURNSTILE_BYPASS_FOR_TESTS;
     process.env.TURNSTILE_SECRET_KEY = 'test-secret';
+    delete process.env.TURNSTILE_BYPASS_FOR_TESTS;
 
     const originalFetch = global.fetch;
     global.fetch = vi.fn().mockImplementation(async (url: any) => {
@@ -528,12 +537,19 @@ describe('POST /api/contact API Validation, CSRF & Anti-Abuse', () => {
       } else {
         delete process.env.TURNSTILE_SECRET_KEY;
       }
+      if (prevBypass !== undefined) {
+        process.env.TURNSTILE_BYPASS_FOR_TESTS = prevBypass;
+      } else {
+        delete process.env.TURNSTILE_BYPASS_FOR_TESTS;
+      }
     }
   });
 
   it('rejects Turnstile response with unexpected action with 403', async () => {
     const prevSecret = process.env.TURNSTILE_SECRET_KEY;
+    const prevBypass = process.env.TURNSTILE_BYPASS_FOR_TESTS;
     process.env.TURNSTILE_SECRET_KEY = 'test-secret';
+    delete process.env.TURNSTILE_BYPASS_FOR_TESTS;
 
     const originalFetch = global.fetch;
     global.fetch = vi.fn().mockImplementation(async (url: any) => {
@@ -579,6 +595,11 @@ describe('POST /api/contact API Validation, CSRF & Anti-Abuse', () => {
         process.env.TURNSTILE_SECRET_KEY = prevSecret;
       } else {
         delete process.env.TURNSTILE_SECRET_KEY;
+      }
+      if (prevBypass !== undefined) {
+        process.env.TURNSTILE_BYPASS_FOR_TESTS = prevBypass;
+      } else {
+        delete process.env.TURNSTILE_BYPASS_FOR_TESTS;
       }
     }
   });
