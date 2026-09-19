@@ -45,8 +45,10 @@ The application requires specific server-side and client-facing environment vari
 | `VERCEL_URL` | **Server-Only** (Vercel System) | Production, Preview | Deployment hostname used for preview domain authorization |
 | `VERCEL_BRANCH_URL` | **Server-Only** (Vercel System) | Preview | Branch deployment URL for preview origin validation |
 | `UPSTASH_REDIS_REST_URL` | **Server-Only** | Optional (Prod/Preview) | Distributed rate limiting primary tier |
-| `UPSTASH_REDIS_REST_TOKEN` | **Server-Only** | Optional (Prod/Preview) | Distributed rate limiting authentication token |
-| `TURNSTILE_BYPASS` | **Server-Only** | **Test Only (`NODE_ENV === 'test'`)** | Fails closed with 403 if enabled in Production or Preview |
+| `TURNSTILE_BYPASS_FOR_TESTS` | **Server-Only** | **Test Only (`NODE_ENV !== 'production'`)** | Fails closed with 403 if enabled in Production. Never bypasses without this explicit flag. |
+| `TRUST_PROXY_HEADERS` | **Server-Only** | Optional (Prod/Preview/Dev) | Set to `'true'` to trust upstream proxy headers (`x-forwarded-for`, `cf-connecting-ip`, `x-real-ip`). Automatically trusted on Vercel (`VERCEL === '1'`). When unset, direct origin requests reject untrusted headers to defeat spoofing. |
+| `TRUST_CLOUDFLARE_PROXY` | **Server-Only** | Optional (Prod/Preview) | Set to `'true'` when behind Cloudflare to trust `cf-connecting-ip`. |
+| `TRUST_REVERSE_PROXY` | **Server-Only** | Optional (Prod/Preview) | Set to `'true'` when behind Nginx or reverse proxy to trust `x-real-ip`. |
 
 ---
 

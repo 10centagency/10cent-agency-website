@@ -383,6 +383,103 @@ describe('POST /api/contact API Validation, CSRF & Anti-Abuse', () => {
     }
   });
 
+  it('does not recognize deprecated TURNSTILE_BYPASS and does not bypass verification', async () => {
+    const prevBypass = (process.env as any).TURNSTILE_BYPASS;
+    const prevTestBypass = process.env.TURNSTILE_BYPASS_FOR_TESTS;
+    const prevSecret = process.env.TURNSTILE_SECRET_KEY;
+    const prevCfSecret = process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY;
+
+    try {
+      delete process.env.TURNSTILE_BYPASS_FOR_TESTS;
+      delete process.env.TURNSTILE_SECRET_KEY;
+      delete process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY;
+      (process.env as any).TURNSTILE_BYPASS = 'true';
+
+      vi.spyOn(rateLimitModule, 'checkRateLimit').mockResolvedValue({
+        allowed: true,
+        remaining: 4,
+        resetTime: Date.now() + 600000,
+      });
+
+      const req = new NextRequest('http://localhost:3000/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          origin: 'http://localhost:3000',
+        },
+        body: JSON.stringify({
+          fullName: 'Legacy Bypass User',
+          businessName: 'Legacy Corp',
+          email: 'legacy@example.com',
+          whatsapp: '+1234567890',
+          service: 'Website Development',
+          message: 'Trying legacy bypass',
+          turnstileToken: 'arbitrary-token-not-mock',
+        }),
+      });
+
+      const res = await POST(req);
+      // Because TURNSTILE_BYPASS is ignored and TURNSTILE_SECRET_KEY is missing, it should fail with 500
+      expect(res.status).toBe(500);
+      const data = await res.json();
+      expect(data.ok).toBe(false);
+      expect(data.error).toContain('Server security configuration error');
+    } finally {
+      if (prevBypass !== undefined) (process.env as any).TURNSTILE_BYPASS = prevBypass;
+      else delete (process.env as any).TURNSTILE_BYPASS;
+      if (prevTestBypass !== undefined) process.env.TURNSTILE_BYPASS_FOR_TESTS = prevTestBypass;
+      else delete process.env.TURNSTILE_BYPASS_FOR_TESTS;
+      if (prevSecret) process.env.TURNSTILE_SECRET_KEY = prevSecret;
+      if (prevCfSecret) process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY = prevCfSecret;
+    }
+  });
+
+  it('missing TURNSTILE_SECRET_KEY in test environment does not silently bypass verification', async () => {
+    const prevTestBypass = process.env.TURNSTILE_BYPASS_FOR_TESTS;
+    const prevSecret = process.env.TURNSTILE_SECRET_KEY;
+    const prevCfSecret = process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY;
+
+    try {
+      delete process.env.TURNSTILE_BYPASS_FOR_TESTS;
+      delete process.env.TURNSTILE_SECRET_KEY;
+      delete process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY;
+
+      vi.spyOn(rateLimitModule, 'checkRateLimit').mockResolvedValue({
+        allowed: true,
+        remaining: 4,
+        resetTime: Date.now() + 600000,
+      });
+
+      const req = new NextRequest('http://localhost:3000/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          origin: 'http://localhost:3000',
+        },
+        body: JSON.stringify({
+          fullName: 'Test User',
+          businessName: 'Test Corp',
+          email: 'test@example.com',
+          whatsapp: '+1234567890',
+          service: 'Website Development',
+          message: 'Trying non-mock token without secret',
+          turnstileToken: 'real-user-token',
+        }),
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(500);
+      const data = await res.json();
+      expect(data.ok).toBe(false);
+      expect(data.error).toContain('Server security configuration error');
+    } finally {
+      if (prevTestBypass !== undefined) process.env.TURNSTILE_BYPASS_FOR_TESTS = prevTestBypass;
+      else delete process.env.TURNSTILE_BYPASS_FOR_TESTS;
+      if (prevSecret) process.env.TURNSTILE_SECRET_KEY = prevSecret;
+      if (prevCfSecret) process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY = prevCfSecret;
+    }
+  });
+
   it('rejects Turnstile response with unapproved hostname with 403', async () => {
     const prevSecret = process.env.TURNSTILE_SECRET_KEY;
     process.env.TURNSTILE_SECRET_KEY = 'test-secret';

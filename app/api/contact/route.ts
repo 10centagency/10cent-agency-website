@@ -116,13 +116,11 @@ export async function POST(req: NextRequest) {
     const turnstileToken = body.turnstileToken;
     const turnstileSecret =
       process.env.TURNSTILE_SECRET_KEY || process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY;
-    const isTest = process.env.NODE_ENV === 'test';
     const isProd = process.env.NODE_ENV === 'production';
-    const isBypass =
-      process.env.TURNSTILE_BYPASS_FOR_TESTS === 'true' || process.env.TURNSTILE_BYPASS === 'true';
+    const isTestBypass = process.env.TURNSTILE_BYPASS_FOR_TESTS === 'true';
 
     // In production, bypass flags must never be active and must fail closed
-    if (isBypass && isProd) {
+    if (isProd && isTestBypass) {
       console.error('[Contact API] Turnstile test bypass is strictly forbidden in production.');
       return NextResponse.json(
         { ok: false, error: 'Security verification failed. Invalid configuration.' },
@@ -130,8 +128,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Allowed bypass only in automated test environment
-    if (isTest && (turnstileToken === 'test-mock-token' || isBypass || !turnstileSecret)) {
+    // Bypass is strictly allowed only in non-production environments when explicitly enabled
+    // via TURNSTILE_BYPASS_FOR_TESTS or when utilizing the designated test mock token.
+    // Missing TURNSTILE_SECRET_KEY never silently bypasses verification.
+    const isExplicitTestBypass =
+      !isProd && (isTestBypass || turnstileToken === 'test-mock-token');
+
+    if (isExplicitTestBypass) {
       // Allowed in automated test execution
     } else {
       if (!turnstileToken) {

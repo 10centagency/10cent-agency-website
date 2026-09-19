@@ -24,39 +24,72 @@ export function isValidIp(candidate: string | null | undefined): boolean {
 /**
  * Extracts and sanitizes client IP according to a verified deployment proxy trust model:
  *
+ * Threat Model & Proxy Spoofing Defense:
+ * Directly exposing an origin server or receiving requests that bypass upstream reverse proxies
+ * allows malicious clients to inject arbitrary headers (`cf-connecting-ip`, `x-real-ip`,
+ * `x-forwarded-for`). To prevent rate-limit bypass and IP spoofing, headers are only trusted
+ * when the application is confirmed to run behind the respective proxy infrastructure.
+ *
+ * Trust Rules:
  * 1. Cloudflare edge header (`cf-connecting-ip`):
- *    Authoritative when traffic is proxied through Cloudflare CDN/WAF.
- * 2. Standard reverse proxy header (`x-real-ip`):
- *    Set by trusted ingress proxies (e.g. Nginx or internal gateways).
+ *    Trusted only when Cloudflare proxying is confirmed via `TRUST_CLOUDFLARE_PROXY === 'true'`,
+ *    `CF_PAGES === '1'`, or blanket `TRUST_PROXY_HEADERS === 'true'`.
+ * 2. Trusted reverse proxy header (`x-real-ip`):
+ *    Trusted only when reverse proxying is confirmed via `TRUST_REVERSE_PROXY === 'true'`,
+ *    `VERCEL === '1'`, or `TRUST_PROXY_HEADERS === 'true'`.
  * 3. Forwarded hops (`x-forwarded-for`):
- *    On Vercel edge/serverless runtimes, Vercel reverse proxies sanitize and append
- *    the connecting client IP. The leftmost entry is parsed and MUST pass strict
- *    IPv4 or IPv6 validation. Any spoofed, malformed, or injected strings are rejected.
- * 4. Fallback:
- *    Returns '127.0.0.1' for development/test, or 'unknown' for production when
- *    no trusted, valid IP can be extracted. Never logs or uses raw unvalidated strings.
+ *    Trusted only when running in a verified Vercel environment (`VERCEL === '1'`) or when
+ *    explicitly enabled via `TRUST_PROXY_HEADERS === 'true'`. The leftmost hop is extracted.
+ * 4. Validation:
+ *    Every extracted candidate MUST strictly pass IPv4 or IPv6 format validation. Any
+ *    spoofed, malformed, or injected strings are rejected.
+ * 5. Fallback:
+ *    When no trusted, valid IP can be extracted, returns `'unknown'` in production to prevent
+ *    untrusted client input from poisoning rate limits or audit logs, or `'127.0.0.1'` in
+ *    development/test.
  */
 export function getClientIp(req: NextRequest): string {
   const headers = req.headers;
 
-  // 1. Cloudflare edge proxy header
-  const cfIp = headers.get('cf-connecting-ip')?.trim();
-  if (cfIp && isValidIp(cfIp)) {
-    return cfIp;
+  const isVercel = process.env.VERCEL === '1';
+  const trustAllProxies = process.env.TRUST_PROXY_HEADERS === 'true';
+
+  // 1. Cloudflare edge proxy header (gated by confirmed Cloudflare topology)
+  const trustCloudflare =
+    trustAllProxies ||
+    process.env.TRUST_CLOUDFLARE_PROXY === 'true' ||
+    process.env.CF_PAGES === '1';
+
+  if (trustCloudflare) {
+    const cfIp = headers.get('cf-connecting-ip')?.trim();
+    if (cfIp && isValidIp(cfIp)) {
+      return cfIp;
+    }
   }
 
-  // 2. Trusted reverse proxy x-real-ip
-  const realIp = headers.get('x-real-ip')?.trim();
-  if (realIp && isValidIp(realIp)) {
-    return realIp;
+  // 2. Trusted reverse proxy x-real-ip (gated by confirmed reverse proxy topology)
+  const trustReverseProxy =
+    trustAllProxies ||
+    isVercel ||
+    process.env.TRUST_REVERSE_PROXY === 'true';
+
+  if (trustReverseProxy) {
+    const realIp = headers.get('x-real-ip')?.trim();
+    if (realIp && isValidIp(realIp)) {
+      return realIp;
+    }
   }
 
-  // 3. x-forwarded-for (parse leftmost hop only with strict validation)
-  const forwarded = headers.get('x-forwarded-for');
-  if (forwarded) {
-    const leftmost = forwarded.split(',')[0]?.trim();
-    if (leftmost && isValidIp(leftmost)) {
-      return leftmost;
+  // 3. x-forwarded-for (gated by Vercel runtime or explicit proxy trust)
+  const trustForwardedFor = trustAllProxies || isVercel;
+
+  if (trustForwardedFor) {
+    const forwarded = headers.get('x-forwarded-for');
+    if (forwarded) {
+      const leftmost = forwarded.split(',')[0]?.trim();
+      if (leftmost && isValidIp(leftmost)) {
+        return leftmost;
+      }
     }
   }
 
