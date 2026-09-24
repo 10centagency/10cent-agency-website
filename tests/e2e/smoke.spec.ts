@@ -95,4 +95,56 @@ test.describe('End-to-End Smoke Tests', () => {
       page.locator('text=Thank you! We received your message and will get back to you within 24 hours.')
     ).toBeVisible();
   });
+
+  test('7. mobile viewport (390x844): compact consent banner displays cleanly without WhatsApp overlap', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+
+    const banner = page.locator('aside[aria-label="Cookie consent banner"]');
+    await expect(banner).toBeVisible();
+
+    // Verify buttons are visible and clickable
+    const acceptBtn = banner.locator('button:has-text("Accept All")');
+    const rejectBtn = banner.locator('button:has-text("Reject Non-Essential")');
+    const customizeBtn = banner.locator('button:has-text("Customize")');
+
+    await expect(acceptBtn).toBeVisible();
+    await expect(rejectBtn).toBeVisible();
+    await expect(customizeBtn).toBeVisible();
+
+    // Verify WhatsApp button is hidden or non-overlapping while banner is open
+    const whatsappBtn = page.locator('a[aria-label="Chat with us on WhatsApp"]');
+    const isWhatsappHidden = await page.evaluate(() => {
+      const el = document.querySelector('a[aria-label="Chat with us on WhatsApp"]');
+      if (!el) return true;
+      const parent = el.closest('div');
+      const style = parent ? window.getComputedStyle(parent) : null;
+      return style ? style.opacity === '0' || style.pointerEvents === 'none' : false;
+    });
+    expect(isWhatsappHidden).toBe(true);
+
+    // Accept consent
+    await acceptBtn.click();
+    await expect(banner).not.toBeVisible();
+  });
+
+  test('8. CTA banner flips to contact form when triggered and flips back', async ({ page }) => {
+    await page.goto('/');
+
+    const flipBtn = page.locator('button[aria-label="Open contact form"]');
+    await flipBtn.scrollIntoViewIfNeeded();
+    await expect(flipBtn).toBeVisible();
+
+    // Click to flip
+    await flipBtn.click();
+
+    // Contact form back face is visible
+    const backHeading = page.locator('div[class*="ctaFaceBack"] h3:has-text("Contact Us")');
+    await expect(backHeading).toBeVisible();
+
+    // Flip back
+    const flipBackBtn = page.locator('button[aria-label="Flip back"]');
+    await flipBackBtn.click();
+    await expect(flipBtn).toBeVisible();
+  });
 });

@@ -7,7 +7,7 @@ export default function WhatsAppButton() {
   if (pathname?.startsWith('/admin')) return null
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 group">
+    <div className="fixed bottom-6 right-6 z-40 group transition-all duration-300 [[data-consent-banner=true]_&]:opacity-0 [[data-consent-banner=true]_&]:pointer-events-none">
       {/* Pulsing ring */}
       <span className="absolute inset-0 rounded-full bg-[#25D366] opacity-40 animate-ping" />
       

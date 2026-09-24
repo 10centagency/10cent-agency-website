@@ -46,6 +46,8 @@ export default function CTABannerInteractive() {
   const nameInputRef = useRef<HTMLInputElement>(null);
   const isFlippedRef = useRef(false);
   const [isBannerActive, setIsBannerActive] = useState(false);
+  const hasTypedRef = useRef(false);
+  const isTypingRef = useRef(false);
 
   // Accessible unique IDs for form fields
   const nameId = useId();
@@ -97,22 +99,41 @@ export default function CTABannerInteractive() {
     };
   }, []);
 
-  // AI Typing effect
+  // Prepare initial client state for smooth typing when scrolled into view
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      hasTypedRef.current = true;
+      setDisplayedLine1(LINE_1);
+      setDisplayedLine2(LINE_2);
+      setCaretPos(0);
+      return;
+    }
+    // On client mount, initialize to blank so it types smoothly when entering viewport
+    if (!hasTypedRef.current && !isTypingRef.current) {
+      setDisplayedLine1('');
+      setDisplayedLine2('');
+    }
+  }, []);
+
+  // Single-run AI Typing effect triggered when banner first enters viewport
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     // Respect reduced motion preference
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      hasTypedRef.current = true;
       setDisplayedLine1(LINE_1);
       setDisplayedLine2(LINE_2);
       setCaretPos(0);
       return;
     }
 
-    if (!isBannerActive) {
+    if (!isBannerActive || hasTypedRef.current || isTypingRef.current) {
       return;
     }
 
+    isTypingRef.current = true;
     let cancelled = false;
     let activeTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -124,9 +145,9 @@ export default function CTABannerInteractive() {
         }, ms);
       });
 
-    const typeDelay = () => 50 + Math.random() * 50;
+    const typeDelay = () => 45 + Math.random() * 45;
 
-    async function typeOnce() {
+    async function runTypeAnimation() {
       // Clear lines and place caret on line 1
       setDisplayedLine1('');
       setDisplayedLine2('');
@@ -135,59 +156,54 @@ export default function CTABannerInteractive() {
       // Type line 1
       for (const ch of LINE_1) {
         if (cancelled) return;
-        while (isFlippedRef.current && !cancelled) {
-          await wait(200);
-        }
-        if (cancelled) return;
+        if (isFlippedRef.current) break;
         setDisplayedLine1((prev) => prev + ch);
-        await wait(ch === ' ' ? 45 : typeDelay());
+        await wait(ch === ' ' ? 40 : typeDelay());
       }
 
       if (cancelled) return;
-      // Move caret to line 2
-      setCaretPos(2);
 
-      // Type line 2
-      for (const ch of LINE_2) {
-        if (cancelled) return;
-        while (isFlippedRef.current && !cancelled) {
-          await wait(200);
+      if (!isFlippedRef.current) {
+        // Move caret to line 2
+        setCaretPos(2);
+
+        // Type line 2
+        for (const ch of LINE_2) {
+          if (cancelled) return;
+          if (isFlippedRef.current) break;
+          setDisplayedLine2((prev) => prev + ch);
+          await wait(ch === ' ' ? 40 : typeDelay());
         }
+
         if (cancelled) return;
-        setDisplayedLine2((prev) => prev + ch);
-        await wait(ch === ' ' ? 45 : typeDelay());
+        // Hold with blinking caret at end of line 2
+        await wait(2000);
       }
 
       if (cancelled) return;
-      // Hold with blinking caret at end of line 2
-      await wait(2400);
-
-      if (cancelled) return;
-      // Hide caret
+      // Final completed state: full text, no caret
       setCaretPos(0);
-      // Clear both lines
-      setDisplayedLine1('');
-      setDisplayedLine2('');
-      await wait(420);
+      setDisplayedLine1(LINE_1);
+      setDisplayedLine2(LINE_2);
+      hasTypedRef.current = true;
+      isTypingRef.current = false;
     }
 
-    async function loop() {
-      while (!cancelled) {
-        while (isFlippedRef.current && !cancelled) {
-          await wait(200);
-        }
-        if (cancelled) break;
-        await typeOnce();
-      }
-    }
-
-    loop();
+    runTypeAnimation();
 
     return () => {
       cancelled = true;
       if (activeTimer) {
         clearTimeout(activeTimer);
         activeTimer = null;
+      }
+      // If interrupted or unmounted before completing, ensure final text is preserved permanently
+      if (!hasTypedRef.current) {
+        hasTypedRef.current = true;
+        isTypingRef.current = false;
+        setDisplayedLine1(LINE_1);
+        setDisplayedLine2(LINE_2);
+        setCaretPos(0);
       }
     };
   }, [isBannerActive]);

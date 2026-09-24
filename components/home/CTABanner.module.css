@@ -201,6 +201,7 @@
 
 .tline {
   display: block;
+  min-height: 1.2em;
 }
 
 @media (min-width: 640px) {
