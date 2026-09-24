@@ -20,6 +20,9 @@ declare global {
           'error-callback'?: () => void;
           'expired-callback'?: () => void;
           theme?: 'light' | 'dark' | 'auto';
+          size?: 'normal' | 'compact' | 'flexible';
+          appearance?: 'always' | 'execute' | 'interaction-only';
+          execution?: 'render' | 'execute';
         }
       ) => string;
       remove: (widgetId: string) => void;
@@ -40,6 +43,9 @@ interface TurnstileProps {
   nonce?: string;
   theme?: 'light' | 'dark' | 'auto';
   action?: string;
+  size?: 'normal' | 'compact' | 'flexible';
+  appearance?: 'always' | 'execute' | 'interaction-only';
+  execution?: 'render' | 'execute';
   className?: string;
 }
 
@@ -51,6 +57,9 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(function Turnstile(
     nonce,
     theme = 'light',
     action,
+    size = 'flexible',
+    appearance = 'always',
+    execution = 'render',
     className = '',
   },
   ref
@@ -58,6 +67,23 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(function Turnstile(
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
   const [configError, setConfigError] = useState<string | null>(null);
+
+  // Store latest callbacks in refs so parent re-renders do not recreate/remove the widget
+  const onSuccessRef = useRef(onSuccess);
+  const onErrorRef = useRef(onError);
+  const onExpireRef = useRef(onExpire);
+
+  useEffect(() => {
+    onSuccessRef.current = onSuccess;
+  }, [onSuccess]);
+
+  useEffect(() => {
+    onErrorRef.current = onError;
+  }, [onError]);
+
+  useEffect(() => {
+    onExpireRef.current = onExpire;
+  }, [onExpire]);
 
   // Canonical public site key with backwards compatibility fallback
   const siteKey =
@@ -79,7 +105,7 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(function Turnstile(
   useEffect(() => {
     // Automated test execution only
     if (process.env.NODE_ENV === 'test') {
-      onSuccess('test-mock-token');
+      onSuccessRef.current('test-mock-token');
       return;
     }
 
@@ -87,7 +113,7 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(function Turnstile(
     if (!siteKey) {
       const msg = 'Security verification is temporarily unavailable. Please reload or contact support.';
       setConfigError(msg);
-      if (onError) onError(msg);
+      if (onErrorRef.current) onErrorRef.current(msg);
       return;
     }
 
@@ -102,15 +128,18 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(function Turnstile(
           sitekey: siteKey,
           action,
           callback: (token: string) => {
-            if (isMounted) onSuccess(token);
+            if (isMounted) onSuccessRef.current(token);
           },
           'error-callback': () => {
-            if (isMounted && onError) onError('Security challenge failed. Please retry.');
+            if (isMounted) onErrorRef.current?.('Security challenge failed. Please retry.');
           },
           'expired-callback': () => {
-            if (isMounted && onExpire) onExpire();
+            if (isMounted) onExpireRef.current?.();
           },
           theme,
+          size,
+          appearance,
+          execution,
         });
         widgetIdRef.current = id;
       } catch (err) {
@@ -180,7 +209,9 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(function Turnstile(
         }
       }
     };
-  }, [siteKey, onSuccess, onError, onExpire, nonce, theme, action]);
+  }, [siteKey, nonce, theme, action, appearance, execution, size]);
+
+  const reservedHeight = size === 'compact' ? 140 : 65;
 
   if (configError) {
     return (
@@ -197,8 +228,16 @@ const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(function Turnstile(
   }
 
   return (
-    <div className={`turnstile-container my-2 ${className}`}>
-      <div ref={containerRef} />
+    <div
+      className={`turnstile-container my-2 ${className}`}
+      style={{
+        minHeight: reservedHeight,
+        display: 'flex',
+        alignItems: 'center',
+        width: '100%',
+      }}
+    >
+      <div ref={containerRef} style={{ width: size === 'flexible' ? '100%' : undefined }} />
     </div>
   );
 });

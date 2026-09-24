@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { CircleCheck as CheckCircle2, Loader as Loader2 } from 'lucide-react';
 import Turnstile, { TurnstileRef } from '@/components/Turnstile';
 
@@ -40,6 +40,19 @@ export default function ContactForm() {
   const successRef = useRef<HTMLDivElement>(null);
   const errorAlertRef = useRef<HTMLDivElement>(null);
 
+  const handleTurnstileSuccess = useCallback((token: string) => {
+    setTurnstileToken(token);
+    setErrors((prev) => (prev.submit ? { ...prev, submit: '' } : prev));
+  }, []);
+
+  const handleTurnstileError = useCallback(() => {
+    setTurnstileToken('');
+  }, []);
+
+  const handleTurnstileExpire = useCallback(() => {
+    setTurnstileToken('');
+  }, []);
+
   useEffect(() => {
     if (submitted && successRef.current) {
       successRef.current.focus();
@@ -74,6 +87,22 @@ export default function ContactForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
+
+    const siteKey =
+      process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ||
+      process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY;
+
+    if (siteKey && !turnstileToken) {
+      setErrors((prev) => ({
+        ...prev,
+        submit: 'Security verification is still loading. Please wait a moment and try again.',
+      }));
+      if (errorAlertRef.current) {
+        errorAlertRef.current.focus();
+      }
+      return;
+    }
+
     setLoading(true);
     setErrors({});
 
@@ -420,7 +449,16 @@ export default function ContactForm() {
       </div>
 
       {/* Cloudflare Turnstile Verification */}
-      <Turnstile ref={turnstileRef} action="contact_form" onSuccess={(token) => setTurnstileToken(token)} />
+      <Turnstile
+        ref={turnstileRef}
+        action="contact_form"
+        size="flexible"
+        appearance="always"
+        execution="render"
+        onSuccess={handleTurnstileSuccess}
+        onError={handleTurnstileError}
+        onExpire={handleTurnstileExpire}
+      />
 
       {/* Submit Button */}
       <button
