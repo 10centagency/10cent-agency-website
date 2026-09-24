@@ -143,7 +143,23 @@ test.describe('End-to-End Smoke Tests', () => {
     await expect(banner).not.toBeVisible();
   });
 
-  test('8. CTA banner flips to contact form when triggered and flips back', async ({ page }) => {
+  test('8. CTA banner flips to contact form without Turnstile and submits successfully', async ({ page }) => {
+    // Route mock for /api/contact verifies payload and returns success
+    await page.route('**/api/contact', async (route) => {
+      const requestBody = JSON.parse(route.request().postData() || '{}');
+      expect(requestBody.source).toBe('cta_banner');
+      expect(requestBody.turnstileToken).toBeUndefined();
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok: true,
+          success: true,
+          message: 'Thank you! Your message has been received.',
+        }),
+      });
+    });
+
     await page.goto('/');
 
     const flipBtn = page.locator('button[aria-label="Open contact form"]');
@@ -157,8 +173,27 @@ test.describe('End-to-End Smoke Tests', () => {
     const backHeading = page.locator('div[class*="ctaFaceBack"] h3:has-text("Contact Us")');
     await expect(backHeading).toBeVisible();
 
+    // Verify Turnstile widget is NOT present in CTA form
+    const turnstileInCta = page.locator('div[class*="ctaFaceBack"] div[class*="cf-turnstile"], div[class*="ctaFaceBack"] iframe[src*="challenges.cloudflare.com"]');
+    await expect(turnstileInCta).toHaveCount(0);
+
+    // Fill CTA form
+    await page.fill('div[class*="ctaFaceBack"] input[name="name"]', 'Alex Morgan');
+    await page.fill('div[class*="ctaFaceBack"] input[name="business"]', 'Growth Co');
+    await page.fill('div[class*="ctaFaceBack"] input[name="email"]', 'alex@growthco.com');
+    await page.fill('div[class*="ctaFaceBack"] input[name="phone"]', '+8801700000000');
+    await page.selectOption('div[class*="ctaFaceBack"] select[name="topic"]', 'Website Development');
+    await page.fill('div[class*="ctaFaceBack"] textarea[name="message"]', 'Looking for a new web agency to build our application.');
+
+    // Submit CTA form
+    const submitBtn = page.locator('div[class*="ctaFaceBack"] button[type="submit"]');
+    await submitBtn.click();
+
+    // Verify success view
+    await expect(page.locator('div[class*="ctaFaceBack"] h3:has-text("Message Sent!")')).toBeVisible();
+
     // Flip back
-    const flipBackBtn = page.locator('button[aria-label="Flip back"]');
+    const flipBackBtn = page.locator('div[class*="ctaFaceBack"] button:has-text("Back to Banner")');
     await flipBackBtn.click();
     await expect(flipBtn).toBeVisible();
   });

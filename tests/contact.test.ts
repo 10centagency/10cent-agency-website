@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 import { POST, GET } from '@/app/api/contact/route';
 import * as rateLimitModule from '@/lib/rate-limit';
 import { checkRateLimit, clearMemoryRateLimitStore } from '@/lib/rate-limit';
+import * as supabaseAdminModule from '@/lib/supabase-admin';
 
 describe('POST /api/contact API Validation, CSRF & Anti-Abuse', () => {
   beforeEach(() => {
@@ -602,5 +603,156 @@ describe('POST /api/contact API Validation, CSRF & Anti-Abuse', () => {
         delete process.env.TURNSTILE_BYPASS_FOR_TESTS;
       }
     }
+  });
+
+  it('allows CTA banner submissions with source: "cta_banner" without turnstileToken', async () => {
+    const mockInsert = vi.fn().mockResolvedValue({ error: null });
+    vi.spyOn(supabaseAdminModule, 'getSupabaseAdmin').mockReturnValue({
+      from: () => ({ insert: mockInsert }),
+    } as any);
+
+    const req = new NextRequest('http://localhost:3000/api/contact', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        origin: 'http://localhost:3000',
+        'x-forwarded-for': '198.51.100.1',
+      },
+      body: JSON.stringify({
+        source: 'cta_banner',
+        fullName: 'CTA Lead',
+        businessName: 'CTA Business',
+        email: 'cta-lead@example.com',
+        whatsapp: '+8801700000000',
+        service: 'Website Development',
+        budget: 'BDT 10,000 – 20,000',
+        message: 'Interested in website development from CTA banner',
+        // Note: No turnstileToken provided
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(201);
+    const data = await res.json();
+    expect(data.ok).toBe(true);
+    expect(mockInsert).toHaveBeenCalledTimes(1);
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        full_name: 'CTA Lead',
+        business_name: 'CTA Business',
+        email: 'cta-lead@example.com',
+      })
+    );
+  });
+
+  it('enforces stricter CTA-specific rate limiting (3 requests per 600s)', async () => {
+    const mockInsert = vi.fn().mockResolvedValue({ error: null });
+    vi.spyOn(supabaseAdminModule, 'getSupabaseAdmin').mockReturnValue({
+      from: () => ({ insert: mockInsert }),
+    } as any);
+
+    const clientIp = '198.51.100.42';
+
+    // Submit 3 valid CTA requests from the same IP with different emails
+    for (let i = 1; i <= 3; i++) {
+      const req = new NextRequest('http://localhost:3000/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          origin: 'http://localhost:3000',
+          'x-forwarded-for': clientIp,
+        },
+        body: JSON.stringify({
+          source: 'cta_banner',
+          fullName: `CTA User ${i}`,
+          businessName: `CTA Business ${i}`,
+          email: `cta-user-${i}@example.com`,
+          whatsapp: '+8801700000000',
+          service: 'Website Development',
+          message: 'Interested in website development',
+        }),
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(201);
+    }
+
+    // 4th request from same IP must be rejected by CTA-specific rate limiter
+    const req4 = new NextRequest('http://localhost:3000/api/contact', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        origin: 'http://localhost:3000',
+        'x-forwarded-for': clientIp,
+      },
+      body: JSON.stringify({
+        source: 'cta_banner',
+        fullName: 'CTA User 4',
+        businessName: 'CTA Business 4',
+        email: 'cta-user-4@example.com',
+        whatsapp: '+8801700000000',
+        service: 'Website Development',
+        message: 'Interested in website development',
+      }),
+    });
+
+    const res4 = await POST(req4);
+    expect(res4.status).toBe(429);
+    const data4 = await res4.json();
+    expect(data4.ok).toBe(false);
+    expect(data4.error).toContain('Too many CTA submissions');
+    expect(res4.headers.get('Retry-After')).toBeDefined();
+  });
+
+  it('still requires turnstileToken when source is not "cta_banner" (e.g. contact_page or omitted)', async () => {
+    const req = new NextRequest('http://localhost:3000/api/contact', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        origin: 'http://localhost:3000',
+      },
+      body: JSON.stringify({
+        source: 'contact_page',
+        fullName: 'Contact Page User',
+        businessName: 'Contact Page Corp',
+        email: 'cp-user@example.com',
+        whatsapp: '+8801700000000',
+        service: 'Website Development',
+        message: 'Submitting from contact page without turnstile',
+        // Note: Missing turnstileToken
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.ok).toBe(false);
+    expect(data.error).toBe('Security verification (Turnstile) is required.');
+  });
+
+  it('still rejects CTA banner submissions with 400 when honeypot is filled', async () => {
+    const req = new NextRequest('http://localhost:3000/api/contact', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        origin: 'http://localhost:3000',
+      },
+      body: JSON.stringify({
+        source: 'cta_banner',
+        fullName: 'Spam Bot',
+        businessName: 'Spam Bot Inc',
+        email: 'spambot@example.com',
+        whatsapp: '+8801700000000',
+        service: 'Website Development',
+        message: 'Spam message through CTA form',
+        website: 'https://spam-link.com', // Honeypot filled!
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.ok).toBe(false);
+    expect(data.error).toBe('Invalid form submission');
   });
 });

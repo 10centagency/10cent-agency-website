@@ -112,123 +112,148 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 9. Cloudflare Turnstile Verification
-    const turnstileToken = body.turnstileToken;
-    const turnstileSecret =
-      process.env.TURNSTILE_SECRET_KEY || process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY;
-    const isProd = process.env.NODE_ENV === 'production';
-    const isTestBypass = process.env.TURNSTILE_BYPASS_FOR_TESTS === 'true';
+    const isCtaBannerSubmission = body.source === 'cta_banner';
 
-    // In production, bypass flags must never be active and must fail closed
-    if (isProd && isTestBypass) {
-      console.error('[Contact API] Turnstile test bypass is strictly forbidden in production.');
-      return NextResponse.json(
-        { ok: false, error: 'Security verification failed. Invalid configuration.' },
-        { status: 403 }
-      );
-    }
-
-    // Bypass is strictly allowed only in non-production environments when explicitly enabled
-    // via TURNSTILE_BYPASS_FOR_TESTS or when utilizing the designated test mock token.
-    // Missing TURNSTILE_SECRET_KEY never silently bypasses verification.
-    const isExplicitTestBypass =
-      !isProd && (isTestBypass || turnstileToken === 'test-mock-token');
-
-    if (isExplicitTestBypass) {
-      // Allowed in automated test execution
-    } else {
-      if (!turnstileToken) {
+    // 8.5 Stricter CTA-specific rate limiting (compensates for no captcha on CTA banner)
+    if (isCtaBannerSubmission) {
+      const ctaIpLimit = await checkRateLimit(`cta:${clientIp}`, 3, 600);
+      if (!ctaIpLimit.allowed) {
+        const retryAfter = Math.max(1, Math.ceil((ctaIpLimit.resetTime - Date.now()) / 1000));
         return NextResponse.json(
-          { ok: false, error: 'Security verification (Turnstile) is required.' },
-          { status: 400 }
-        );
-      }
-
-      if (!turnstileSecret) {
-        console.error('[Contact API] TURNSTILE_SECRET_KEY is missing in server environment');
-        return NextResponse.json(
-          { ok: false, error: 'Server security configuration error. Please contact support.' },
-          { status: 500 }
-        );
-      }
-
-      const verifyFormData = new URLSearchParams();
-      verifyFormData.append('secret', turnstileSecret);
-      verifyFormData.append('response', turnstileToken);
-      if (clientIp && clientIp !== 'unknown') {
-        verifyFormData.append('remoteip', clientIp);
-      }
-
-      try {
-        const turnstileRes = await fetch(
-          'https://challenges.cloudflare.com/turnstile/v0/siteverify',
           {
-            method: 'POST',
-            body: verifyFormData,
+            ok: false,
+            error:
+              'Too many CTA submissions from this network. Please wait a few minutes before trying again.',
+          },
+          {
+            status: 429,
+            headers: {
+              'Retry-After': String(retryAfter),
+            },
           }
         );
-        const turnstileData = await turnstileRes.json();
+      }
+    }
 
-        if (!turnstileData.success) {
-          console.warn('[Contact API] Turnstile challenge failed:', turnstileData['error-codes']);
-          return NextResponse.json(
-            { ok: false, error: 'Security verification failed. Please refresh and try again.' },
-            { status: 403 }
-          );
-        }
+    // 9. Cloudflare Turnstile Verification (required for all non-CTA submissions)
+    if (!isCtaBannerSubmission) {
+      const turnstileToken = body.turnstileToken;
+      const turnstileSecret =
+        process.env.TURNSTILE_SECRET_KEY || process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY;
+      const isProd = process.env.NODE_ENV === 'production';
+      const isTestBypass = process.env.TURNSTILE_BYPASS_FOR_TESTS === 'true';
 
-        // Hostname validation
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;
-        const vercelUrl = process.env.VERCEL_URL;
-        const allowedHostnames = [
-          'www.10centagency.com',
-          '10centagency.com',
-          'localhost',
-          '127.0.0.1',
-        ];
-        if (siteUrl) {
-          try {
-            allowedHostnames.push(new URL(siteUrl).hostname.toLowerCase());
-          } catch {}
-        }
-        if (vercelUrl) {
-          try {
-            const vHost = vercelUrl.replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
-            allowedHostnames.push(vHost);
-          } catch {}
-        }
-
-        const responseHostname = turnstileData.hostname ? turnstileData.hostname.toLowerCase() : '';
-        const isValidHostname = isProd
-          ? responseHostname &&
-            (allowedHostnames.includes(responseHostname) || responseHostname.endsWith('.vercel.app'))
-          : !responseHostname ||
-            allowedHostnames.includes(responseHostname) ||
-            responseHostname.endsWith('.vercel.app');
-
-        if (!isValidHostname) {
-          console.error('[Contact API] Turnstile hostname mismatch:', responseHostname);
-          return NextResponse.json(
-            { ok: false, error: 'Security verification failed: Hostname mismatch.' },
-            { status: 403 }
-          );
-        }
-
-        // Action validation: if action was passed, verify against allowed form actions
-        const allowedActions = ['contact_form', 'cta_form', 'contact'];
-        if (turnstileData.action && !allowedActions.includes(turnstileData.action)) {
-          console.error('[Contact API] Turnstile action mismatch:', turnstileData.action);
-          return NextResponse.json(
-            { ok: false, error: 'Security verification failed: Action mismatch.' },
-            { status: 403 }
-          );
-        }
-      } catch (err) {
-        console.error('[Contact API] Turnstile verify error:', err);
+      // In production, bypass flags must never be active and must fail closed
+      if (isProd && isTestBypass) {
+        console.error('[Contact API] Turnstile test bypass is strictly forbidden in production.');
         return NextResponse.json(
-          { ok: false, error: 'Failed to verify security challenge' },
-          { status: 500 }
+          { ok: false, error: 'Security verification failed. Invalid configuration.' },
+          { status: 403 }
         );
+      }
+
+      // Bypass is strictly allowed only in non-production environments when explicitly enabled
+      // via TURNSTILE_BYPASS_FOR_TESTS or when utilizing the designated test mock token.
+      // Missing TURNSTILE_SECRET_KEY never silently bypasses verification.
+      const isExplicitTestBypass =
+        !isProd && (isTestBypass || turnstileToken === 'test-mock-token');
+
+      if (isExplicitTestBypass) {
+        // Allowed in automated test execution
+      } else {
+        if (!turnstileToken) {
+          return NextResponse.json(
+            { ok: false, error: 'Security verification (Turnstile) is required.' },
+            { status: 400 }
+          );
+        }
+
+        if (!turnstileSecret) {
+          console.error('[Contact API] TURNSTILE_SECRET_KEY is missing in server environment');
+          return NextResponse.json(
+            { ok: false, error: 'Server security configuration error. Please contact support.' },
+            { status: 500 }
+          );
+        }
+
+        const verifyFormData = new URLSearchParams();
+        verifyFormData.append('secret', turnstileSecret);
+        verifyFormData.append('response', turnstileToken);
+        if (clientIp && clientIp !== 'unknown') {
+          verifyFormData.append('remoteip', clientIp);
+        }
+
+        try {
+          const turnstileRes = await fetch(
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+            {
+              method: 'POST',
+              body: verifyFormData,
+            }
+          );
+          const turnstileData = await turnstileRes.json();
+
+          if (!turnstileData.success) {
+            console.warn('[Contact API] Turnstile challenge failed:', turnstileData['error-codes']);
+            return NextResponse.json(
+              { ok: false, error: 'Security verification failed. Please refresh and try again.' },
+              { status: 403 }
+            );
+          }
+
+          // Hostname validation
+          const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;
+          const vercelUrl = process.env.VERCEL_URL;
+          const allowedHostnames = [
+            'www.10centagency.com',
+            '10centagency.com',
+            'localhost',
+            '127.0.0.1',
+          ];
+          if (siteUrl) {
+            try {
+              allowedHostnames.push(new URL(siteUrl).hostname.toLowerCase());
+            } catch {}
+          }
+          if (vercelUrl) {
+            try {
+              const vHost = vercelUrl.replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
+              allowedHostnames.push(vHost);
+            } catch {}
+          }
+
+          const responseHostname = turnstileData.hostname ? turnstileData.hostname.toLowerCase() : '';
+          const isValidHostname = isProd
+            ? responseHostname &&
+              (allowedHostnames.includes(responseHostname) || responseHostname.endsWith('.vercel.app'))
+            : !responseHostname ||
+              allowedHostnames.includes(responseHostname) ||
+              responseHostname.endsWith('.vercel.app');
+
+          if (!isValidHostname) {
+            console.error('[Contact API] Turnstile hostname mismatch:', responseHostname);
+            return NextResponse.json(
+              { ok: false, error: 'Security verification failed: Hostname mismatch.' },
+              { status: 403 }
+            );
+          }
+
+          // Action validation: if action was passed, verify against allowed form actions
+          const allowedActions = ['contact_form', 'cta_form', 'contact'];
+          if (turnstileData.action && !allowedActions.includes(turnstileData.action)) {
+            console.error('[Contact API] Turnstile action mismatch:', turnstileData.action);
+            return NextResponse.json(
+              { ok: false, error: 'Security verification failed: Action mismatch.' },
+              { status: 403 }
+            );
+          }
+        } catch (err) {
+          console.error('[Contact API] Turnstile verify error:', err);
+          return NextResponse.json(
+            { ok: false, error: 'Failed to verify security challenge' },
+            { status: 500 }
+          );
+        }
       }
     }
 

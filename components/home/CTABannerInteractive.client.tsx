@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useId } from 'react';
 import Link from 'next/link';
-import Turnstile from '@/components/Turnstile';
 import styles from './CTABanner.module.css';
 
 const LINE_1 = 'Ready to Grow Your';
@@ -36,7 +35,6 @@ export default function CTABannerInteractive() {
 
   const [formData, setFormData] = useState<FormDataState>(initialFormData);
   const [hpField, setHpField] = useState('');
-  const [turnstileToken, setTurnstileToken] = useState('');
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -224,6 +222,7 @@ export default function CTABannerInteractive() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          source: 'cta_banner',
           fullName: formData.name.trim(),
           businessName: formData.business.trim(),
           email: formData.email.trim(),
@@ -233,7 +232,6 @@ export default function CTABannerInteractive() {
           message: formData.message.trim(),
           website: hpField,
           hp_field: hpField,
-          turnstileToken,
         }),
       });
 
@@ -538,10 +536,6 @@ export default function CTABannerInteractive() {
                     placeholder="Tell us about your business and goals..."
                   />
                 </label>
-
-                <div className="my-2">
-                  <Turnstile action="cta_form" onSuccess={(token) => setTurnstileToken(token)} />
-                </div>
 
                 <div className={styles.formActions}>
                   <button type="submit" className={styles.submitBtn} disabled={loading}>

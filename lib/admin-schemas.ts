@@ -189,6 +189,7 @@ export const canonicalContactSubmissionSchema = z
       .max(5000, 'Message must be at most 5,000 characters'),
     honeypot: z.string().max(100).optional().default(''),
     turnstileToken: z.string().max(4096).optional().default(''),
+    source: z.enum(['cta_banner', 'contact_page']).optional(),
   })
   .strict();
 
@@ -267,7 +268,16 @@ export function normalizeContactInput(raw: unknown): ContactNormalizationResult 
   }
   const resolvedHoneypot = rawWebsite || rawHp;
 
-  // 5. Parse canonical schema
+  // 5. Source validation
+  const rawSource = str(obj.source);
+  const resolvedSource =
+    rawSource === 'cta_banner'
+      ? ('cta_banner' as const)
+      : rawSource === 'contact_page'
+        ? ('contact_page' as const)
+        : undefined;
+
+  // 6. Parse canonical schema
   const candidate = {
     fullName: resolvedFullName,
     businessName: resolvedBusinessName,
@@ -278,6 +288,7 @@ export function normalizeContactInput(raw: unknown): ContactNormalizationResult 
     message: str(obj.message),
     honeypot: resolvedHoneypot,
     turnstileToken: str(obj.turnstileToken),
+    source: resolvedSource,
   };
 
   const parsed = canonicalContactSubmissionSchema.safeParse(candidate);
