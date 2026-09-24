@@ -214,7 +214,7 @@ export default function ConsentBanner() {
         <aside
           role="region"
           aria-label="Cookie consent banner"
-          className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] sm:inset-x-0 sm:bottom-0 z-[70] p-3.5 sm:p-5 md:p-6 bg-brand-navy/95 backdrop-blur-md rounded-2xl sm:rounded-none border border-brand-border/70 sm:border-x-0 sm:border-b-0 sm:border-t text-white shadow-2xl transition-all duration-300 max-h-[85vh] overflow-y-auto sm:overflow-visible"
+          className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] sm:inset-x-0 sm:bottom-0 z-[70] p-3 sm:p-5 md:p-6 bg-brand-navy/95 backdrop-blur-md rounded-2xl sm:rounded-none border border-brand-border/70 sm:border-x-0 sm:border-b-0 sm:border-t text-white shadow-2xl transition-all duration-300 max-h-[45vh] overflow-y-auto sm:max-h-none sm:overflow-visible"
         >
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-start gap-2.5 sm:gap-3 max-w-3xl">

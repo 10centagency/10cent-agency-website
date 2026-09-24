@@ -45,7 +45,6 @@ export default function CTABannerInteractive() {
   const flipBtnRef = useRef<HTMLButtonElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const isFlippedRef = useRef(false);
-  const [isBannerActive, setIsBannerActive] = useState(false);
   const hasTypedRef = useRef(false);
   const isTypingRef = useRef(false);
 
@@ -63,59 +62,6 @@ export default function CTABannerInteractive() {
     isFlippedRef.current = isFlipped;
   }, [isFlipped]);
 
-  // Viewport & Tab Visibility Gating
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    let isIntersecting = false;
-    let isTabVisible = document.visibilityState === 'visible';
-
-    const updateActiveState = () => {
-      setIsBannerActive(isIntersecting && isTabVisible);
-    };
-
-    const handleVisibilityChange = () => {
-      isTabVisible = document.visibilityState === 'visible';
-      updateActiveState();
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        isIntersecting = entry ? entry.isIntersecting : false;
-        updateActiveState();
-      },
-      { threshold: 0.15 }
-    );
-
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      observer.disconnect();
-    };
-  }, []);
-
-  // Prepare initial client state for smooth typing when scrolled into view
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      hasTypedRef.current = true;
-      setDisplayedLine1(LINE_1);
-      setDisplayedLine2(LINE_2);
-      setCaretPos(0);
-      return;
-    }
-    // On client mount, initialize to blank so it types smoothly when entering viewport
-    if (!hasTypedRef.current && !isTypingRef.current) {
-      setDisplayedLine1('');
-      setDisplayedLine2('');
-    }
-  }, []);
-
   // Single-run AI Typing effect triggered when banner first enters viewport
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -129,11 +75,12 @@ export default function CTABannerInteractive() {
       return;
     }
 
-    if (!isBannerActive || hasTypedRef.current || isTypingRef.current) {
-      return;
+    // Set initial client state to blank if not yet typed
+    if (!hasTypedRef.current && !isTypingRef.current) {
+      setDisplayedLine1('');
+      setDisplayedLine2('');
     }
 
-    isTypingRef.current = true;
     let cancelled = false;
     let activeTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -145,42 +92,48 @@ export default function CTABannerInteractive() {
         }, ms);
       });
 
-    const typeDelay = () => 45 + Math.random() * 45;
+    const typeDelay = () => 40 + Math.random() * 40;
 
     async function runTypeAnimation() {
-      // Clear lines and place caret on line 1
-      setDisplayedLine1('');
-      setDisplayedLine2('');
-      setCaretPos(1);
+      if (hasTypedRef.current || isTypingRef.current || cancelled) return;
+      isTypingRef.current = true;
 
-      // Type line 1
+      // Start typing line 1
+      setCaretPos(1);
       for (const ch of LINE_1) {
         if (cancelled) return;
-        if (isFlippedRef.current) break;
-        setDisplayedLine1((prev) => prev + ch);
-        await wait(ch === ' ' ? 40 : typeDelay());
-      }
-
-      if (cancelled) return;
-
-      if (!isFlippedRef.current) {
-        // Move caret to line 2
-        setCaretPos(2);
-
-        // Type line 2
-        for (const ch of LINE_2) {
-          if (cancelled) return;
-          if (isFlippedRef.current) break;
-          setDisplayedLine2((prev) => prev + ch);
-          await wait(ch === ' ' ? 40 : typeDelay());
+        while (isFlippedRef.current && !cancelled) {
+          await wait(150);
         }
-
         if (cancelled) return;
-        // Hold with blinking caret at end of line 2
-        await wait(2000);
+        setDisplayedLine1((prev) => prev + ch);
+        await wait(ch === ' ' ? 35 : typeDelay());
       }
 
       if (cancelled) return;
+
+      // Move caret to line 2
+      setCaretPos(2);
+      await wait(80);
+
+      // Type line 2
+      for (const ch of LINE_2) {
+        if (cancelled) return;
+        while (isFlippedRef.current && !cancelled) {
+          await wait(150);
+        }
+        if (cancelled) return;
+        setDisplayedLine2((prev) => prev + ch);
+        await wait(ch === ' ' ? 35 : typeDelay());
+      }
+
+      if (cancelled) return;
+
+      // Hold blinking caret at the end of line 2
+      await wait(1800);
+
+      if (cancelled) return;
+
       // Final completed state: full text, no caret
       setCaretPos(0);
       setDisplayedLine1(LINE_1);
@@ -189,16 +142,29 @@ export default function CTABannerInteractive() {
       isTypingRef.current = false;
     }
 
-    runTypeAnimation();
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry && entry.isIntersecting) {
+          // Unobserve once triggered to prevent repeated restarts or scrolls in/out threshold
+          observer.disconnect();
+          runTypeAnimation();
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
 
     return () => {
       cancelled = true;
+      observer.disconnect();
       if (activeTimer) {
         clearTimeout(activeTimer);
         activeTimer = null;
       }
-      // If interrupted or unmounted before completing, ensure final text is preserved permanently
-      if (!hasTypedRef.current) {
+      if (isTypingRef.current && !hasTypedRef.current) {
         hasTypedRef.current = true;
         isTypingRef.current = false;
         setDisplayedLine1(LINE_1);
@@ -206,7 +172,7 @@ export default function CTABannerInteractive() {
         setCaretPos(0);
       }
     };
-  }, [isBannerActive]);
+  }, []);
 
   const handleFlipToBack = () => {
     setIsFlipped(true);
@@ -332,7 +298,6 @@ export default function CTABannerInteractive() {
           <button
             ref={flipBtnRef}
             className={styles.flipBtn}
-            style={!isBannerActive ? { animationPlayState: 'paused' } : undefined}
             type="button"
             onClick={handleFlipToBack}
             aria-label="Open contact form"
@@ -345,7 +310,6 @@ export default function CTABannerInteractive() {
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden="true"
-              style={!isBannerActive ? { animationPlayState: 'paused' } : undefined}
             >
               <path d="M14 4.1 12 6" />
               <path d="m5.1 8-2.9-.8" />

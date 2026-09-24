@@ -30,8 +30,12 @@ test.describe('End-to-End Smoke Tests', () => {
     await expect(page.locator('input#fullName')).toBeVisible();
   });
 
-  test('4. consent banner appears on fresh context and can be accepted/dismissed', async ({ page }) => {
+  test('4. consent banner appears on fresh context and can be accepted/dismissed', async ({ page, context }) => {
+    await context.clearCookies();
     await page.goto('/');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+
     const banner = page.locator('aside[aria-label="Cookie consent banner"]');
     await expect(banner).toBeVisible();
 
@@ -52,7 +56,10 @@ test.describe('End-to-End Smoke Tests', () => {
 
   test('5. contact form displays client-side validation errors without external services', async ({ page }) => {
     await page.goto('/contact');
+    await page.waitForLoadState('networkidle');
+
     const submitBtn = page.locator('button[type="submit"]:has-text("Send Message")');
+    await expect(submitBtn).toBeVisible();
     await submitBtn.click();
 
     // Error messages appear and aria-invalid is set
@@ -76,6 +83,7 @@ test.describe('End-to-End Smoke Tests', () => {
     });
 
     await page.goto('/contact');
+    await page.waitForLoadState('networkidle');
 
     // Fill form inputs
     await page.fill('input#fullName', 'Sarah Connor');
@@ -96,12 +104,20 @@ test.describe('End-to-End Smoke Tests', () => {
     ).toBeVisible();
   });
 
-  test('7. mobile viewport (390x844): compact consent banner displays cleanly without WhatsApp overlap', async ({ page }) => {
+  test('7. mobile viewport (390x844): compact consent banner displays cleanly without WhatsApp overlap', async ({ page, context }) => {
+    await context.clearCookies();
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
 
     const banner = page.locator('aside[aria-label="Cookie consent banner"]');
     await expect(banner).toBeVisible();
+
+    // Verify compact height on mobile (< 45% of 844px height = ~380px)
+    const box = await banner.boundingBox();
+    expect(box).toBeTruthy();
+    expect(box!.height).toBeLessThan(380);
 
     // Verify buttons are visible and clickable
     const acceptBtn = banner.locator('button:has-text("Accept All")');
@@ -113,7 +129,6 @@ test.describe('End-to-End Smoke Tests', () => {
     await expect(customizeBtn).toBeVisible();
 
     // Verify WhatsApp button is hidden or non-overlapping while banner is open
-    const whatsappBtn = page.locator('a[aria-label="Chat with us on WhatsApp"]');
     const isWhatsappHidden = await page.evaluate(() => {
       const el = document.querySelector('a[aria-label="Chat with us on WhatsApp"]');
       if (!el) return true;
@@ -146,5 +161,22 @@ test.describe('End-to-End Smoke Tests', () => {
     const flipBackBtn = page.locator('button[aria-label="Flip back"]');
     await flipBackBtn.click();
     await expect(flipBtn).toBeVisible();
+  });
+
+  test('9. CTA banner typing animation completes smoothly and stabilizes without clearing', async ({ page }) => {
+    await page.goto('/');
+
+    const ctaTitle = page.locator('h2[class*="ctaTitle"]');
+    await ctaTitle.scrollIntoViewIfNeeded();
+    await expect(ctaTitle).toBeVisible();
+
+    // Wait for the full headline text to be rendered
+    await expect(ctaTitle).toContainText('Ready to Grow Your');
+    await expect(ctaTitle).toContainText('Business Online?');
+
+    // Wait 2.5s and verify the headline stays stable and does NOT clear back to blank
+    await page.waitForTimeout(2500);
+    await expect(ctaTitle).toContainText('Ready to Grow Your');
+    await expect(ctaTitle).toContainText('Business Online?');
   });
 });
