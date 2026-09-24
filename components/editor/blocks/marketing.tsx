@@ -3,6 +3,7 @@ import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react'
 import { Megaphone, BarChart3, MessageSquareQuote, HelpCircle, Tags, ListOrdered, Grid3x3, Users } from 'lucide-react'
 import type { BlockDefinition } from '../types'
 import { cx, jsonAttr, mergeAttributes, suppress } from './helpers'
+import { sanitizeUrl, sanitizeCssBackgroundUrl } from '@/lib/url-safety'
 
 /* ══════════════════════════════════════════════════════════════════════════
  * CTA
@@ -27,18 +28,19 @@ const CtaView = ({ node, selected }: { node: any; selected: boolean }) => {
           : 'bg-brand-blue text-white'
         : 'border border-white/60 text-white',
     )
+  const safeBg = sanitizeCssBackgroundUrl(bgImage)
   return (
     <NodeViewWrapper data-block="cta" className={cx('my-2', selected && 'rounded-lg ring-2 ring-brand-blue ring-offset-2')} data-drag-handle>
       <div
         className={cx('relative overflow-hidden rounded-2xl px-6 py-8', !hasCustom && (CTA_STYLES[variant] ?? CTA_STYLES.gradient), hasCustom && 'text-white')}
         style={{
           backgroundColor: bgColor || undefined,
-          backgroundImage: bgImage ? `url(${bgImage})` : undefined,
+          backgroundImage: safeBg ? `url("${safeBg}")` : undefined,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-        {bgImage && <div className="pointer-events-none absolute inset-0 bg-black/40" />}
+        {safeBg && <div className="pointer-events-none absolute inset-0 bg-black/40" />}
         <div className={cx('relative z-10 flex gap-4', layout === 'row' ? 'flex-row items-center justify-between' : 'flex-col', alignCls)}>
           <div className="flex flex-col gap-3">
             {title && <h3 className="text-2xl font-bold leading-tight">{title}</h3>}
@@ -51,10 +53,10 @@ const CtaView = ({ node, selected }: { node: any; selected: boolean }) => {
           {(buttonLabel || button2Label) && (
             <div className="flex flex-wrap gap-3">
               {buttonLabel && (
-                <a href={buttonUrl || '#'} className={btnCls(true)}>{buttonLabel}</a>
+                <a href={sanitizeUrl(buttonUrl, '#')} className={btnCls(true)}>{buttonLabel}</a>
               )}
               {button2Label && (
-                <a href={button2Url || '#'} className={btnCls(false)}>{button2Label}</a>
+                <a href={sanitizeUrl(button2Url, '#')} className={btnCls(false)}>{button2Label}</a>
               )}
             </div>
           )}
@@ -96,9 +98,10 @@ const CtaNode = Node.create({
     if (title) texts.push(['h3', { class: 'text-2xl font-bold leading-tight' }, title])
     if (body) texts.push(['p', { class: 'max-w-xl text-sm leading-relaxed opacity-80' }, body])
     const btns: any[] = []
-    if (buttonLabel) btns.push(['a', { href: buttonUrl || '#', class: btnClass(true) }, buttonLabel])
-    if (button2Label) btns.push(['a', { href: button2Url || '#', class: btnClass(false) }, button2Label])
-    const bgStyle = [bgColor ? `background-color:${bgColor}` : '', bgImage ? `background-image:url(${bgImage});background-size:cover;background-position:center` : ''].filter(Boolean).join(';')
+    if (buttonLabel) btns.push(['a', { href: sanitizeUrl(buttonUrl, '#'), class: btnClass(true) }, buttonLabel])
+    if (button2Label) btns.push(['a', { href: sanitizeUrl(button2Url, '#'), class: btnClass(false) }, button2Label])
+    const safeBg = sanitizeCssBackgroundUrl(bgImage)
+    const bgStyle = [bgColor ? `background-color:${bgColor}` : '', safeBg ? `background-image:url("${safeBg}");background-size:cover;background-position:center` : ''].filter(Boolean).join(';')
     return [
       'div',
       mergeAttributes(HTMLAttributes, {
@@ -106,7 +109,7 @@ const CtaNode = Node.create({
         class: cx('my-6 relative overflow-hidden rounded-2xl px-6 py-8', !hasCustom && (CTA_STYLES[variant] ?? CTA_STYLES.gradient), hasCustom && 'text-white'),
         ...(bgStyle ? { style: bgStyle } : {}),
       }),
-      bgImage ? ['div', { class: 'pointer-events-none absolute inset-0 bg-black/40' }] : ['span', { class: 'hidden' }],
+      safeBg ? ['div', { class: 'pointer-events-none absolute inset-0 bg-black/40' }] : ['span', { class: 'hidden' }],
       [
         'div',
         { class: cx('relative z-10 flex gap-4', layout === 'row' ? 'flex-row items-center justify-between' : 'flex-col', alignCls) },
@@ -658,7 +661,7 @@ const PricingView = ({ node, selected }: { node: any; selected: boolean }) => {
               </ul>
               {p.ctaLabel && (
                 <a
-                  href={p.ctaUrl || '#'}
+                  href={sanitizeUrl(p.ctaUrl, '#')}
                   className={cx(
                     'mt-5 inline-flex justify-center rounded-lg px-4 py-2 text-sm font-semibold',
                     p.highlight ? 'bg-blue-600 text-white' : 'bg-slate-900 text-white',
@@ -1100,8 +1103,16 @@ const TeamView = ({ node, selected }: { node: any; selected: boolean }) => {
                 {m.bio && <p className="mt-2 text-xs leading-relaxed text-slate-500">{m.bio}</p>}
                 {(m.linkedin || m.website) && (
                   <p className="mt-2 flex gap-3 text-xs">
-                    {m.linkedin && <a href={m.linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">LinkedIn</a>}
-                    {m.website && <a href={m.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Website</a>}
+                    {m.linkedin && sanitizeUrl(m.linkedin) && (
+                      <a href={sanitizeUrl(m.linkedin)} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                        LinkedIn
+                      </a>
+                    )}
+                    {m.website && sanitizeUrl(m.website) && (
+                      <a href={sanitizeUrl(m.website)} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                        Website
+                      </a>
+                    )}
                   </p>
                 )}
               </div>

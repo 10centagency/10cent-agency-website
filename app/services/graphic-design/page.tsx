@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { JetBrains_Mono } from 'next/font/google';
 import CTABanner from '@/components/home/CTABanner';
+import JsonLd from '@/components/seo/JsonLd';
 import styles from './GraphicDesign.module.css';
 
 // Client Components
@@ -177,13 +178,7 @@ export default function GraphicDesignPage() {
 
   return (
     <>
-      {/* Single Server-Rendered Connected Schema.org @graph */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(schemaGraph).replace(/</g, '\\u003c'),
-        }}
-      />
+      <JsonLd data={schemaGraph} />
 
       <div className={`${styles.pageRoot} ${jetbrainsMono.variable}`}>
       {/* ===================== 1. HERO ===================== */}

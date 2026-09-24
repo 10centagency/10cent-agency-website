@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { ChevronUp } from 'lucide-react'
 
 export default function ScrollToTop() {
@@ -16,7 +16,7 @@ export default function ScrollToTop() {
   return (
     <AnimatePresence>
       {visible && (
-        <motion.button
+        <m.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -26,7 +26,7 @@ export default function ScrollToTop() {
           aria-label="Scroll to top"
         >
           <ChevronUp className="w-5 h-5" />
-        </motion.button>
+        </m.button>
       )}
     </AnimatePresence>
   )

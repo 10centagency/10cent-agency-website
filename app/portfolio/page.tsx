@@ -6,6 +6,7 @@ import AnimatedSection from '@/components/ui/AnimatedSection';
 import CTABanner from '@/components/home/CTABanner';
 import { getPublishedPortfolioItems } from '@/lib/portfolio';
 import PortfolioGrid from './PortfolioGrid';
+import JsonLd from '@/components/seo/JsonLd';
 
 export const revalidate = 3600;
 
@@ -161,12 +162,7 @@ export default async function PortfolioPage() {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(schemaGraph).replace(/</g, '\\u003c'),
-        }}
-      />
+      <JsonLd data={schemaGraph} />
       {/* Hero */}
       <section className="bg-brand-bgAlt pt-32 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

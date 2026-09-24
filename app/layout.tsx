@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { headers } from "next/headers";
 import { Outfit, Anek_Bangla } from 'next/font/google'
 import { LazyMotion, domAnimation } from "framer-motion";
 import "./globals.css";
@@ -7,8 +8,9 @@ import '@/components/editor/editor.css';
 import PublicLayoutWrapper from "@/components/layout/PublicLayoutWrapper";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
 import ScrollToTop from "@/components/ui/ScrollToTop";
-import CustomCursor from "@/components/ui/CustomCursor";
 import GoogleTagManager from "@/components/GoogleTagManager";
+import ConsentModeScript from "@/components/consent/ConsentModeScript";
+import ConsentBanner from "@/components/consent/ConsentBanner";
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -100,14 +102,19 @@ export const viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const headersList = await headers();
+  const nonce = headersList.get('x-nonce') || undefined;
+
   return (
     <html lang="en-BD" className={`${outfit.variable} ${anekBangla.variable}`}>
       <head>
+        {nonce && <meta name="csp-nonce" content={nonce} />}
+        <ConsentModeScript nonce={nonce} />
         {/* Preload critical above-the-fold image */}
         <link
           rel="preload"
@@ -123,7 +130,8 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
       </head>
       <body>
-        <GoogleTagManager />
+        <ConsentBanner />
+        <GoogleTagManager nonce={nonce} />
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-black focus:rounded focus:shadow-lg"
@@ -132,12 +140,9 @@ export default function RootLayout({
         </a>
         <LazyMotion features={domAnimation}>
           <PublicLayoutWrapper>{children}</PublicLayoutWrapper>
+          <WhatsAppButton />
+          <ScrollToTop />
         </LazyMotion>
-        <WhatsAppButton />
-        <ScrollToTop />
-        <Suspense fallback={null}>
-          <CustomCursor />
-        </Suspense>
       </body>
     </html>
   );

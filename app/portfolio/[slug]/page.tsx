@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { headers } from 'next/headers';
 import Link from 'next/link';
 import { ChevronRight, ArrowLeft, ExternalLink } from 'lucide-react';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
@@ -8,7 +9,10 @@ import SectionLabel from '@/components/ui/SectionLabel';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import CTABanner from '@/components/home/CTABanner';
 import ProjectContent from './ProjectContent';
-import { renderDocToHtml } from '@/components/editor';
+import { renderDocToHtml } from '@/components/editor/render';
+import { sanitizeContentHtml } from '@/lib/sanitize';
+import { sanitizeUrl, isSafeMediaUrl } from '@/lib/url-safety';
+import JsonLd from '@/components/seo/JsonLd';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,7 +93,8 @@ export default async function ProjectPage({ params }: Props) {
     notFound();
   }
 
-  const contentHtml = renderDocToHtml(item.content);
+  const nonce = (await headers()).get('x-nonce') || undefined;
+  const contentHtml = sanitizeContentHtml(renderDocToHtml(item.content));
 
   const pageUrl = `https://www.10centagency.com/portfolio/${item.slug}`;
   const pageDescription =
@@ -230,12 +235,7 @@ export default async function ProjectPage({ params }: Props) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(schemaGraph),
-        }}
-      />
+      <JsonLd data={schemaGraph} nonce={nonce} />
       {/* Hero */}
       <section className="bg-brand-bgAlt pt-32 pb-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -296,9 +296,9 @@ export default async function ProjectPage({ params }: Props) {
         <section className="bg-white py-8">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
-              {item.featured_image_link ? (
+              {item.featured_image_link && sanitizeUrl(item.featured_image_link) ? (
                 <a
-                  href={item.featured_image_link}
+                  href={sanitizeUrl(item.featured_image_link)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block relative group"

@@ -6,16 +6,30 @@ declare global {
   }
 }
 
-export const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID!;
+export const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || '';
 
-if (!META_PIXEL_ID) {
-  console.error('[MetaPixel] NEXT_PUBLIC_META_PIXEL_ID is missing or empty. Check your .env.local file.');
+/**
+ * Checks if marketing consent has been explicitly granted by the user via tc_consent_v1
+ */
+export function hasMarketingConsent(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const stored = localStorage.getItem('tc_consent_v1');
+    if (stored) {
+      const pref = JSON.parse(stored);
+      return Boolean(pref && typeof pref === 'object' && pref.marketing);
+    }
+  } catch {
+    // Restricted storage environment
+  }
+  return false;
 }
 
 // ─── Core helper ────────────────────────────────────────────────────────────
 
 function fbq(...args: unknown[]) {
-  if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+  // Only execute tracking if marketing consent is granted and fbq exists
+  if (typeof window !== 'undefined' && hasMarketingConsent() && typeof window.fbq === 'function') {
     window.fbq(...args);
   }
 }
@@ -27,7 +41,6 @@ export function pageView() {
 }
 
 // ─── Standard events ────────────────────────────────────────────────────────
-// Wire these to UI elements when ready.
 
 export function trackLead(params?: Record<string, unknown>) {
   fbq('track', 'Lead', params);
@@ -44,12 +57,3 @@ export function trackPurchase(params?: { value: number; currency: string; [key: 
 export function trackCustom(eventName: string, params?: Record<string, unknown>) {
   fbq('trackCustom', eventName, params);
 }
-
-// ─── CAPI-ready structure ────────────────────────────────────────────────────
-// When adding Conversions API, create lib/capi.ts alongside this file.
-// Each function above can be extended to call both fbq() AND your CAPI endpoint.
-// Example pattern:
-//   export async function trackLeadWithCAPI(params) {
-//     trackLead(params);                        // browser pixel
-//     await sendToCAPI({ event: 'Lead', params }); // server-side CAPI
-//   }

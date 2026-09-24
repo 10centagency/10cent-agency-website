@@ -3,8 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
-import { getAuthenticatedClient } from '@/lib/auth-helpers'
 import { CategoryRow } from '@/lib/database.types'
 import { registerAllBlocks, BlockEditor, convertLegacyBlocks, isDocEmpty } from '@/components/editor'
 import { savePreview } from './previewStore'
@@ -62,12 +60,15 @@ export default function BlogForm({ postId }: BlogFormProps) {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const { data } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('type', 'blog')
-        .order('name')
-      if (data) setCategories(data as CategoryRow[])
+      try {
+        const res = await fetch('/api/admin/categories?type=blog');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.categories) setCategories(data.categories);
+        }
+      } catch (err) {
+        console.error('[BlogForm] fetchCategories error:', err);
+      }
     }
     fetchCategories()
   }, [])
@@ -75,51 +76,61 @@ export default function BlogForm({ postId }: BlogFormProps) {
   useEffect(() => {
     if (!isEditing) return
     async function loadPost() {
-      const { data } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .eq('id', postId!)
-        .maybeSingle()
-      if (data) {
-        setTitle(data.title)
-        setSlug(data.slug)
-        setCategoryId(data.category_id)
-        setExcerpt(data.excerpt || '')
-        setMetaDescription(data.meta_description || '')
-        setTags(data.tags?.join(', ') || '')
-        setFeaturedImageUrl(data.featured_image_url || '')
-        setFeaturedImageLink(data.featured_image_link || '')
-        setFeaturedImageAlt(data.featured_image_alt || '')
-        setContent((data.content as JSONContent) ?? convertLegacyBlocks(data.content_blocks) ?? null)
-        setIsFeatured(data.is_featured)
-        setSortOrder(data.sort_order)
-        setStatus(data.status)
+      try {
+        const res = await fetch(`/api/admin/blog/${postId}`);
+        if (res.ok) {
+          const { post: data } = await res.json();
+          if (data) {
+            setTitle(data.title)
+            setSlug(data.slug)
+            setCategoryId(data.category_id)
+            setExcerpt(data.excerpt || '')
+            setMetaDescription(data.meta_description || '')
+            setTags(data.tags?.join(', ') || '')
+            setFeaturedImageUrl(data.featured_image_url || '')
+            setFeaturedImageLink(data.featured_image_link || '')
+            setFeaturedImageAlt(data.featured_image_alt || '')
+            setContent((data.content as JSONContent) ?? convertLegacyBlocks(data.content_blocks) ?? null)
+            setIsFeatured(data.is_featured)
+            setSortOrder(data.sort_order)
+            setStatus(data.status)
+          }
+        }
+      } catch (err) {
+        console.error('[BlogForm] loadPost error:', err);
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
     loadPost()
   }, [postId, isEditing])
 
   const uploadImage = useCallback(
     async (file: File, bucket: string): Promise<string | null> => {
-      const client = await getAuthenticatedClient()
-      if (!client) return null
-
-      const ext = file.name.split('.').pop()
-      const sanitizedName = file.name.toLowerCase().replace(/[^a-z0-9.\-_]/g, '-').replace(/-+/g, '-')
-      const path = `${Date.now()}-${sanitizedName}`
-      const { error: uploadError } = await client.storage
-        .from(bucket)
-        .upload(path, file, { cacheControl: '3600', upsert: false })
-      if (uploadError) {
-        setError('Image upload failed')
-        return null
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('bucket', bucket);
+        const res = await fetch('/api/admin/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        if (!res.ok) {
+          if (res.status === 401 || res.status === 403) {
+            setError('Your session has expired or you lack admin privileges. Please log in again.');
+            return null;
+          }
+          const err = await res.json().catch(() => ({ error: `Upload failed (status ${res.status})` }));
+          setError(err.error || 'Image upload failed');
+          return null;
+        }
+        const data = await res.json().catch(() => ({}));
+        return data.url || null;
+      } catch (err) {
+        console.error('[BlogForm] upload error:', err);
+        setError('Network error during image upload');
+        return null;
       }
-
-      const { data: publicUrl } = client.storage
-        .from(bucket)
-        .getPublicUrl(path)
-      return publicUrl?.publicUrl || null
     },
     []
   )
@@ -139,24 +150,28 @@ export default function BlogForm({ postId }: BlogFormProps) {
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) return
 
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
-      window.location.replace('/auth')
-      return
-    }
+    try {
+      const slugName = generateSlug(newCategoryName)
+      const res = await fetch('/api/admin/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newCategoryName, slug: slugName, type: 'blog' }),
+      });
 
-    const slugName = generateSlug(newCategoryName)
-    const { data, error: insertError } = await supabase
-      .from('categories')
-      .insert([{ name: newCategoryName, slug: slugName, type: 'blog' }])
-      .select()
-      .single()
-
-    if (!insertError && data) {
-      setCategories([...categories, data as CategoryRow])
-      setCategoryId(data.id)
-      setNewCategoryName('')
-      setShowCategoryModal(false)
+      if (res.ok) {
+        const data = await res.json();
+        if (data.category) {
+          setCategories([...categories, data.category]);
+          setCategoryId(data.category.id);
+          setNewCategoryName('');
+          setShowCategoryModal(false);
+        }
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setError(err.error || 'Failed to add category');
+      }
+    } catch (err) {
+      console.error('[BlogForm] handleAddCategory error:', err);
     }
   }
 
@@ -189,12 +204,6 @@ export default function BlogForm({ postId }: BlogFormProps) {
     setFeedback('')
     setSaving(true)
 
-    const client = await getAuthenticatedClient()
-    if (!client) {
-      setSaving(false)
-      return
-    }
-
     const finalSlug = slug || generateSlug(title)
     const tagsArray = tags
       .split(',')
@@ -218,31 +227,40 @@ export default function BlogForm({ postId }: BlogFormProps) {
     }
 
     if (isEditing) {
-      const { error } = await client
-        .from('blog_posts')
-        .update(payload)
-        .eq('id', postId!)
-        .select()
-        .single()
+      const res = await fetch(`/api/admin/blog/${postId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-      if (error) {
-        console.error('Blog update error:', error)
-        setError(`Update failed: ${error.message}`)
-        setSaving(false)
-        return
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          setError('Your session has expired or you lack admin privileges. Please log in again.');
+          setSaving(false);
+          return;
+        }
+        const err = await res.json().catch(() => ({ error: `Server error (${res.status})` }));
+        setError(`Update failed: ${err.error || 'Unknown error'}`);
+        setSaving(false);
+        return;
       }
     } else {
-      const { error } = await client
-        .from('blog_posts')
-        .insert([payload])
-        .select()
-        .single()
+      const res = await fetch('/api/admin/blog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-      if (error) {
-        console.error('Blog insert error:', error)
-        setError(`Create failed: ${error.message}`)
-        setSaving(false)
-        return
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          setError('Your session has expired or you lack admin privileges. Please log in again.');
+          setSaving(false);
+          return;
+        }
+        const err = await res.json().catch(() => ({ error: `Server error (${res.status})` }));
+        setError(`Create failed: ${err.error || 'Unknown error'}`);
+        setSaving(false);
+        return;
       }
     }
 

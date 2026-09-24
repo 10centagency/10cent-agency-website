@@ -3,6 +3,7 @@ import { NodeViewContent, NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap
 import { Info, Palette, CaseSensitive, MousePointerClick } from 'lucide-react'
 import type { BlockDefinition } from '../types'
 import { cx, jsonAttr, mergeAttributes, suppress } from './helpers'
+import { sanitizeUrl } from '@/lib/url-safety'
 
 /* ══════════════════════════════════════════════════════════════════════════
  * CALLOUT — nested rich content block (content: 'block+')
@@ -417,7 +418,7 @@ const ButtonView = ({ node, selected }: { node: any; selected: boolean }) => {
   return (
     <NodeViewWrapper data-block="button" className={cx('my-2 flex', justify, selected && 'ring-2 ring-brand-blue rounded-lg')} data-drag-handle>
       <a
-        href={url || '#'}
+        href={sanitizeUrl(url, '#')}
         target={newTab ? '_blank' : undefined}
         rel={newTab ? 'noopener noreferrer' : undefined}
         style={custom}
@@ -472,7 +473,7 @@ const ButtonNode = Node.create({
       [
         'a',
         {
-          href: url || '#',
+          href: sanitizeUrl(url, '#'),
           ...(newTab ? { target: '_blank', rel: 'noopener noreferrer' } : {}),
           ...(styleAttr ? { style: styleAttr } : {}),
           class: cx(

@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
-import { plainTextFromDoc } from '@/components/editor';
+import { plainTextFromDoc } from '@/components/editor/plainText';
 
 export const revalidate = 3600;
 

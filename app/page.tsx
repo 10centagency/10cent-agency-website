@@ -5,6 +5,7 @@ import { homeFaqs } from '@/components/home/homeSectionsData';
 import { getLatestBlogPosts, type HomeBlogPost } from '@/lib/blog';
 import { getFeaturedPortfolioItems } from '@/lib/portfolio';
 import type { PortfolioItem } from '@/lib/database.types';
+import JsonLd from '@/components/seo/JsonLd';
 
 export const revalidate = 3600;
 
@@ -159,12 +160,7 @@ export default async function Home() {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(schemaGraph).replace(/</g, '\\u003c'),
-        }}
-      />
+      <JsonLd data={schemaGraph} />
       <HeroSection />
       <HomeContent blogPosts={blogPosts} portfolioItems={portfolioItems} />
     </>

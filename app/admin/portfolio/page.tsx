@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
 import { PortfolioItem } from '@/lib/database.types';
 import { Plus, Search, Trash2, Pencil } from 'lucide-react';
 
@@ -16,13 +15,21 @@ export default function PortfolioListPage() {
   const [deleting, setDeleting] = useState<string | null>(null);
 
   const fetchItems = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('portfolio_items')
-      .select('*')
-      .order('sort_order', { ascending: true });
-
-    if (!error && data) setItems(data);
-    setLoading(false);
+    try {
+      const res = await fetch('/api/admin/portfolio');
+      if (res.status === 401) {
+        window.location.replace('/auth');
+        return;
+      }
+      if (res.ok) {
+        const data = await res.json();
+        if (data.items) setItems(data.items);
+      }
+    } catch (err) {
+      console.error('[Portfolio] fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -32,9 +39,20 @@ export default function PortfolioListPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this item?')) return;
     setDeleting(id);
-    await supabase.from('portfolio_items').delete().eq('id', id);
-    setItems((prev) => prev.filter((i) => i.id !== id));
-    setDeleting(null);
+    try {
+      const res = await fetch(`/api/admin/portfolio/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setItems((prev) => prev.filter((i) => i.id !== id));
+      } else {
+        const err = await res.json().catch(() => ({ error: `Delete failed (status ${res.status})` }));
+        alert(err.error || 'Failed to delete item');
+      }
+    } catch (err) {
+      console.error('[Portfolio] delete error:', err);
+      alert('Network error while deleting item');
+    } finally {
+      setDeleting(null);
+    }
   };
 
   const filtered = items.filter((item) => {

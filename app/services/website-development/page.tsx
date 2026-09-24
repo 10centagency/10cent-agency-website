@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { JetBrains_Mono } from 'next/font/google';
 import CTABanner from '@/components/home/CTABanner';
+import JsonLd from '@/components/seo/JsonLd';
 import styles from './WebsiteDevelopment.module.css';
 
 // Client Components
@@ -181,13 +182,7 @@ export default function WebsiteDevelopmentPage() {
 
   return (
     <>
-      {/* Single Connected Server-Rendered JSON-LD Schema @graph */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: jsonLdString,
-        }}
-      />
+      <JsonLd data={schemaGraph} />
 
       {/* Page-scoped overview progress bar animation */}
       <WebsiteOverviewMotion />
@@ -253,7 +248,7 @@ export default function WebsiteDevelopmentPage() {
               </div>
               <pre className={styles.codeContent}>
                 <code>
-                  <span className={styles.tokComment}>// Quick Answer Engine</span>{'\n'}
+                  <span className={styles.tokComment}>{'// Quick Answer Engine'}</span>{'\n'}
                   <span className={styles.tokPunct}>{'{'}</span>{'\n'}
                   {'  '}<span className={styles.tokKey}>&quot;question&quot;</span><span className={styles.tokPunct}>:</span> <span className={styles.tokString}>&quot;What is Website Development?&quot;</span><span className={styles.tokPunct}>,</span>{'\n'}
                   {'  '}<span className={styles.tokKey}>&quot;answer&quot;</span><span className={styles.tokPunct}>:</span> <span className={styles.tokString}>&quot;Website Development is the process of designing,{'\n'}  building, and launching a functional online presence —{'\n'}  optimized for speed, mobile devices, and search engines.{'\n'}  10 Cent Agency builds custom WordPress + Elementor websites{'\n'}  and custom Next.js/React web apps for businesses in Bangladesh.&quot;</span><span className={styles.tokPunct}>,</span>{'\n'}

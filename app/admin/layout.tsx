@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { createServerClient } from '@supabase/ssr';
-import { isAdminEmail } from '@/lib/admin-auth';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import AdminLayoutClient from '@/components/admin/AdminLayoutClient';
 
 async function createServerSupabaseClient() {
@@ -39,9 +39,27 @@ export default async function AdminLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user || !isAdminEmail(user.email)) {
+  if (!user) {
+    redirect('/auth');
+  }
+
+  // Database-backed admin check via public.admin_users
+  try {
+    const adminClient = getSupabaseAdmin();
+    const { data: adminRecord, error } = await adminClient
+      .from('admin_users' as any)
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (error || !adminRecord) {
+      redirect('/');
+    }
+  } catch (err) {
+    console.error('[AdminLayout] Admin verification error:', err);
     redirect('/');
   }
 
   return <AdminLayoutClient>{children}</AdminLayoutClient>;
 }
+

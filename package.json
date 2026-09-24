@@ -2,12 +2,19 @@
   "name": "nextjs",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22.13.0 <23",
+    "npm": ">=10.9.2 <11"
+  },
+  "packageManager": "npm@10.9.2",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.0",
@@ -63,7 +70,7 @@
     "@tiptap/starter-kit": "^3.31.3",
     "@tiptap/suggestion": "^3.31.3",
     "@tiptap/y-tiptap": "^3.0.9",
-    "@types/node": "20.6.2",
+    "@types/node": "^22.12.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "10.4.15",
@@ -78,16 +85,18 @@
     "happy-dom": "^20.14.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.446.0",
-    "next": "^15.5.24",
+    "next": "15.5.25",
     "next-themes": "^0.4.6",
-    "postcss": "8.4.30",
+    "postcss": "8.5.28",
     "react": "^19.0.0",
     "react-day-picker": "^10.0.1",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.80.0",
     "react-icons": "^5.7.0",
-    "react-resizable-panels": "^0.0.55",
+    "react-resizable-panels": "^2.1.7",
     "recharts": "^3.9.1",
+    "sanitize-html": "^2.17.7",
+    "sharp": "^0.35.4",
     "slugify": "^1.6.9",
     "sonner": "^2.0.7",
     "tailwind-merge": "^2.5.2",
@@ -96,7 +105,11 @@
     "typescript": "5.2.2",
     "vaul": "^1.1.2",
     "y-protocols": "^1.0.7",
-    "yjs": "^13.6.32"
+    "yjs": "^13.6.32",
+    "zod": "^3.24.2"
+  },
+  "overrides": {
+    "postcss": "8.5.28"
   },
   "browserslist": {
     "production": [
@@ -109,5 +122,16 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
+    "@playwright/test": "^1.63.0",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@types/sanitize-html": "^2.16.1",
+    "@vitejs/plugin-react": "^6.1.1",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.1"
   }
 }

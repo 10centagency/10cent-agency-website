@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
+import { m, AnimatePresence } from 'framer-motion';
 import { BookOpen, ExternalLink, ChevronDown } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { BlogPost, CategoryRow } from '@/lib/database.types';
@@ -154,15 +155,20 @@ export default function BlogContent({
               <p className="text-brand-textMid text-lg">No blog posts yet</p>
             </div>
           ) : (
-            <motion.div
+            <m.div
               layout
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
               <AnimatePresence mode="popLayout">
                 {visiblePosts.map((post) => {
                   const category = categories.find((c) => c.id === post.category_id);
+                  const isOptImage =
+                    post.featured_image_url &&
+                    (post.featured_image_url.startsWith('/') ||
+                      post.featured_image_url.includes('rpgygdjptsxryewxaeys.supabase.co'));
+
                   return (
-                    <motion.div
+                    <m.div
                       key={post.id}
                       layout
                       initial={{ opacity: 0, scale: 0.92 }}
@@ -177,11 +183,21 @@ export default function BlogContent({
                       <Link href={`/blog/${post.slug}`}>
                         <div className="relative h-[200px] overflow-hidden">
                           {post.featured_image_url ? (
-                            <img
-                              src={post.featured_image_url}
-                              alt={post.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
+                            isOptImage ? (
+                              <Image
+                                src={post.featured_image_url}
+                                alt={post.title}
+                                fill
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            ) : (
+                              <img
+                                src={post.featured_image_url}
+                                alt={post.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            )
                           ) : (
                             <div
                               className="w-full h-full flex items-center justify-center"
@@ -236,11 +252,11 @@ export default function BlogContent({
                           </div>
                         </div>
                       </Link>
-                    </motion.div>
+                    </m.div>
                   );
                 })}
               </AnimatePresence>
-            </motion.div>
+            </m.div>
           )}
 
           {/* Load More Button */}

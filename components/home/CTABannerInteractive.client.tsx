@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useId } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
+import Turnstile from '@/components/Turnstile';
 import styles from './CTABanner.module.css';
 
 const LINE_1 = 'Ready to Grow Your';
@@ -35,6 +35,8 @@ export default function CTABannerInteractive() {
   const [caretPos, setCaretPos] = useState<0 | 1 | 2>(0);
 
   const [formData, setFormData] = useState<FormDataState>(initialFormData);
+  const [hpField, setHpField] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -236,20 +238,28 @@ export default function CTABannerInteractive() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.from('contact_submissions').insert({
-        full_name: formData.name.trim(),
-        business_name: formData.business.trim(),
-        email: formData.email.trim(),
-        whatsapp: formData.phone.trim(),
-        service_interested: formData.topic.trim(),
-        budget_range: formData.budget.trim() || null,
-        message: formData.message.trim(),
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: formData.name.trim(),
+          businessName: formData.business.trim(),
+          email: formData.email.trim(),
+          whatsapp: formData.phone.trim(),
+          service: formData.topic.trim(),
+          budget: formData.budget.trim() || undefined,
+          message: formData.message.trim(),
+          website: hpField,
+          hp_field: hpField,
+          turnstileToken,
+        }),
       });
 
+      const data = await res.json();
       setLoading(false);
 
-      if (error) {
-        setErrorMessage('Something went wrong. Please try again.');
+      if (!res.ok) {
+        setErrorMessage(data.error || 'Something went wrong. Please try again.');
         return;
       }
 
@@ -406,13 +416,42 @@ export default function CTABannerInteractive() {
                 </button>
               </div>
 
-              {errorMessage && (
-                <div className={styles.formError} role="alert">
-                  {errorMessage}
-                </div>
-              )}
+              <div aria-live="polite">
+                {errorMessage && (
+                  <div className={styles.formError} role="alert">
+                    {errorMessage}
+                  </div>
+                )}
+              </div>
 
               <form onSubmit={handleSubmit} noValidate>
+                {/* Visually hidden honeypot */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    width: 1,
+                    height: 1,
+                    padding: 0,
+                    margin: -1,
+                    overflow: 'hidden',
+                    clip: 'rect(0, 0, 0, 0)',
+                    whiteSpace: 'nowrap',
+                    border: 0,
+                  }}
+                  aria-hidden="true"
+                >
+                  <label htmlFor="cta_website">Do not fill this field</label>
+                  <input
+                    id="cta_website"
+                    type="text"
+                    name="website"
+                    value={hpField}
+                    onChange={(e) => setHpField(e.target.value)}
+                    tabIndex={-1}
+                    aria-hidden="true"
+                    autoComplete="off"
+                  />
+                </div>
                 <div className={styles.formGrid}>
                   <label className={styles.field} htmlFor={nameId}>
                     <span className={styles.flabel}>Full Name *</span>
@@ -519,6 +558,10 @@ export default function CTABannerInteractive() {
                     placeholder="Tell us about your business and goals..."
                   />
                 </label>
+
+                <div className="my-2">
+                  <Turnstile action="cta_form" onSuccess={(token) => setTurnstileToken(token)} />
+                </div>
 
                 <div className={styles.formActions}>
                   <button type="submit" className={styles.submitBtn} disabled={loading}>

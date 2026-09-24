@@ -2,6 +2,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import CTABanner from '@/components/home/CTABanner';
+import JsonLd from '@/components/seo/JsonLd';
 import styles from './FacebookMetaMkt.module.css';
 import StrategyTabs from './StrategyTabs.client';
 import FAQAccordion from './FAQAccordion.client';
@@ -119,12 +120,7 @@ export default function FacebookMetaMarketingPage() {
         <FacebookMotion />
 
         {/* Single Server-Rendered Connected Schema.org @graph */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(schemaGraph),
-          }}
-        />
+        <JsonLd data={schemaGraph} />
 
         {/* ===================== 1. HERO ===================== */}
         <section className={styles.hero}>

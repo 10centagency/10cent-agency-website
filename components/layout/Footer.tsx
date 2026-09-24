@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Facebook, Instagram, Youtube, Linkedin, Mail, Phone, MapPin, Clock } from 'lucide-react';
 import { FaXTwitter } from 'react-icons/fa6';
+import CookiePreferencesButton from '@/components/consent/CookiePreferencesButton';
 
 const quickLinks = [
   { label: 'Home', href: '/' },
@@ -157,6 +158,8 @@ export default function Footer() {
             <Link href="/terms-of-service" className="text-white/50 text-sm hover:text-white/80 transition-colors">
               Terms of Service
             </Link>
+            <span className="text-white/30">|</span>
+            <CookiePreferencesButton />
           </div>
         </div>
       </div>

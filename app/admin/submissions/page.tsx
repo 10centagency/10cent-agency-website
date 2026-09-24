@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
 import { ContactSubmission } from '@/lib/database.types';
 import {
   Search,
@@ -25,13 +24,17 @@ export default function SubmissionsPage() {
   const [deleting, setDeleting] = useState<string | null>(null);
 
   const fetchSubmissions = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('contact_submissions')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (!error && data) setSubmissions(data);
-    setLoading(false);
+    try {
+      const res = await fetch('/api/admin/submissions');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.submissions) setSubmissions(data.submissions);
+      }
+    } catch (err) {
+      console.error('[SubmissionsPage] fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -46,19 +49,55 @@ export default function SubmissionsPage() {
     if (selected?.id === id) {
       setSelected({ ...selected, status: newStatus });
     }
-    await supabase
-      .from('contact_submissions')
-      .update({ status: newStatus })
-      .eq('id', id);
+    try {
+      const res = await fetch('/api/admin/submissions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: newStatus }),
+      });
+      if (!res.ok) {
+        // Revert optimistic update
+        setSubmissions((prev) =>
+          prev.map((s) => (s.id === id ? { ...s, status: currentStatus as any } : s))
+        );
+        if (selected?.id === id) {
+          setSelected({ ...selected, status: currentStatus as any });
+        }
+        const err = await res.json().catch(() => ({ error: `Failed to update (status ${res.status})` }));
+        alert(err.error || 'Failed to update submission status');
+      }
+    } catch (err) {
+      console.error('[SubmissionsPage] update status error:', err);
+      // Revert optimistic update
+      setSubmissions((prev) =>
+        prev.map((s) => (s.id === id ? { ...s, status: currentStatus as any } : s))
+      );
+      if (selected?.id === id) {
+        setSelected({ ...selected, status: currentStatus as any });
+      }
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this submission?')) return;
     setDeleting(id);
-    await supabase.from('contact_submissions').delete().eq('id', id);
-    setSubmissions((prev) => prev.filter((s) => s.id !== id));
-    if (selected?.id === id) setSelected(null);
-    setDeleting(null);
+    try {
+      const res = await fetch(`/api/admin/submissions?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setSubmissions((prev) => prev.filter((s) => s.id !== id));
+        if (selected?.id === id) setSelected(null);
+      } else {
+        const err = await res.json().catch(() => ({ error: `Delete failed (status ${res.status})` }));
+        alert(err.error || 'Failed to delete submission');
+      }
+    } catch (err) {
+      console.error('[SubmissionsPage] delete error:', err);
+      alert('Network error while deleting submission');
+    } finally {
+      setDeleting(null);
+    }
   };
 
   const downloadCSV = () => {

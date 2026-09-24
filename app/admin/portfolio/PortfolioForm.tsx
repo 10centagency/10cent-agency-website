@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import NextLink from 'next/link';
-import { supabase } from '@/lib/supabase';
-import { getAuthenticatedClient } from '@/lib/auth-helpers';
+import Link from 'next/link';
 import { registerAllBlocks, BlockEditor, convertLegacyBlocks, isDocEmpty } from '@/components/editor';
 import { savePreview } from '@/components/admin/previewStore';
 import type { JSONContent } from '@tiptap/core';
@@ -63,47 +61,64 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
   useEffect(() => {
     if (!isEditing) return;
     async function loadItem() {
-      const { data } = await supabase
-        .from('portfolio_items')
-        .select('*')
-        .eq('id', itemId!)
-        .maybeSingle();
-      if (data) {
-        setTitle(data.title);
-        setSlug(data.slug);
-        setCategory(data.category);
-        setIndustry(data.industry);
-        setClientName(data.client_name || '');
-        setResultHighlight(data.result_highlight);
-        setExcerpt(data.excerpt || '');
-        setMetaDescription(data.meta_description || '');
-        setTags(data.tags?.join(', ') || '');
-        setFeaturedImageUrl(data.featured_image_url || '');
-        setFeaturedImageLink(data.featured_image_link || '');
-        setFeaturedImageAlt(data.featured_image_alt || '');
-        setContent((data.content as JSONContent) ?? convertLegacyBlocks(data.content_blocks) ?? null);
-        setIsFeatured(data.is_featured);
-        setSortOrder(data.sort_order);
-        setStatus(data.status);
+      try {
+        const res = await fetch(`/api/admin/portfolio/${itemId}`);
+        if (res.ok) {
+          const { item: data } = await res.json();
+          if (data) {
+            setTitle(data.title);
+            setSlug(data.slug);
+            setCategory(data.category);
+            setIndustry(data.industry);
+            setClientName(data.client_name || '');
+            setResultHighlight(data.result_highlight);
+            setExcerpt(data.excerpt || '');
+            setMetaDescription(data.meta_description || '');
+            setTags(data.tags?.join(', ') || '');
+            setFeaturedImageUrl(data.featured_image_url || '');
+            setFeaturedImageLink(data.featured_image_link || '');
+            setFeaturedImageAlt(data.featured_image_alt || '');
+            setContent((data.content as JSONContent) ?? convertLegacyBlocks(data.content_blocks) ?? null);
+            setIsFeatured(data.is_featured);
+            setSortOrder(data.sort_order);
+            setStatus(data.status);
+          }
+        }
+      } catch (err) {
+        console.error('[PortfolioForm] load error:', err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     loadItem();
   }, [itemId, isEditing]);
 
   const uploadImage = useCallback(
     async (file: File, bucket: string): Promise<string | null> => {
-      const client = await getAuthenticatedClient();
-      if (!client) return null;
-      const ext = file.name.split('.').pop();
-      const sanitizedName = file.name.toLowerCase().replace(/[^a-z0-9.\-_]/g, '-').replace(/-+/g, '-');
-      const path = `${Date.now()}-${sanitizedName}`;
-      const { error: uploadError } = await client.storage
-        .from(bucket)
-        .upload(path, file, { cacheControl: '3600', upsert: false });
-      if (uploadError) { setError('Image upload failed'); return null; }
-      const { data: { publicUrl } } = client.storage.from(bucket).getPublicUrl(path);
-      return publicUrl;
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('bucket', bucket);
+        const res = await fetch('/api/admin/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        if (!res.ok) {
+          if (res.status === 401 || res.status === 403) {
+            setError('Your session has expired or you lack admin privileges. Please log in again.');
+            return null;
+          }
+          const err = await res.json().catch(() => ({ error: `Upload failed (status ${res.status})` }));
+          setError(err.error || 'Image upload failed');
+          return null;
+        }
+        const data = await res.json().catch(() => ({}));
+        return data.url || null;
+      } catch (err) {
+        console.error('[PortfolioForm] upload error:', err);
+        setError('Network error during image upload');
+        return null;
+      }
     },
     []
   );
@@ -141,13 +156,6 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
     setError('');
     setFeedback('');
     setSaving(true);
-
-    const client = await getAuthenticatedClient();
-    if (!client) {
-      setSaving(false);
-      return;
-    }
-
     const finalSlug = slug || generateSlug(title);
     const tagsArray = tags.split(',').map((t) => t.trim()).filter(Boolean);
 
@@ -171,11 +179,39 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
     };
 
     if (isEditing) {
-      const { error } = await client.from('portfolio_items').update(payload).eq('id', itemId!).select().single();
-      if (error) { setError(`Update failed: ${error.message}`); setSaving(false); return; }
+      const res = await fetch(`/api/admin/portfolio/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          setError('Your session has expired or you lack admin privileges. Please log in again.');
+          setSaving(false);
+          return;
+        }
+        const err = await res.json().catch(() => ({ error: `Server error (${res.status})` }));
+        setError(`Update failed: ${err.error || 'Unknown error'}`);
+        setSaving(false);
+        return;
+      }
     } else {
-      const { error } = await client.from('portfolio_items').insert([payload]).select().single();
-      if (error) { setError(`Create failed: ${error.message}`); setSaving(false); return; }
+      const res = await fetch('/api/admin/portfolio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          setError('Your session has expired or you lack admin privileges. Please log in again.');
+          setSaving(false);
+          return;
+        }
+        const err = await res.json().catch(() => ({ error: `Server error (${res.status})` }));
+        setError(`Create failed: ${err.error || 'Unknown error'}`);
+        setSaving(false);
+        return;
+      }
     }
 
     setStatus(nextStatus);
@@ -206,13 +242,13 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Back link */}
-      <NextLink
+      <Link
         href="/admin/portfolio"
         className="inline-flex items-center gap-1.5 text-sm text-brand-textMid hover:text-brand-blue transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Portfolio
-      </NextLink>
+      </Link>
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
@@ -437,12 +473,12 @@ export default function PortfolioForm({ itemId }: PortfolioFormProps) {
             ? 'Update'
             : 'Publish'}
         </button>
-        <NextLink
+        <Link
           href="/admin/portfolio"
           className="text-sm font-medium text-brand-textMid hover:text-brand-textDark transition-colors px-4 py-2.5"
         >
           Cancel
-        </NextLink>
+        </Link>
       </div>
     </form>
   );

@@ -6,7 +6,7 @@ const nextConfig = {
     ignoreDuringBuilds: false,
   },
   images: {
-    formats: ['image/webp', 'image/avif'],
+    formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
@@ -14,6 +14,14 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'rpgygdjptsxryewxaeys.supabase.co',
         pathname: '/storage/v1/object/public/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
       },
     ],
   },
@@ -36,22 +44,6 @@ const nextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
           { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-          {
-            key: 'Content-Security-Policy-Report-Only',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://connect.facebook.net",
-              "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: blob: https://rpgygdjptsxryewxaeys.supabase.co https://rpgygdjptsxryewgaeys.supabase.co https://www.googletagmanager.com https://*.facebook.com https://*.fbcdn.net",
-              "font-src 'self' data:",
-              "connect-src 'self' https://rpgygdjptsxryewxaeys.supabase.co https://*.facebook.com https://*.google-analytics.com https://www.googletagmanager.com",
-              "frame-src https://calendly.com",
-              "frame-ancestors 'self'",
-              "base-uri 'self'",
-              "form-action 'self'",
-              "report-uri /api/csp-report",
-            ].join('; '),
-          },
         ],
       },
       {

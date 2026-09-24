@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { ExternalLink } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import type { PortfolioItem } from '@/lib/database.types';
@@ -106,10 +106,10 @@ export default function PortfolioGrid({ initialItems = [] }: PortfolioGridProps)
         </div>
 
         {/* Grid */}
-        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <m.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <AnimatePresence mode="popLayout">
             {filtered.map((project) => (
-              <motion.div
+              <m.div
                 key={project.id}
                 layout
                 initial={{ opacity: 0, scale: 0.92 }}
@@ -157,10 +157,10 @@ export default function PortfolioGrid({ initialItems = [] }: PortfolioGridProps)
                     {project.result_highlight}
                   </p>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </AnimatePresence>
-        </motion.div>
+        </m.div>
       </div>
     </section>
   );

@@ -6,6 +6,7 @@ import AnimatedSection, { StaggerContainer, StaggerItem } from '@/components/ui/
 import CTABanner from '@/components/home/CTABanner';
 import Image from "next/image";
 import AboutNewSections from './AboutNewSections';
+import JsonLd from '@/components/seo/JsonLd';
 
 export const metadata: Metadata = {
   title: 'About 10 Cent Agency | Digital Marketing Agency Dhaka, BD',
@@ -166,12 +167,7 @@ export default function AboutPage() {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(schemaGraph).replace(/</g, '\\u003c'),
-        }}
-      />
+      <JsonLd data={schemaGraph} />
       {/* Hero */}
       <section className="bg-brand-bgAlt pt-32 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

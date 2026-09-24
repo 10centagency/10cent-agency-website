@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { headers } from 'next/headers';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import {
   getBlogPost,
@@ -9,7 +10,9 @@ import {
   getBlogPostDescription,
 } from '@/lib/blog';
 import BlogPostClient from './BlogPostClient';
-import { renderDocToHtml } from '@/components/editor';
+import { renderDocToHtml } from '@/components/editor/render';
+import { sanitizeContentHtml } from '@/lib/sanitize';
+import JsonLd from '@/components/seo/JsonLd';
 
 export const dynamic = 'force-dynamic';
 
@@ -94,7 +97,8 @@ export default async function BlogPostPage({ params }: Props) {
     notFound();
   }
 
-  const contentHtml = renderDocToHtml(post.content);
+  const nonce = (await headers()).get('x-nonce') || undefined;
+  const contentHtml = sanitizeContentHtml(renderDocToHtml(post.content));
 
   const [category, relatedPosts] = await Promise.all([
     post.category_id ? getCategoryById(post.category_id) : Promise.resolve(null),
@@ -129,12 +133,7 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLd),
-        }}
-      />
+      <JsonLd data={jsonLd} nonce={nonce} />
       <BlogPostClient
         post={post}
         category={category}

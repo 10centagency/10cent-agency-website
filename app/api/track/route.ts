@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendToCAPI } from '@/lib/capi';
+import { getClientIp } from '@/lib/ip';
 
 // Allowed event names based on codebase tracking callers
 const ALLOWED_EVENTS = new Set(['PageView', 'Lead', 'Contact', 'Purchase']);
@@ -96,10 +97,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 4. Rate limiting check (per IP, in-memory)
-  const ipAddress =
-    req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
-    req.headers.get('x-real-ip') ||
-    '127.0.0.1';
+  const ipAddress = getClientIp(req);
 
   if (!checkRateLimit(ipAddress)) {
     console.warn('[Track API] Rejected: rate limit exceeded (20 req/min)');

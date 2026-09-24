@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 import { BlogPost, CategoryRow } from '@/lib/database.types'
 import { Plus, Trash2, Pencil, Search, Loader } from 'lucide-react'
 
@@ -19,33 +18,50 @@ export default function BlogListPage() {
   }, [])
 
   const fetchData = async () => {
-    const [postsRes, catsRes] = await Promise.all([
-      supabase
-        .from('blog_posts')
-        .select('*')
-        .order('created_at', { ascending: false }),
-      supabase
-        .from('categories')
-        .select('*')
-        .eq('type', 'blog')
-        .order('name'),
-    ])
+    try {
+      const [postsRes, catsRes] = await Promise.all([
+        fetch('/api/admin/blog'),
+        fetch('/api/admin/categories?type=blog'),
+      ]);
 
-    if (postsRes.data) setPosts(postsRes.data as BlogPost[])
-    if (catsRes.data) setCategories(catsRes.data as CategoryRow[])
-    setLoading(false)
+      if (postsRes.status === 401) {
+        window.location.replace('/auth');
+        return;
+      }
+
+      if (postsRes.ok) {
+        const postsData = await postsRes.json();
+        if (postsData.posts) setPosts(postsData.posts);
+      }
+      if (catsRes.ok) {
+        const catsData = await catsRes.json();
+        if (catsData.categories) setCategories(catsData.categories);
+      }
+    } catch (err) {
+      console.error('[BlogListPage] fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this post?')) return
+    if (!confirm('Are you sure you want to delete this post?')) return;
 
-    setDeleting(id)
-    const { error } = await supabase.from('blog_posts').delete().eq('id', id)
-
-    if (!error) {
-      setPosts(posts.filter((p) => p.id !== id))
+    setDeleting(id);
+    try {
+      const res = await fetch(`/api/admin/blog/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setPosts(posts.filter((p) => p.id !== id));
+      } else {
+        const err = await res.json().catch(() => ({ error: `Delete failed (status ${res.status})` }));
+        alert(err.error || 'Failed to delete post');
+      }
+    } catch (err) {
+      console.error('[BlogListPage] delete error:', err);
+      alert('Network error while deleting post');
+    } finally {
+      setDeleting(null);
     }
-    setDeleting(null)
   }
 
   const filteredPosts = posts.filter((post) => {

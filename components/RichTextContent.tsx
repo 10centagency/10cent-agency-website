@@ -10,12 +10,15 @@
  *   correctly on public pages — matching what the admin TipTap editor shows.
  */
 
+import { sanitizeContentHtml } from '@/lib/sanitize';
+
 interface RichTextContentProps {
   html: string;
   className?: string;
 }
 
 export default function RichTextContent({ html, className = '' }: RichTextContentProps) {
+  const sanitizedHtml = sanitizeContentHtml(html);
   return (
     <div
       className={[
@@ -55,7 +58,7 @@ export default function RichTextContent({ html, className = '' }: RichTextConten
       ]
         .filter(Boolean)
         .join(' ')}
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
     />
   );
 }

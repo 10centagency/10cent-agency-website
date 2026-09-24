@@ -5,6 +5,7 @@ import { TableStyles } from '../extensions/tableStyles'
 import { Table2, Code, ListTree } from 'lucide-react'
 import type { BlockDefinition } from '../types'
 import { cx, jsonAttr, mergeAttributes, suppress } from './helpers'
+import { sanitizeUrl } from '@/lib/url-safety'
 
 /* ══════════════════════════════════════════════════════════════════════════
  * TABLE  (Tiptap official TableKit — fully editable)
@@ -52,8 +53,10 @@ export const tableBlock: BlockDefinition = {
   ],
 }
 
+import { sanitizeContentHtml } from '@/lib/sanitize'
+
 /* ══════════════════════════════════════════════════════════════════════════
- * RAW HTML
+ * RAW HTML (Disabled for new content, strictly sanitized if legacy content exists)
  * ═════════════════════════════════════════════════════════════════════════*/
 const HtmlView = ({ node, selected }: { node: any; selected: boolean }) => {
   const { code } = node.attrs
@@ -64,10 +67,10 @@ const HtmlView = ({ node, selected }: { node: any; selected: boolean }) => {
       data-drag-handle
     >
       {code ? (
-        <div className="raw-html" dangerouslySetInnerHTML={{ __html: code }} />
+        <div className="raw-html" dangerouslySetInnerHTML={{ __html: sanitizeContentHtml(code) }} />
       ) : (
         <div className="rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center text-xs text-slate-400">
-          Raw HTML — paste your code in the inspector →
+          Raw HTML disabled — legacy code rendered safely
         </div>
       )}
     </NodeViewWrapper>
@@ -129,7 +132,7 @@ const TocView = ({ node, selected }: { node: any; selected: boolean }) => {
         <ol className={cx(numbered ? 'list-decimal space-y-1 pl-5' : 'space-y-1', Number(columns) === 2 && 'grid gap-1 sm:grid-cols-2')}>
           {(links as { label: string; url: string }[]).map((l, i) => (
             <li key={i}>
-              <a href={l.url || '#'} className="text-sm text-blue-600 hover:underline">
+              <a href={sanitizeUrl(l.url, '#')} className="text-sm text-blue-600 hover:underline">
                 {l.label || `Section ${i + 1}`}
               </a>
             </li>
@@ -225,5 +228,5 @@ export const tocBlock: BlockDefinition = {
   ],
 }
 
-export const advancedBlocks: BlockDefinition[] = [tableBlock, htmlBlock, tocBlock]
+export const advancedBlocks: BlockDefinition[] = [tableBlock, tocBlock]
 
