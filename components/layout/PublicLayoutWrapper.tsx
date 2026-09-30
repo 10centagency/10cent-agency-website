@@ -1,0 +1,28 @@
+'use client';
+
+import dynamic from 'next/dynamic';
+import { usePathname } from 'next/navigation';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
+
+const CustomCursor = dynamic(() => import('@/components/ui/CustomCursor'), { ssr: false });
+
+export default function PublicLayoutWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+  const isAdmin = pathname.startsWith('/admin');
+
+  return (
+    <>
+      {!isAdmin && <Navbar />}
+      <main id="main-content">
+        {children}
+      </main>
+      {!isAdmin && <Footer />}
+      {!isAdmin && <CustomCursor />}
+    </>
+  );
+}
