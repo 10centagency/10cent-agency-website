@@ -117,7 +117,6 @@ export async function middleware(req: NextRequest) {
           {
             headers: {
               apikey: serviceRoleKey,
-              Authorization: `Bearer ${serviceRoleKey}`,
             },
             cache: 'no-store',
           }
@@ -127,6 +126,8 @@ export async function middleware(req: NextRequest) {
           if (Array.isArray(records) && records.length > 0) {
             isDbAdmin = true;
           }
+        } else {
+          console.error('[Admin Middleware] admin_users check failed with HTTP', checkRes.status);
         }
       } catch (err) {
         console.error('[Admin Middleware] Admin database verification error:', err);
