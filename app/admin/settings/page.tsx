@@ -28,7 +28,30 @@ export default function SettingsPage() {
       return;
     }
 
+    if (newPassword === currentPassword) {
+      setMessage({ type: 'error', text: 'New password must be different from the current password.' });
+      return;
+    }
+
     setSaving(true);
+
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const email = userData?.user?.email;
+    if (userError || !email) {
+      setMessage({ type: 'error', text: 'Could not verify your session. Please log in again.' });
+      setSaving(false);
+      return;
+    }
+
+    const { error: reauthError } = await supabase.auth.signInWithPassword({
+      email,
+      password: currentPassword,
+    });
+    if (reauthError) {
+      setMessage({ type: 'error', text: 'Current password is incorrect.' });
+      setSaving(false);
+      return;
+    }
 
     const { error } = await supabase.auth.updateUser({
       password: newPassword,
@@ -70,6 +93,29 @@ export default function SettingsPage() {
         )}
 
         <form onSubmit={handleChangePassword} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-brand-textDark mb-1.5">
+              Current Password
+            </label>
+            <div className="relative">
+              <input
+                type={showCurrent ? 'text' : 'password'}
+                required
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Enter your current password"
+                className="w-full px-4 py-2.5 rounded-lg border border-brand-border bg-white text-sm text-brand-textDark placeholder:text-brand-textMid/50 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue transition-colors pr-11"
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrent(!showCurrent)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-textMid hover:text-brand-textDark transition-colors"
+              >
+                {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-brand-textDark mb-1.5">
               New Password
