@@ -24,6 +24,11 @@ export function getSupabaseAdmin() {
       autoRefreshToken: false,
       persistSession: false,
     },
+    global: {
+      headers: {
+        'User-Agent': 'tencent-agency-server/1.0 (vercel; node)',
+      },
+    },
   });
 }
 
@@ -66,23 +71,15 @@ export async function verifyAdmin(req: NextRequest): Promise<AdminVerificationRe
     };
   }
 
-  // Verify real admin membership in public.admin_users using server admin client
-  const adminClient = getSupabaseAdmin();
-  const { data: adminRecord, error: adminError } = await adminClient
-    .from('admin_users' as any)
-    .select('user_id')
-    .eq('user_id', user.id)
-    .maybeSingle();
-
-  if (adminError || !adminRecord) {
-    return {
-      authorized: false,
-      response: NextResponse.json(
-        { error: 'Forbidden: Admin authorization required.' },
-        { status: 403 }
-      ),
-    };
+  const { data: rpcResult, error: rpcError } = await supabase.rpc('is_admin');
+  if (rpcError || rpcResult !== true) {
+    if (rpcError) {
+      console.error('[verifyAdmin] is_admin RPC error:', rpcError.message);
+    }
+    return { authorized: false, response: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) };
   }
+
+  const adminClient = getSupabaseAdmin();
 
   return {
     authorized: true,

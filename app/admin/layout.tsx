@@ -1,7 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { createServerClient } from '@supabase/ssr';
-import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import AdminLayoutClient from '@/components/admin/AdminLayoutClient';
 
 async function createServerSupabaseClient() {
@@ -43,20 +42,19 @@ export default async function AdminLayout({
     redirect('/auth');
   }
 
-  // Database-backed admin check via public.admin_users
+  let isAdmin = false;
   try {
-    const adminClient = getSupabaseAdmin();
-    const { data: adminRecord, error } = await adminClient
-      .from('admin_users' as any)
-      .select('user_id')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (error || !adminRecord) {
-      redirect('/');
+    const { data: rpcResult, error: rpcError } = await supabase.rpc('is_admin');
+    if (!rpcError && rpcResult === true) {
+      isAdmin = true;
+    } else if (rpcError) {
+      console.error('[AdminLayout] is_admin RPC error:', rpcError.message);
     }
   } catch (err) {
-    console.error('[AdminLayout] Admin verification error:', err);
+    console.error('[AdminLayout] admin verification exception:', err);
+  }
+
+  if (!isAdmin) {
     redirect('/');
   }
 
