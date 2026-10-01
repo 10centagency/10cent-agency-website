@@ -71,7 +71,7 @@ export async function middleware(req: NextRequest) {
   // 3. Admin authentication & database role check (for /admin paths)
   if (pathname.startsWith('/admin')) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey) {
       console.error('[Admin Middleware] Missing Supabase configuration');
@@ -108,7 +108,7 @@ export async function middleware(req: NextRequest) {
 
     // Verify database-backed admin membership using server credentials
     let isDbAdmin = false;
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const serviceRoleKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (serviceRoleKey && supabaseUrl) {
       try {
@@ -127,13 +127,13 @@ export async function middleware(req: NextRequest) {
             isDbAdmin = true;
           }
         } else {
-          console.error('[Admin Middleware] admin_users check failed with HTTP', checkRes.status);
+          console.error('[Admin Middleware] admin_users check failed with HTTP', checkRes.status, '| key type:', serviceRoleKey.slice(0, 11));
         }
       } catch (err) {
         console.error('[Admin Middleware] Admin database verification error:', err);
       }
     } else {
-      console.error('[Admin Middleware] SUPABASE_SERVICE_ROLE_KEY is not configured');
+      console.error('[Admin Middleware] SUPABASE_SECRET_KEY (or legacy SUPABASE_SERVICE_ROLE_KEY) is not configured');
     }
 
     if (!isDbAdmin) {

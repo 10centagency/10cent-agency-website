@@ -24,7 +24,9 @@ jobs:
       NEXT_PUBLIC_SITE_URL: https://www.10centagency.com
       SITE_URL: https://www.10centagency.com
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: example-publishable-key-placeholder
       NEXT_PUBLIC_SUPABASE_ANON_KEY: example-anon-key-placeholder
+      SUPABASE_SECRET_KEY: example-secret-key-placeholder
       SUPABASE_SERVICE_ROLE_KEY: example-service-role-key-placeholder
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
       TURNSTILE_SECRET_KEY: 1x0000000000000000000000000000000AA

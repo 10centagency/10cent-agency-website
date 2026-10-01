@@ -5,7 +5,7 @@ import { createServerClient } from '@supabase/ssr';
 import type { Database } from './database.types';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseServiceRoleKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl) {
   throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL');
@@ -17,7 +17,7 @@ if (!supabaseUrl) {
  */
 export function getSupabaseAdmin() {
   if (!supabaseServiceRoleKey) {
-    throw new Error('SUPABASE_SERVICE_ROLE_KEY is not configured on the server');
+    throw new Error('SUPABASE_SECRET_KEY (or legacy SUPABASE_SERVICE_ROLE_KEY) is not configured on the server');
   }
   return createClient<Database>(supabaseUrl, supabaseServiceRoleKey, {
     auth: {
@@ -38,7 +38,7 @@ export type AdminVerificationResult =
 export async function verifyAdmin(req: NextRequest): Promise<AdminVerificationResult> {
   const supabase = createServerClient(
     supabaseUrl,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)!,
     {
       cookies: {
         getAll() {
