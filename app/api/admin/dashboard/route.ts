@@ -42,6 +42,18 @@ export async function GET(req: NextRequest) {
       supabaseAdmin.from('contact_submissions').select('*', { count: 'exact', head: true }).eq('status', 'unread'),
     ]);
 
+    const results = {
+      portfolio: portfolioRes.error, blog: blogRes.error, submissions: submissionsRes.error,
+      blogCount: blogCountRes.error, publishedBlogCount: publishedBlogCountRes.error,
+      portfolioCount: portfolioCountRes.error, publishedPortfolioCount: publishedPortfolioCountRes.error,
+      submissionsCount: submissionsCountRes.error, unreadSubmissionsCount: unreadSubmissionsCountRes.error,
+    };
+    for (const [name, err] of Object.entries(results)) {
+      if (err) {
+        console.error(`[Dashboard API] ${name} query failed:`, err.message, '| code:', err.code);
+      }
+    }
+
     const totalPortfolio = portfolioCountRes.count || 0;
     const publishedPortfolio = publishedPortfolioCountRes.count || 0;
     const totalBlog = blogCountRes.count || 0;
