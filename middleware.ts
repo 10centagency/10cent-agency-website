@@ -106,17 +106,31 @@ export async function middleware(req: NextRequest) {
       return redirectResponse;
     }
 
-    // Verify database-backed admin membership using server credentials
     let isDbAdmin = false;
+
+    // Primary: database-backed check using the user's own session (no secret key)
+    try {
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('is_admin');
+      if (!rpcError && rpcResult === true) {
+        isDbAdmin = true;
+      } else if (rpcError) {
+        console.error('[Admin Middleware] is_admin RPC error:', rpcError.message);
+      }
+    } catch (err) {
+      console.error('[Admin Middleware] is_admin RPC exception:', err);
+    }
+
+    // Fallback: database-backed check using service role / secret key
     const serviceRoleKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (serviceRoleKey && supabaseUrl) {
+    if (!isDbAdmin && serviceRoleKey && supabaseUrl) {
       try {
         const checkRes = await fetch(
           `${supabaseUrl}/rest/v1/admin_users?user_id=eq.${encodeURIComponent(user.id)}&select=user_id`,
           {
             headers: {
               apikey: serviceRoleKey,
+              'User-Agent': 'tencent-agency-middleware/1.0 (server; vercel-edge)',
             },
             cache: 'no-store',
           }
@@ -132,7 +146,7 @@ export async function middleware(req: NextRequest) {
       } catch (err) {
         console.error('[Admin Middleware] Admin database verification error:', err);
       }
-    } else {
+    } else if (!isDbAdmin && !serviceRoleKey) {
       console.error('[Admin Middleware] SUPABASE_SECRET_KEY (or legacy SUPABASE_SERVICE_ROLE_KEY) is not configured');
     }
 
